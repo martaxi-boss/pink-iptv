@@ -3,7 +3,6 @@ package com.pinkiptv.app.storage
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import androidx.datastore.preferences.core.clear
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -95,7 +94,9 @@ class DataStoreCredentialPersistence(
 
     override suspend fun clear() {
         context.credentialDataStore.edit { preferences ->
-            preferences.clear()
+            preferences.remove(USERNAME)
+            preferences.remove(IV)
+            preferences.remove(CIPHERTEXT)
         }
     }
 

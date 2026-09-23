@@ -1,62 +1,40 @@
 # Roadmap
 
-## Phase 0 - Architecture
-Current phase.
-Deliver docs, repository structure and supervisor handoff.
-No production changes.
+## Phase 0 — Architecture
 
-## Phase 1 - Backend Foundation
-- FastAPI service skeleton
-- PostgreSQL schema
-- Mega adapter
-- subscription mapping/import path
-- /session/resolve
-- /app-config
-- tests
-- staging deployment
+Architecture baseline and Supervisor-controlled builder orders. Public launch: NO.
 
-Gate: one real username/password resolves to the correct assigned dns_link and validates against Xtream.
+## Phase 1 — Backend / Mega Proof
 
-## Phase 2 - Android Core
-- Kotlin/Compose project
-- login
-- secure credential storage
-- Xtream catalog adapter
-- Home
-- Live TV
-- Movies
-- Series
-- Media3 player
-- EPG
-- favorites/history
+- FastAPI backend foundation
+- PostgreSQL subscription mapping + Alembic migration
+- Mega retrieve-by-ID adapter
+- internal known-ID import/bootstrap
+- exact mapped `dns_link` Xtream authentication
+- `/v1/session/resolve`
+- automated security/migration tests
+- Owner-authorized live Mega/Xtream proof
 
-Gate: stable playback on phone + Android TV device.
+Gate: real authorized line proves mapping match, Xtream `SUCCESS`, and wrong-password `INVALID_CREDENTIALS` without secret leakage.
 
-## Phase 3 - VPN
-- WireGuard POC on existing Droplet
-- Android embedded tunnel
-- per-installation peer enrollment
-- reconnect/kill policy
-- bandwidth measurements
-- dedicated-gateway decision
+## Phase 2 — Android Shell
 
-Gate: IPTV works through VPN with measured throughput and no impact to existing workloads.
+Android project shell, original PINK theme, login/home shell, backend API client and secure local credential storage. No full player gate is opened by Phase 1 alone.
 
-## Phase 4 - Windows
-- WinUI 3 application
-- same backend contract and information architecture
-- media player
-- secure credentials
-- WireGuard integration
+## Phase 3 — Android Xtream + Player
 
-## Phase 5 - Hardening / Distribution
-- CI/CD
-- signed release builds
-- crash/error reporting
-- accessibility/TV focus pass
-- load tests
-- backup/restore tests
-- legal/store policy review
-- controlled beta
+Xtream catalog, Live/VOD/Series/EPG behavior, Media3 playback, favorites/history and Android TV navigation/focus.
 
-Public launch remains NO until explicit owner/supervisor approval.
+## Phase 4 — WireGuard
+
+Separately supervised VPN POC, rollback/snapshot prerequisites, per-installation peers, client tunnel integration, networking safety and measured capacity.
+
+## Phase 5 — Windows
+
+Windows shell, backend contract parity, catalog/player, secure storage and separately audited VPN integration.
+
+## Phase 6 — Hardening / Distribution
+
+Release CI/CD, signed builds, dependency/security hardening, observability/privacy review, performance/load testing, backup/restore, accessibility, legal/store review and controlled beta.
+
+Public launch remains NO until explicit Owner/Supervisor approval.

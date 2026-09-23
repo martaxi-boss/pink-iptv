@@ -1,61 +1,45 @@
 # Mega OTT Integration
 
-Official references:
+Official references reviewed for this architecture:
+
 - https://megaott.net/docs/authentication
 - https://megaott.net/docs/subscriptions
 
-## Confirmed public API behavior
+## Confirmed behavior used by Order 001
 
-Mega OTT documents OAuth2-style Bearer token authentication.
-The subscription model includes:
+Mega documents Bearer-token authentication and `GET /v1/subscriptions/{id}`. The documented M3U subscription response includes `type`, `id`, `username`, `password`, `expiring_at`, `dns_link`, and `dns_link_for_samsung_lg`.
+
+Order 001 uses only retrieve-by-ID in production code.
+
+## Existing-line bootstrap
+
+An internal CLI receives a known `mega_subscription_id`, calls `GET /v1/subscriptions/{id}`, requires the returned id to match, requires `type=M3U`, and persists only:
+
 - id
 - username
-- password
-- package
-- max_connections
-- expiring_at
 - dns_link
 - dns_link_for_samsung_lg
-- portal_link
+- expiring_at
+- sync timestamps
 
-The create-subscription example returns dns_link in the same response.
-The API also documents retrieve-by-id, extend, deactivate and activate operations.
+Import is idempotent and refreshes authoritative metadata for the same subscription id.
 
-## Critical architecture constraint
+## No username lookup assumption
 
-The currently published subscription documentation exposes retrieve-by-id, not a documented username lookup/list endpoint.
+The reviewed public documentation does not establish a subscription search/list endpoint by username. The backend therefore does not invent or call one. Username-only customer login works only after a line has a local mapping populated by the known-ID bootstrap (or a separately approved future provisioning mechanism).
 
-Therefore v1 must NOT assume:
-"username -> Mega API search -> dns_link"
-unless the supervisor/builder verifies a supported endpoint from the live account.
+## Password handling
 
-Reliable strategy:
-1. New lines created through a PINK provisioning/admin flow call Mega POST /v1/subscriptions.
-2. Store returned mega_subscription_id + username + dns_link in PINK PostgreSQL.
-3. Existing manually-created lines require a one-time import/bootstrap mapping before username-only login can work.
-4. If Mega later exposes an official search/list/webhook mechanism, add it behind the Mega adapter without changing clients.
+The Mega response may contain a password. It is parsed only transiently so the documented response can be validated, represented as a secret type, and then discarded. It is never stored, printed, logged, included in fixtures with real values, or returned to clients.
 
-## Mega naming versus PINK product scope
+The customer-supplied password for Xtream authentication is also request-scoped and is never persisted or cached.
 
-Mega calls username/password subscriptions type M3U.
-PINK v1 must not expose M3U import or playlist URL entry.
-The client uses the returned dns_link as the host for Xtream-style player API calls.
+## Authoritative dns_link
 
-## Xtream adapter expectations
+`dns_link` is used exactly as returned and persisted. The implementation does not derive a base domain, invent a prefix/subdomain, substitute `zvpnm.com`, change hosts, brute-force DNS, or rewrite HTTP to HTTPS.
 
-Feature-detect provider behavior; do not hardcode assumptions beyond tested endpoints.
-Expected capabilities include:
-- authentication/account info
-- live categories/streams
-- VOD categories/streams/info
-- series categories/list/info
-- EPG where available
+Only safe path normalization is performed to form `<dns_link>/player_api.php`.
 
-The assigned dns_link is authoritative.
-Do not derive random subdomains from a base domain.
-Do not hardcode zvpnm.com as a universal host.
+## Operations excluded from Order 001
 
-## Secrets
-
-MEGA_OTT_API_TOKEN exists only as a backend secret.
-Never embed it in Android, Windows, logs, analytics, GitHub, screenshots or client config.
+No live code path creates, extends, deactivates, or activates subscriptions. Those documented Mega endpoints are not used by this order.

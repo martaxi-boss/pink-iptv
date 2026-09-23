@@ -84,3 +84,35 @@ Successful resolution may return a signed PINK session token with a maximum five
 ## Non-responsibility
 
 The PINK Backend never relays IPTV video streams. Android, Windows, player and VPN implementation are outside Order 001.
+
+## Global client architecture retained
+
+The full approved architecture remains broader than Order 001:
+
+- Android client;
+- Windows client;
+- PINK Backend API;
+- PostgreSQL;
+- Mega OTT adapter;
+- Xtream client layer;
+- WireGuard control plane in a later phase;
+- WireGuard gateway in a later phase;
+- shared logical contracts expressed through backend API contracts and UX specifications.
+
+### Client modules
+
+Auth, Catalog, Live TV, VOD, Series, EPG, Search, Favorites, History, Player, VPN, Settings, and operational error reporting remain the logical product modules. Order 001 implements only the backend authentication/mapping proof and does not construct these client modules.
+
+### Android stack
+
+The approved later Android stack remains Kotlin, Jetpack Compose, Media3/ExoPlayer, platform secure storage, Room/DataStore where appropriate, and separately audited Android VPN/WireGuard integration.
+
+### Windows stack
+
+The approved later Windows stack remains .NET 8, WinUI 3, Windows Credential Locker, a validated media engine, local settings/storage where appropriate, and separately audited WireGuard Windows integration.
+
+## R1 outbound connection architecture
+
+`dns_link` is an origin only: empty path or `/` is accepted and PINK alone appends `/player_api.php`. Scheme, hostname, and valid port are preserved.
+
+DNS resolution produces the public IP set for the attempt. The outbound network backend then connects to a validated IP literal instead of resolving the hostname again. The connected peer is verified against that pinned public IP before HTTP bytes are sent. HTTPS still uses the original hostname for SNI and certificate verification, while HTTP retains the original `Host` header. Redirects remain disabled.

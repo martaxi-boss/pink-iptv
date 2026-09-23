@@ -55,3 +55,28 @@ The project must not mark the Mega/Xtream proof complete based only on mocks/CI.
 5. Only after Order 001 gate: issue any later Android/VPN/Windows order explicitly.
 
 Implementation status: ORDER 001 AUTOMATED IMPLEMENTATION PREPARED; LIVE_PROOF_BLOCKED.
+
+## Infrastructure observed and retained
+
+Existing DigitalOcean development/POC environment observed in the architecture baseline:
+
+- Ubuntu 24.04 LTS;
+- London region;
+- 1 vCPU / 1 GB RAM;
+- 25 GB plan disk with approximately 11 GB free at the baseline audit;
+- existing Nginx, PostgreSQL, Gunicorn, Python, and Node workloads.
+
+This environment remains POC/staging only. Production VPN use has not been approved, and the production design still expects a dedicated VPN gateway once capacity/isolation are proven. No DigitalOcean service, firewall, routing, deployment, or VPN mutation is part of Order 001/R1.
+
+## Future project gates retained
+
+After the live Mega/Xtream proof and Supervisor merge decision, separate orders are still required for:
+
+1. original PINK design-system/screen-map approval where not already closed;
+2. Android shell and later Android Xtream/player work;
+3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
+4. production VPN capacity/isolation and bandwidth planning;
+5. Windows implementation;
+6. hardening/distribution and explicit public-launch approval.
+
+Public launch remains: NO.

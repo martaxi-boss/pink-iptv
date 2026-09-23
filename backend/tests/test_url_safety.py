@@ -69,3 +69,31 @@ def test_redirect_is_not_followed() -> None:
         )
     client.close()
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("http://stream.example.com", "http://stream.example.com"),
+        ("http://stream.example.com/", "http://stream.example.com"),
+        ("https://stream.example.com:8443", "https://stream.example.com:8443"),
+    ],
+)
+def test_dns_link_origin_path_contract_allows_only_origin(
+    url: str,
+    expected: str,
+) -> None:
+    assert validate_dns_link(url, resolver=public_resolver) == expected
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://stream.example.com/foo",
+        "https://stream.example.com/player_api.php",
+        "https://stream.example.com/anything/player_api.php",
+    ],
+)
+def test_dns_link_origin_path_contract_rejects_non_root_paths(url: str) -> None:
+    with pytest.raises(UnsafeOutboundURL, match="path"):
+        validate_dns_link(url, resolver=public_resolver)

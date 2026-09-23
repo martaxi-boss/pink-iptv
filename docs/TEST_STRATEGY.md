@@ -51,3 +51,38 @@ Required live sequence:
 Evidence may include the Mega subscription id, masked/hash username evidence, SHA-256 `dns_link` evidence, scheme, mapping hash match, and the result `Xtream auth: SUCCESS`. Passwords, tokens and credential-bearing URLs are forbidden from evidence.
 
 If the authorized line/token is unavailable, Order 001 remains `LIVE_PROOF_BLOCKED`; automated PASS does not substitute for the live proof.
+
+## Future client/platform matrices retained
+
+Order 001 backend proof does not remove the test plan for later phases.
+
+### Android phone/tablet
+
+- phone and tablet form factors;
+- Wi-Fi/mobile network transitions;
+- background/foreground and process restart;
+- secure credential persistence;
+- player/network recovery where implemented.
+
+### Android TV / TV Box
+
+- D-pad-only navigation;
+- deterministic focus movement and visible focus state;
+- resume/reconnect behavior after network changes;
+- playback behavior on supported TV hardware.
+
+### Windows
+
+- Windows 11;
+- mouse/keyboard navigation;
+- install/uninstall and upgrade behavior;
+- secure credential storage;
+- network transitions and media protocol/codec behavior.
+
+### VPN / WireGuard
+
+When the separately supervised VPN phase opens, test throughput, packet loss, reconnect, DNS behavior, provider access through the gateway, peer revocation, network transitions, and multiple simultaneous test peers. Capacity must be measured before production estimates.
+
+## R1 outbound binding proof
+
+Automated tests additionally prove that a validated public DNS result is pinned into the real transport connection, a subsequent/private peer swap is rejected before request bytes are written, provider paths are rejected, HTTP `Host` is preserved, and HTTPS SNI plus certificate verification remain enabled.

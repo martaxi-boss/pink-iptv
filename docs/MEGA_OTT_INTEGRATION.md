@@ -43,3 +43,13 @@ Only safe path normalization is performed to form `<dns_link>/player_api.php`.
 ## Operations excluded from Order 001
 
 No live code path creates, extends, deactivates, or activates subscriptions. Those documented Mega endpoints are not used by this order.
+
+## General integration rules retained
+
+Mega reseller authentication is backend-only. The Mega API token never enters Android, Windows, client configuration, analytics, screenshots, logs, or Git history.
+
+Mega may call username/password subscriptions M3U internally. That provider naming does not authorize a user-facing M3U import flow: the PINK client remains username/password Xtream-style only.
+
+The assigned `dns_link` is authoritative. PINK never infers a DNS host, derives random subdomains, substitutes another base domain, or brute-forces DNS.
+
+Beyond authentication, future Xtream functionality must feature-detect provider behavior rather than assume unsupported capabilities. Candidate later capabilities include Live categories/streams, VOD, Series, and EPG where the provider actually supports them.

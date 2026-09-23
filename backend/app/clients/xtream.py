@@ -5,13 +5,14 @@ from typing import Any
 
 import httpx
 
+from app.outbound_transport import PinnedHTTPTransport
 from app.url_safety import (
     DNSResolutionFailure,
     Resolver,
     UnsafeOutboundURL,
     player_api_url,
+    resolve_dns_link_target,
     system_resolver,
-    validate_dns_link,
 )
 
 
@@ -73,15 +74,48 @@ class XtreamClient:
         resolver: Resolver = system_resolver,
     ) -> None:
         self._resolver = resolver
-        self._client = httpx.Client(
-            timeout=httpx.Timeout(timeout_seconds),
-            follow_redirects=False,
-            transport=transport,
-            trust_env=False,
+        self._timeout = httpx.Timeout(timeout_seconds)
+        self._client = (
+            httpx.Client(
+                timeout=self._timeout,
+                follow_redirects=False,
+                transport=transport,
+                trust_env=False,
+            )
+            if transport is not None
+            else None
         )
 
     def close(self) -> None:
-        self._client.close()
+        if self._client is not None:
+            self._client.close()
+
+    def _request(
+        self,
+        *,
+        target,
+        url: str,
+        username: str,
+        password: str,
+    ) -> httpx.Response:
+        client = self._client
+        close_after = False
+        if client is None:
+            client = httpx.Client(
+                timeout=self._timeout,
+                follow_redirects=False,
+                transport=PinnedHTTPTransport(target),
+                trust_env=False,
+            )
+            close_after = True
+        try:
+            return client.get(
+                url,
+                params={"username": username, "password": password},
+            )
+        finally:
+            if close_after:
+                client.close()
 
     def authenticate(
         self,
@@ -91,17 +125,19 @@ class XtreamClient:
         password: str,
     ) -> XtreamAuthResult:
         try:
-            safe_base = validate_dns_link(dns_link, resolver=self._resolver)
+            target = resolve_dns_link_target(dns_link, resolver=self._resolver)
         except DNSResolutionFailure as exc:
             raise XtreamDNSUnreachable("Xtream host could not be resolved") from exc
         except UnsafeOutboundURL as exc:
             raise XtreamUpstreamError("Xtream destination failed safety validation") from exc
 
-        url = player_api_url(safe_base)
+        url = player_api_url(target.origin)
         try:
-            response = self._client.get(
-                url,
-                params={"username": username, "password": password},
+            response = self._request(
+                target=target,
+                url=url,
+                username=username,
+                password=password,
             )
         except httpx.TimeoutException as exc:
             raise XtreamUpstreamError("Xtream request timed out") from exc

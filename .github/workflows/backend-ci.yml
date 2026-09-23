@@ -66,7 +66,19 @@ jobs:
         run: |
           ruff check --fix .
           ruff format .
-          git diff --exit-code
+          git diff > /tmp/ruff.patch
+
+      - name: Upload Ruff normalization patch
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ruff-normalization-patch
+          path: /tmp/ruff.patch
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail if normalization is required
+        working-directory: backend
+        run: git diff --exit-code
 
       - name: Alembic upgrade from clean PostgreSQL
         working-directory: backend

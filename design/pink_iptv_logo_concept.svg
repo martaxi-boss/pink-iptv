@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" role="img" aria-labelledby="title desc">
+  <title id="title">PINK IPTV logo concept</title>
+  <desc id="desc">Original abstract P and play symbol with PINK IPTV wordmark.</desc>
+  <defs>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF8FC1"/>
+      <stop offset="0.55" stop-color="#FF2D8D"/>
+      <stop offset="1" stop-color="#D4146C"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="220" rx="36" fill="#FDF7FB"/>
+  <g transform="translate(42 30)">
+    <path d="M30 10h74c56 0 91 25 91 69 0 42-35 70-91 70H74v31H30V10zm44 39v61h28c29 0 47-10 47-31 0-20-18-30-47-30H74z" fill="url(#pink)"/>
+    <path d="M91 62l45 27-45 27V62z" fill="#FFFFFF" opacity=".96"/>
+  </g>
+  <text x="270" y="105" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700" fill="#FF2D8D">PINK</text>
+  <text x="430" y="105" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700" fill="#141722">IPTV</text>
+  <text x="273" y="145" font-family="Arial, Helvetica, sans-serif" font-size="18" letter-spacing="4" fill="#616777">STREAM SMARTER, YOUR WAY</text>
+</svg>

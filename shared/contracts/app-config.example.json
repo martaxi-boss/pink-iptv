@@ -1,0 +1,17 @@
+{
+  "minimum_supported_version": "0.0.0",
+  "vpn": {
+    "enabled": false,
+    "required_for_playback": false,
+    "mode": "auto"
+  },
+  "features": {
+    "live_tv": true,
+    "movies": true,
+    "series": true,
+    "epg": true,
+    "catch_up": true,
+    "favorites": true
+  },
+  "maintenance_message": null
+}

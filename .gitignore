@@ -1,0 +1,41 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+wg*.conf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Android/Gradle
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+
+# .NET/Windows
+bin/
+obj/
+.vs/
+*.user
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs/data
+*.log
+*.sqlite3
+coverage/

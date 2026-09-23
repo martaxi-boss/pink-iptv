@@ -1,6 +1,6 @@
 import socket
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -59,7 +59,7 @@ def _parse_epoch(value: Any) -> datetime | None:
     if value in (None, "", "0", 0):
         return None
     try:
-        return datetime.fromtimestamp(int(value), tz=timezone.utc)
+        return datetime.fromtimestamp(int(value), tz=UTC)
     except (TypeError, ValueError, OverflowError, OSError):
         return None
 
@@ -156,7 +156,7 @@ class XtreamClient:
         account_expires_at = _parse_epoch(user_info.get("exp_date"))
         if (
             account_expires_at is not None
-            and account_expires_at <= datetime.now(timezone.utc)
+            and account_expires_at <= datetime.now(UTC)
         ):
             return XtreamAuthResult(
                 code="EXPIRED",

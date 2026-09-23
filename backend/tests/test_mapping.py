@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 import pytest
@@ -49,7 +49,7 @@ def test_import_expiry_is_timezone_aware(db, mega_payload) -> None:
         parsed = client.get_subscription(121)
     assert parsed.expiring_at is not None
     assert parsed.expiring_at.tzinfo is not None
-    assert parsed.expiring_at.utcoffset() == timezone.utc.utcoffset(
+    assert parsed.expiring_at.utcoffset() == UTC.utcoffset(
         parsed.expiring_at
     )
     assert SubscriptionMapping.__table__.c.expiring_at.type.timezone is True
@@ -66,7 +66,7 @@ def test_import_updates_dns_link(db, mega_payload) -> None:
 
 
 def test_duplicate_subscription_id_protected(db) -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     db.add(
         SubscriptionMapping(
             mega_subscription_id=121,
@@ -90,7 +90,7 @@ def test_duplicate_subscription_id_protected(db) -> None:
 
 
 def test_duplicate_username_protected(db) -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     db.add(
         SubscriptionMapping(
             mega_subscription_id=121,

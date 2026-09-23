@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
@@ -63,8 +63,8 @@ def future_mapping(db: Session) -> SubscriptionMapping:
         username="authorized-user",
         dns_link="http://stream.example.com",
         dns_link_samsung_lg=None,
-        expiring_at=datetime.now(timezone.utc) + timedelta(days=30),
-        last_synced_at=datetime.now(timezone.utc),
+        expiring_at=datetime.now(UTC) + timedelta(days=30),
+        last_synced_at=datetime.now(UTC),
     )
     db.add(mapping)
     db.commit()

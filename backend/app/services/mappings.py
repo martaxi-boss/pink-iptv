@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from hashlib import sha256
 from urllib.parse import urlsplit
 
@@ -30,7 +30,7 @@ def import_subscription(
     mega_subscription_id: int,
 ) -> SubscriptionMapping:
     subscription = mega_client.get_subscription(mega_subscription_id)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     mapping = session.scalar(
         select(SubscriptionMapping).where(

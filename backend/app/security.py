@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 
@@ -9,7 +9,7 @@ def issue_session_token(
     mapping_id: int,
     settings: Settings,
 ) -> tuple[str, datetime]:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expires_at = now + timedelta(seconds=settings.session_ttl_seconds)
     payload = {
         "sub": f"mapping:{mapping_id}",

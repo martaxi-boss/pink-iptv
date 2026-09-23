@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -37,8 +37,8 @@ class SessionResolver:
         if mapping.expiring_at is not None:
             expiry = mapping.expiring_at
             if expiry.tzinfo is None:
-                expiry = expiry.replace(tzinfo=timezone.utc)
-            if expiry <= datetime.now(timezone.utc):
+                expiry = expiry.replace(tzinfo=UTC)
+            if expiry <= datetime.now(UTC):
                 return ResolveResponse(code=ResolveCode.EXPIRED)
 
         try:

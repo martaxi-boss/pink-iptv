@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import jwt
@@ -102,8 +102,8 @@ def test_local_authoritative_expiry_short_circuits_xtream(
         mega_subscription_id=500,
         username="expired-user",
         dns_link="https://stream.example.com",
-        expiring_at=datetime.now(timezone.utc) - timedelta(seconds=1),
-        last_synced_at=datetime.now(timezone.utc),
+        expiring_at=datetime.now(UTC) - timedelta(seconds=1),
+        last_synced_at=datetime.now(UTC),
     )
     db.add(mapping)
     db.commit()

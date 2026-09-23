@@ -66,13 +66,16 @@ jobs:
         run: |
           ruff check --fix .
           ruff format .
-          git diff > /tmp/ruff.patch
+          git -C "$GITHUB_WORKSPACE" diff > /tmp/ruff.patch
+          git -C "$GITHUB_WORKSPACE" diff --name-only -z -- backend             | tar -C "$GITHUB_WORKSPACE" --null -czf /tmp/ruff-normalized-files.tgz -T -
 
-      - name: Upload Ruff normalization patch
+      - name: Upload Ruff normalization evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ruff-normalization-patch
-          path: /tmp/ruff.patch
+          name: ruff-normalization-evidence
+          path: |
+            /tmp/ruff.patch
+            /tmp/ruff-normalized-files.tgz
           if-no-files-found: error
           retention-days: 1
 

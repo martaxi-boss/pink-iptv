@@ -50,7 +50,7 @@ The project must not mark the Mega/Xtream proof complete based only on mocks/CI.
 
 1. Run the Owner-authorized live Mega retrieve/import and compare redacted hash evidence.
 2. Prove real Xtream `SUCCESS` through exactly the mapped `dns_link`.
-3. Prove wrong password => `INVALID_CREDENTIALS` with no leakage.
+3. Prove an incorrect customer credential => `INVALID_CREDENTIALS` with no leakage.
 4. Supervisor audit/merge decision for Order 001.
 5. Only after Order 001 gate: issue any later Android/VPN/Windows order explicitly.
 

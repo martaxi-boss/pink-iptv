@@ -79,7 +79,7 @@ jobs:
 
       - name: Secret scan
         run: |
-          detect-secrets scan --all-files --exclude-files '(^|/)\.git/' > /tmp/detect-secrets.json
+          detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.pytest_cache|\.ruff_cache)/' > /tmp/detect-secrets.json
           python - <<'PY'
           import json
           from pathlib import Path

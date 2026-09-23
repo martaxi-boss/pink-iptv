@@ -278,3 +278,45 @@ def test_pinned_http_transport_preserves_original_host_header() -> None:
     assert response.status_code == 200
     wire = b"".join(backend.streams[0].writes).lower()
     assert b"host: stream.example.com:8080\r\n" in wire
+
+
+class MissingPeerStream(RecordingStream):
+    def get_extra_info(self, info: str):
+        if info == "server_addr":
+            return None
+        return super().get_extra_info(info)
+
+
+class MissingPeerBackend(RecordingBackend):
+    def connect_tcp(
+        self,
+        host: str,
+        port: int,
+        timeout: float | None = None,
+        local_address: str | None = None,
+        socket_options=None,
+    ) -> httpcore.NetworkStream:
+        self.connected_hosts.append(host)
+        stream = MissingPeerStream(
+            [b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}"],
+            peer_address="93.184.216.34",
+            peer_port=port,
+        )
+        self.streams.append(stream)
+        return stream
+
+
+def test_pinned_transport_rejects_unverifiable_peer_before_request_bytes() -> None:
+    target = resolve_dns_link_target(
+        "http://stream.example.com",
+        resolver=lambda _host, _port: ["93.184.216.34"],
+    )
+    backend = MissingPeerBackend(peer_address="93.184.216.34")
+    transport = PinnedHTTPTransport(target, network_backend=backend)
+
+    with httpx.Client(transport=transport, trust_env=False) as client:
+        with pytest.raises(httpx.RequestError, match="upstream connection failed"):
+            client.get(f"{target.origin}/player_api.php")
+
+    assert backend.connected_hosts == ["93.184.216.34"]
+    assert backend.streams[0].writes == []

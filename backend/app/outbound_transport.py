@@ -56,23 +56,25 @@ class PinnedIPNetworkBackend(httpcore.NetworkBackend):
                 continue
 
             peer = stream.get_extra_info("server_addr")
-            if peer is not None:
-                peer_address = str(peer[0]) if isinstance(peer, tuple) else str(peer)
-                peer_port = peer[1] if isinstance(peer, tuple) and len(peer) > 1 else port
-                try:
-                    parsed_peer = ipaddress.ip_address(peer_address)
-                except ValueError:
-                    stream.close()
-                    raise httpcore.ConnectError("connected peer address is invalid") from None
-                if (
-                    not parsed_peer.is_global
-                    or parsed_peer.compressed != address
-                    or peer_port != port
-                ):
-                    stream.close()
-                    raise httpcore.ConnectError(
-                        "connected peer did not match pinned public destination"
-                    )
+            if peer is None:
+                stream.close()
+                raise httpcore.ConnectError("connected peer address is unavailable")
+            peer_address = str(peer[0]) if isinstance(peer, tuple) else str(peer)
+            peer_port = peer[1] if isinstance(peer, tuple) and len(peer) > 1 else port
+            try:
+                parsed_peer = ipaddress.ip_address(peer_address)
+            except ValueError:
+                stream.close()
+                raise httpcore.ConnectError("connected peer address is invalid") from None
+            if (
+                not parsed_peer.is_global
+                or parsed_peer.compressed != address
+                or peer_port != port
+            ):
+                stream.close()
+                raise httpcore.ConnectError(
+                    "connected peer did not match pinned public destination"
+                )
             return stream
 
         if last_error is not None:

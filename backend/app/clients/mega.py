@@ -86,9 +86,7 @@ class MegaOTTClient:
             or parsed.query
             or parsed.fragment
         ):
-            raise ValueError(
-                "Mega base URL must be HTTPS with no credentials, query, or fragment"
-            )
+            raise ValueError("Mega base URL must be HTTPS with no credentials, query, or fragment")
         self._base_url = base_url.rstrip("/")
         self._client = httpx.Client(
             headers={

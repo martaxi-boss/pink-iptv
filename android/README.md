@@ -12,7 +12,7 @@ Order 002 implements the PINK IPTV application shell for phone/tablet, Android T
 - Android ViewModel / StateFlow
 - DataStore Preferences
 - Android Keystore AES/GCM
-- OkHttp 5.5.0 for the PINK Backend session endpoint
+- OkHttp 5.4.0 for the PINK Backend session endpoint
 
 SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17. API 36 is used as the stable non-preview SDK available in the CI environment; Order 002 does not opt into Android 17 preview SDK tooling.
 

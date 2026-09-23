@@ -66,11 +66,7 @@ class PinnedIPNetworkBackend(httpcore.NetworkBackend):
             except ValueError:
                 stream.close()
                 raise httpcore.ConnectError("connected peer address is invalid") from None
-            if (
-                not parsed_peer.is_global
-                or parsed_peer.compressed != address
-                or peer_port != port
-            ):
+            if not parsed_peer.is_global or parsed_peer.compressed != address or peer_port != port:
                 stream.close()
                 raise httpcore.ConnectError(
                     "connected peer did not match pinned public destination"

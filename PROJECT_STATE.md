@@ -42,19 +42,29 @@ Backend implementation includes:
 
 ## Mega / Xtream proof status
 
-LIVE PROOF: NOT PASSED / BLOCKED until an Owner-authorized test line and runtime secrets are available to the Builder in an approved secure execution context.
+LIVE PROOF: PASSED.
 
-The project must not mark the Mega/Xtream proof complete based only on mocks/CI.
+Sanitized live-proof record:
+
+- live Mega retrieve-by-ID: PASS;
+- `mega_subscription_id`: `10291720`;
+- local mapping persistence and mapping match: PASS;
+- Mega password persistence: NO;
+- Xtream correct credentials: `SUCCESS`;
+- Xtream wrong password: `INVALID_CREDENTIALS`;
+- final remediation: the observed upstream required a stable Xtream User-Agent; the approved implementation uses `PINK-IPTV/0.1`;
+- final implementation CI: PASS;
+- public launch: NO;
+- PR #2: NOT MERGED.
+
+No username, customer password, Mega token, provider hostname, session token, or credential-bearing URL is recorded in this state document.
 
 ## Remaining technical gates
 
-1. Run the Owner-authorized live Mega retrieve/import and compare redacted hash evidence.
-2. Prove real Xtream `SUCCESS` through exactly the mapped `dns_link`.
-3. Prove an incorrect customer credential => `INVALID_CREDENTIALS` with no leakage.
-4. Supervisor audit/merge decision for Order 001.
-5. Only after Order 001 gate: issue any later Android/VPN/Windows order explicitly.
+1. Supervisor audit/merge decision for Order 001.
+2. Only after the Order 001 merge decision: issue any later Android/VPN/Windows order explicitly.
 
-Implementation status: ORDER 001 AUTOMATED IMPLEMENTATION PREPARED; LIVE_PROOF_BLOCKED.
+Implementation status: FOUNDATION / MEGA PROOF 001 TECHNICALLY COMPLETE; awaiting only Supervisor decision/merge for PR #2.
 
 ## Infrastructure observed and retained
 
@@ -70,7 +80,7 @@ This environment remains POC/staging only. Production VPN use has not been appro
 
 ## Future project gates retained
 
-After the live Mega/Xtream proof and Supervisor merge decision, separate orders are still required for:
+After the Supervisor merge decision, separate orders are still required for:
 
 1. original PINK design-system/screen-map approval where not already closed;
 2. Android shell and later Android Xtream/player work;

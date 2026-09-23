@@ -53,3 +53,45 @@ Mega may call username/password subscriptions M3U internally. That provider nami
 The assigned `dns_link` is authoritative. PINK never infers a DNS host, derives random subdomains, substitutes another base domain, or brute-forces DNS.
 
 Beyond authentication, future Xtream functionality must feature-detect provider behavior rather than assume unsupported capabilities. Candidate later capabilities include Live categories/streams, VOD, Series, and EPG where the provider actually supports them.
+
+## Platform DNS selection
+
+Each Mega subscription may provide two distinct authoritative destinations:
+
+- `dns_link`
+- `dns_link_for_samsung_lg`
+
+PINK IPTV platform selection is normative:
+
+### Use `dns_link`
+
+Use `dns_link` for:
+
+- Android phone;
+- Android tablet;
+- Android TV;
+- TV Box;
+- Windows.
+
+Android TV is not treated as a Samsung/LG native application.
+
+### Use `dns_link_for_samsung_lg`
+
+Use `dns_link_for_samsung_lg` exclusively for future native applications for:
+
+- Samsung Smart TV / Tizen;
+- LG Smart TV / webOS.
+
+The backend mapping preserves `dns_link` and `dns_link_for_samsung_lg` separately. PINK never automatically substitutes one for the other and never derives either destination from the other.
+
+PINK never hardcodes `zvpnm.com` or `daizsmart.com`. The hostname/subdomain returned by Mega for each subscription is authoritative for its corresponding field.
+
+Samsung/LG native applications remain outside the current v1 and require a separate future implementation order. This platform-selection contract does not change the behavior implemented in Order 001.
+
+## Live proof remediation record
+
+The completed live proof observed that the real Xtream upstream reset the connection when presented with HTTPX's default User-Agent. The same authorized endpoint responded correctly when the client used the stable User-Agent `PINK-IPTV/0.1`.
+
+The final remediation therefore fixes a stable Xtream User-Agent. It does not change the stored `dns_link`, outbound SSRF protections, pinned-peer behavior, redirect policy, or authentication semantics.
+
+No provider hostname, username, password, Mega token, session token, raw provider response, or credential-bearing URL is recorded here.

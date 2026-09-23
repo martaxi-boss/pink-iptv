@@ -50,7 +50,22 @@ Required live sequence:
 
 Evidence may include the Mega subscription id, masked/hash username evidence, SHA-256 `dns_link` evidence, scheme, mapping hash match, and the result `Xtream auth: SUCCESS`. Passwords, tokens and credential-bearing URLs are forbidden from evidence.
 
-If the authorized line/token is unavailable, Order 001 remains `LIVE_PROOF_BLOCKED`; automated PASS does not substitute for the live proof.
+Order 001 live proof is complete and passed before merge. Automated CI remains separate from live-provider proof and must never use production credentials.
+
+## Android Shell 002 automated proof
+
+Android CI uses JDK 17 and the committed Gradle wrapper. It runs `lintDebug`, all debug JVM unit tests, `assembleDebug`, compilation/assembly of Android instrumentation-test sources, and repository secret scanning without production signing or credentials.
+
+Order 002 JVM tests cover exact username/password request serialization, backend response-code mapping, login success/failure/temporary states, startup decisions with and without stored credentials, failed-login no-save behavior, invalid stored-credential clearing, logout clearing, HTTPS backend URL policy, and the encrypted credential-store contract.
+
+Compose instrumentation sources cover the Login control contract, Home navigation, and D-pad focus movement. They must compile in CI. Device execution is reported separately and is never invented when an emulator/device is unavailable.
+
+### Order 002 device matrix
+
+- phone/tablet: launch, Splash, Login, touch navigation and adaptive Home layout;
+- Android TV / TV Box: launch, D-pad-only Home navigation, strong focus state, OK activation, Back behavior and Login with remote plus system keyboard.
+
+No Order 002 device proof may use hidden production fake-login behavior. Test-only composition/fakes are allowed only in test sources.
 
 ## Future client/platform matrices retained
 

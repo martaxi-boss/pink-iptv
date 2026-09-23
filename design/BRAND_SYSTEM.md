@@ -1,6 +1,8 @@
-# PINK IPTV Brand System - Draft
+# PINK IPTV Brand System
 
-Status: concept for supervisor approval.
+Status: APPROVED AS ANDROID SHELL 002 BASELINE.
+
+The palette and visual direction below are approved for the Android Shell 002 implementation. Final distribution/store artwork and production asset certification remain pending.
 
 ## Identity
 

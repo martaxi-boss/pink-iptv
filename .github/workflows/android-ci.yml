@@ -1,0 +1,95 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - "builder/**"
+    paths:
+      - "android/**"
+      - ".github/workflows/android-ci.yml"
+      - "PROJECT_STATE.md"
+      - "README.md"
+      - "docs/UX_STRUCTURE.md"
+      - "docs/TEST_STRATEGY.md"
+      - "design/BRAND_SYSTEM.md"
+  pull_request:
+    paths:
+      - "android/**"
+      - ".github/workflows/android-ci.yml"
+      - "PROJECT_STATE.md"
+      - "README.md"
+      - "docs/UX_STRUCTURE.md"
+      - "docs/TEST_STRATEGY.md"
+      - "design/BRAND_SYSTEM.md"
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Set up Python for secret scan
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.12"
+
+      - name: Install secret scanner
+        run: python -m pip install --disable-pip-version-check detect-secrets==1.5.0
+
+      - name: Secret scan
+        run: |
+          detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.gradle|build|\.pytest_cache|\.ruff_cache)/' > /tmp/detect-secrets.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("/tmp/detect-secrets.json").read_text())
+          findings = [
+              (path, item.get("line_number"), item.get("type"))
+              for path, items in report.get("results", {}).items()
+              for item in items
+          ]
+          if findings:
+              for path, line, kind in findings:
+                  print(f"potential secret: {path}:{line} ({kind})")
+              raise SystemExit(1)
+          print("detect-secrets: no findings")
+          PY
+
+      - name: Install Android SDK 37
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37" "build-tools;36.0.0"
+
+      - name: Android lint
+        working-directory: android
+        run: ./gradlew --no-daemon lintDebug
+
+      - name: Android JVM tests
+        working-directory: android
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Compile Android instrumentation tests
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebugAndroidTest

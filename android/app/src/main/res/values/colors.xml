@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pink_primary">#FF2D8D</color>
+    <color name="magenta_deep">#D4146C</color>
+    <color name="pink_soft">#FF8FC1</color>
+    <color name="ink">#141722</color>
+    <color name="surface_dark">#1C2030</color>
+    <color name="surface_raised">#252A3A</color>
+    <color name="blush">#FDF7FB</color>
+    <color name="white">#FFFFFF</color>
+</resources>

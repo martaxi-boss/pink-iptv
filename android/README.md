@@ -7,14 +7,14 @@ Order 002 implements the PINK IPTV application shell for phone/tablet, Android T
 - Kotlin 2.4.10
 - Android Gradle Plugin 9.4.0
 - Gradle 9.6.0
-- Jetpack Compose / Material 3 with Compose BOM 2026.09.00
+- Jetpack Compose 1.11.4 / Material 3 1.4.0 with Compose BOM 2026.06.01
 - Navigation Compose 2.9.8
 - Android ViewModel / StateFlow
 - DataStore Preferences
 - Android Keystore AES/GCM
 - OkHttp 5.5.0 for the PINK Backend session endpoint
 
-SDK contract: compileSdk 37, targetSdk 37, minSdk 23, JDK 17.
+SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17. API 36 is used as the stable non-preview SDK available in the CI environment; Order 002 does not opt into Android 17 preview SDK tooling.
 
 ## Order 002 scope
 

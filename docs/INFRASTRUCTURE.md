@@ -1,20 +1,21 @@
 # Infrastructure Plan
 
-## Current DigitalOcean baseline
+## Current OVH baseline
 
-Audited 2026-09-23:
+Audited after the controlled migration on 2026-09-23:
+- OVHcloud VPS in Gravelines, France
 - Ubuntu 24.04 LTS
-- London region
-- 1 vCPU
-- 1 GB RAM
-- 25 GB plan disk
-- about 13 GB used / 11 GB free on root filesystem
-- 4 GB swap configured
-- existing Nginx, PostgreSQL, Gunicorn, Python and Node processes
-- current load low
-- no DigitalOcean backups enabled at audit time
+- 4 vCores
+- 8 GB RAM
+- about 72 GB root filesystem
+- OVH daily backup available on the VPS plan
+- Nginx, PostgreSQL, Python, PM2 and Remote Desktop Commander installed
+- UFW and Fail2ban enabled
+- PINK backend staging runs only on `127.0.0.1:8010`
+- PINK public launch remains unauthorized
+- DigitalOcean is no longer an application runtime dependency
 
-## Use of current Droplet
+## Use of current OVH VPS
 
 Allowed for:
 - backend development/staging
@@ -31,7 +32,7 @@ Not approved yet for:
 
 ## Target production topology
 
-PINK Backend Droplet:
+PINK Backend VPS:
 - HTTPS API
 - PostgreSQL
 - Mega adapter

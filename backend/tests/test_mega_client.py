@@ -36,6 +36,15 @@ def test_retrieve_by_id_applies_bearer_without_logging_secret(
     assert mega_payload["password"] not in caplog.text
 
 
+def test_client_rejects_non_https_base() -> None:
+    token = "test-token"  # pragma: allowlist secret
+    with pytest.raises(ValueError, match="must be HTTPS"):
+        MegaOTTClient(
+            base_url="http://mega.example.com/api",
+            token=token,
+        )
+
+
 def test_malformed_response_rejected(mega_payload) -> None:
     bad = dict(mega_payload)
     bad.pop("dns_link")

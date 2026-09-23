@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
 from pydantic import BaseModel, ConfigDict, SecretStr, ValidationError, field_validator
@@ -76,6 +77,18 @@ class MegaOTTClient:
         timeout_seconds: float = 10.0,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
+        parsed = urlsplit(base_url)
+        if (
+            parsed.scheme.casefold() != "https"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError(
+                "Mega base URL must be HTTPS with no credentials, query, or fragment"
+            )
         self._base_url = base_url.rstrip("/")
         self._client = httpx.Client(
             headers={

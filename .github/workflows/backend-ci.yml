@@ -61,13 +61,12 @@ jobs:
         working-directory: backend
         run: python -m pip install --disable-pip-version-check -e ".[dev]"
 
-      - name: Ruff lint
+      - name: Ruff diagnostic
         working-directory: backend
-        run: ruff check .
-
-      - name: Ruff format check
-        working-directory: backend
-        run: ruff format --check .
+        run: |
+          ruff check --fix .
+          ruff format .
+          git diff --exit-code
 
       - name: Alembic upgrade from clean PostgreSQL
         working-directory: backend

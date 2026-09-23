@@ -8,99 +8,111 @@
 4. PostgreSQL
 5. Mega OTT adapter
 6. Xtream client layer
-7. WireGuard control plane
-8. WireGuard gateway
+7. WireGuard control plane (later phase)
+8. WireGuard gateway (later phase)
 9. GitHub repository and CI/CD
 
-## Runtime flow
+Order 001 implements only items 3-6 plus CI.
 
-Client
-  -> PINK Backend over HTTPS
-     -> resolves local subscription mapping
-     -> optionally refreshes metadata from Mega OTT by subscription id
-     -> returns signed client configuration
+## Order 001 runtime path
 
-Client
-  -> WireGuard Gateway when VPN is enabled
-  -> assigned Xtream dns_link
-  -> player_api.php/catalog/EPG/stream endpoints
+```text
+known mega_subscription_id
+  -> Mega GET /v1/subscriptions/{id}
+  -> validate returned id and type=M3U
+  -> extract exact username/dns_link/dns_link_for_samsung_lg/expiring_at
+  -> persist local mapping (never password)
 
-The PINK Backend must never relay video streams.
+client username + password
+  -> local mapping lookup by exact username
+  -> exact stored dns_link
+  -> outbound destination safety checks
+  -> <dns_link>/player_api.php
+  -> Xtream authentication
+  -> classified PINK response
+```
+
+The backend does not search Mega by username. No such search endpoint is assumed or implemented.
 
 ## Subscription mapping
 
-Canonical PINK record:
+Canonical Order 001 record:
+
 - id
-- mega_subscription_id
-- username
-- dns_link
-- dns_link_samsung_lg optional
-- expiring_at
-- active/status cache
+- mega_subscription_id (unique, required)
+- username (unique, required and preserved exactly)
+- dns_link (required, authoritative)
+- dns_link_samsung_lg (optional)
+- expiring_at (optional, timezone-aware)
 - last_synced_at
-- created_at/updated_at
+- created_at
+- updated_at
 
-Do not store the Xtream password in the backend unless a later audited requirement proves it necessary.
+There is deliberately no password, Mega token, WireGuard key, or invented active/status field.
 
-For remembered login, client credentials must use Android Keystore / Windows Credential Locker equivalents.
+## Session resolve
 
-## Proposed backend endpoints
+`POST /v1/session/resolve` accepts only username and password. Unknown username and wrong password are intentionally indistinguishable to the caller.
 
-POST /v1/session/resolve
-- input: username + password + installation_id
-- resolves username -> subscription mapping
-- refreshes Mega metadata by known subscription id when appropriate
-- validates the supplied credentials against the assigned Xtream endpoint
-- returns short-lived signed session/config
+Functional codes:
 
-GET /v1/app-config
-- minimum supported version
-- feature flags
-- VPN policy
-- support/maintenance message
+- `SUCCESS`: Xtream authenticated.
+- `INVALID_CREDENTIALS`: no local mapping, wrong password, or `auth=0` without a more specific proven state.
+- `EXPIRED`: authoritative local expiry has passed or Xtream explicitly reports expiry.
+- `DISABLED`: only an explicit upstream disabled/deactivated/banned/blocked state.
+- `DNS_UNREACHABLE`: real host/DNS resolution failure.
+- `UPSTREAM_ERROR`: timeout, TLS/connection failure, unexpected HTTP response, malformed JSON/schema, or other unclassified upstream failure.
 
-POST /v1/vpn/enroll
-- input: authenticated installation + WireGuard public key
-- returns peer assignment and gateway config
-- never receives client WireGuard private key
+The response never returns raw exceptions and has `Cache-Control: no-store`.
 
-POST /v1/vpn/heartbeat
-- optional health/telemetry without viewing-history payloads
+## Outbound URL safety
 
-POST /v1/session/logout
-- revokes server session; does not delete provider line
+Before Xtream authentication, `dns_link` must use `http` or `https`, contain a valid hostname, and contain no embedded credentials, query, or fragment. Localhost, loopback, link-local, private/reserved literal addresses, local hostnames, and hostnames resolving to non-public addresses are rejected. Redirects are not followed.
 
-## Client modules
+The only generated path is `player_api.php`; the provider host is never guessed or replaced.
 
-Auth
-Catalog
-LiveTV
-VOD
-Series
-EPG
-Search
-Favorites
-History
-Player
-VPN
-Settings
-Telemetry/Error reporting
+## HTTP/TLS gate
 
-## Platform implementation
+Mega documentation can return an HTTP `dns_link`. Order 001 preserves the exact scheme received. It does not upgrade HTTP to HTTPS automatically, even if a separate credential-free TLS probe would succeed.
 
-Android:
-- Kotlin
-- Jetpack Compose
-- Media3 / ExoPlayer
-- Android VpnService + audited WireGuard integration
-- Room/DataStore for local state
+Production cleartext/TLS policy remains a Supervisor gate before Android networking is implemented.
 
-Windows:
-- .NET 8
-- WinUI 3
-- robust media engine such as LibVLCSharp, subject to builder validation
-- Windows Credential Locker
-- official/audited WireGuard Windows integration
-- SQLite/local settings
+## Sessions
 
-Shared behavior is defined by API contracts and UX specs rather than forcing one UI runtime across both platforms.
+Successful resolution may return a signed PINK session token with a maximum five-minute TTL. The token subject references only the internal mapping id. It contains no Mega token, customer password, Mega subscription id, or other provider secret.
+
+## Non-responsibility
+
+The PINK Backend never relays IPTV video streams. Android, Windows, player and VPN implementation are outside Order 001.
+
+## Global client architecture retained
+
+The full approved architecture remains broader than Order 001:
+
+- Android client;
+- Windows client;
+- PINK Backend API;
+- PostgreSQL;
+- Mega OTT adapter;
+- Xtream client layer;
+- WireGuard control plane in a later phase;
+- WireGuard gateway in a later phase;
+- shared logical contracts expressed through backend API contracts and UX specifications.
+
+### Client modules
+
+Auth, Catalog, Live TV, VOD, Series, EPG, Search, Favorites, History, Player, VPN, Settings, and operational error reporting remain the logical product modules. Order 001 implements only the backend authentication/mapping proof and does not construct these client modules.
+
+### Android stack
+
+The approved later Android stack remains Kotlin, Jetpack Compose, Media3/ExoPlayer, platform secure storage, Room/DataStore where appropriate, and separately audited Android VPN/WireGuard integration.
+
+### Windows stack
+
+The approved later Windows stack remains .NET 8, WinUI 3, Windows Credential Locker, a validated media engine, local settings/storage where appropriate, and separately audited WireGuard Windows integration.
+
+## R1 outbound connection architecture
+
+`dns_link` is an origin only: empty path or `/` is accepted and PINK alone appends `/player_api.php`. Scheme, hostname, and valid port are preserved.
+
+DNS resolution produces the public IP set for the attempt. The outbound network backend then connects to a validated IP literal instead of resolving the hostname again. The connected peer is verified against that pinned public IP before HTTP bytes are sent. HTTPS still uses the original hostname for SNI and certificate verification, while HTTP retains the original `Host` header. Redirects remain disabled.

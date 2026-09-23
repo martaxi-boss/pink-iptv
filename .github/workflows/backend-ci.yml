@@ -1,0 +1,99 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - "builder/**"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+      - ".env.example"
+      - "docs/ARCHITECTURE.md"
+      - "docs/MEGA_OTT_INTEGRATION.md"
+      - "docs/SECURITY.md"
+      - "docs/TEST_STRATEGY.md"
+      - "docs/ROADMAP.md"
+      - "PROJECT_STATE.md"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres # pragma: allowlist secret
+          POSTGRES_DB: pink_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pink_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:5432/pink_test # pragma: allowlist secret
+      SESSION_SIGNING_KEY: ci-test-signing-key-32-bytes-minimum-value # pragma: allowlist secret
+      SESSION_TTL_SECONDS: "300"
+      MEGA_OTT_API_BASE: https://megaott.net/api
+      MEGA_OTT_API_TOKEN: ci-test-token # pragma: allowlist secret
+      PINK_POSTGRES_TEST: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Install dependencies
+        working-directory: backend
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+
+      - name: Ruff lint
+        working-directory: backend
+        run: ruff check .
+
+      - name: Ruff format check
+        working-directory: backend
+        run: ruff format --check .
+
+      - name: Alembic upgrade from clean PostgreSQL
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Backend tests
+        working-directory: backend
+        run: pytest
+
+      - name: Secret scan
+        run: |
+          detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.pytest_cache|\.ruff_cache)/' > /tmp/detect-secrets.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('/tmp/detect-secrets.json').read_text())
+          results = report.get('results', {})
+          findings = [
+              (path, item.get('line_number'), item.get('type'))
+              for path, items in results.items()
+              for item in items
+          ]
+          if findings:
+              for path, line, kind in findings:
+                  print(f"potential secret: {path}:{line} ({kind})")
+              raise SystemExit(1)
+          print('detect-secrets: no findings')
+          PY

@@ -1,0 +1,135 @@
+import logging
+from datetime import datetime
+from typing import Any
+from urllib.parse import urlsplit
+
+import httpx
+from pydantic import BaseModel, ConfigDict, SecretStr, ValidationError, field_validator
+
+logger = logging.getLogger(__name__)
+
+
+class MegaClientError(RuntimeError):
+    pass
+
+
+class MegaUpstreamError(MegaClientError):
+    pass
+
+
+class MegaProtocolError(MegaClientError):
+    pass
+
+
+class MegaSubscription(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    type: str
+    id: int
+    username: str
+    password: SecretStr | None = None
+    expiring_at: datetime | None = None
+    dns_link: str
+    dns_link_for_samsung_lg: str | None = None
+
+    @field_validator("type")
+    @classmethod
+    def require_m3u(cls, value: str) -> str:
+        if value.casefold() != "m3u":
+            raise ValueError("subscription is not M3U/Xtream-compatible")
+        return value
+
+    @field_validator("username", "dns_link")
+    @classmethod
+    def require_non_empty(cls, value: str) -> str:
+        if not value:
+            raise ValueError("required field is empty")
+        return value
+
+    @field_validator("expiring_at", mode="before")
+    @classmethod
+    def parse_mega_timestamp(cls, value: Any) -> Any:
+        if value in (None, ""):
+            return None
+        if isinstance(value, datetime):
+            parsed = value
+        elif isinstance(value, str):
+            try:
+                parsed = datetime.strptime(value, "%Y-%m-%d %H:%M:%S GMT%z")
+            except ValueError:
+                try:
+                    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except ValueError as exc:
+                    raise ValueError("invalid expiring_at timestamp") from exc
+        else:
+            return value
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            raise ValueError("expiring_at must be timezone-aware")
+        return parsed
+
+
+class MegaOTTClient:
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        token: str,
+        timeout_seconds: float = 10.0,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        parsed = urlsplit(base_url)
+        if (
+            parsed.scheme.casefold() != "https"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError("Mega base URL must be HTTPS with no credentials, query, or fragment")
+        self._base_url = base_url.rstrip("/")
+        self._client = httpx.Client(
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+            timeout=httpx.Timeout(timeout_seconds),
+            follow_redirects=False,
+            transport=transport,
+            trust_env=False,
+        )
+
+    def close(self) -> None:
+        self._client.close()
+
+    def __enter__(self) -> "MegaOTTClient":
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        self.close()
+
+    def get_subscription(self, mega_subscription_id: int) -> MegaSubscription:
+        url = f"{self._base_url}/v1/subscriptions/{mega_subscription_id}"
+        try:
+            response = self._client.get(url)
+        except (httpx.TimeoutException, httpx.RequestError) as exc:
+            raise MegaUpstreamError("Mega subscription retrieval failed") from exc
+
+        if response.status_code >= 400:
+            raise MegaUpstreamError("Mega subscription retrieval failed")
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise MegaProtocolError("Mega returned invalid JSON") from exc
+        try:
+            subscription = MegaSubscription.model_validate(payload)
+        except ValidationError as exc:
+            raise MegaProtocolError("Mega returned an invalid subscription schema") from exc
+        if subscription.id != mega_subscription_id:
+            raise MegaProtocolError("Mega subscription id mismatch")
+
+        logger.info(
+            "Mega subscription metadata retrieved for id=%s",
+            mega_subscription_id,
+        )
+        return subscription

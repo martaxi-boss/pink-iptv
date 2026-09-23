@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-09-23
-Phase: Architecture / pre-build
+Phase: Phase 1 — Backend / Mega Proof
 Public launch: NO
 
 ## Governance
@@ -13,37 +13,80 @@ BUILDER: implements only approved orders and reports evidence.
 ## Current decisions
 
 - Product name: PINK IPTV.
-- Original pink/magenta visual identity.
-- Functional navigation equivalent to the common IPTV-player pattern, with no copied source code/assets.
-- Client authentication UX: Username + Password only.
-- Client protocol scope: Xtream-style API only.
-- Mega OTT reseller API secrets stay server-side.
-- Per-line dns_link is resolved by PINK backend data, never guessed from a base domain.
-- WireGuard is the preferred VPN technology.
-- VPN should auto-connect as part of the app experience after initial OS permission/setup.
-- Android first; Windows follows the same backend/contracts.
-- GitHub is source of truth for code and documentation.
-- DigitalOcean is runtime infrastructure, not the source of truth.
+- Customer login remains Username + Password only.
+- Client scope remains Xtream-style only; no user DNS/M3U/MAG/Enigma input.
+- Existing-line Mega bootstrap for Order 001 is by known `mega_subscription_id` only.
+- No Mega username-search endpoint is assumed.
+- Mega API token remains backend-only.
+- Mega response password and customer Xtream password are never persisted.
+- Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
+- Local mapping has no invented provider status field.
+- WireGuard remains a later phase and is not implemented by Order 001.
+- Android and Windows remain later phases.
+- GitHub remains source of truth.
 
-## Infrastructure observed
+## Order 001 implementation state
 
-Existing DigitalOcean Droplet:
-- Ubuntu 24.04 LTS
-- region: London
-- 1 vCPU
-- 1 GB RAM
-- 25 GB plan disk, about 11 GB free at audit
-- existing Nginx/PostgreSQL/Gunicorn/Python/Node workloads
-- suitable for development/POC only
-- production VPN should later move to a dedicated gateway
-- backups were not enabled at the time of audit
+Backend implementation includes:
 
-## Open technical gates
+- FastAPI session-resolve endpoint;
+- PostgreSQL/SQLAlchemy mapping model;
+- Alembic initial migration;
+- Mega GET-subscription-by-id adapter;
+- internal idempotent known-ID import CLI;
+- outbound `dns_link` safety validation;
+- Xtream `player_api.php` authentication/classification;
+- maximum five-minute signed PINK session;
+- logging redaction controls/tests;
+- PostgreSQL migration CI and secret scanning.
 
-1. Confirm the production workflow that populates username -> Mega subscription id -> dns_link for every line.
-2. Prove one real Xtream login through the assigned dns_link.
-3. Prove one WireGuard client through the existing Droplet without disrupting current services.
-4. Supervisor approval of the original PINK design system and screen map.
-5. Define production bandwidth plan before onboarding real VPN users.
+## Mega / Xtream proof status
 
-Implementation status: NOT STARTED.
+LIVE PROOF: PASSED.
+
+Sanitized live-proof record:
+
+- live Mega retrieve-by-ID: PASS;
+- `mega_subscription_id`: `10291720`;
+- local mapping persistence and mapping match: PASS;
+- Mega password persistence: NO;
+- Xtream correct credentials: `SUCCESS`;
+- Xtream deliberately incorrect test credential: `INVALID_CREDENTIALS`;
+- final remediation: the observed upstream required a stable Xtream User-Agent; the approved implementation uses `PINK-IPTV/0.1`;
+- final implementation CI: PASS;
+- public launch: NO;
+- PR #2: NOT MERGED.
+
+No username, customer password, Mega token, provider hostname, session token, or credential-bearing URL is recorded in this state document.
+
+## Remaining technical gates
+
+1. Supervisor audit/merge decision for Order 001.
+2. Only after the Order 001 merge decision: issue any later Android/VPN/Windows order explicitly.
+
+Implementation status: FOUNDATION / MEGA PROOF 001 TECHNICALLY COMPLETE; awaiting only Supervisor decision/merge for PR #2.
+
+## Infrastructure observed and retained
+
+Existing DigitalOcean development/POC environment observed in the architecture baseline:
+
+- Ubuntu 24.04 LTS;
+- London region;
+- 1 vCPU / 1 GB RAM;
+- 25 GB plan disk with approximately 11 GB free at the baseline audit;
+- existing Nginx, PostgreSQL, Gunicorn, Python, and Node workloads.
+
+This environment remains POC/staging only. Production VPN use has not been approved, and the production design still expects a dedicated VPN gateway once capacity/isolation are proven. No DigitalOcean service, firewall, routing, deployment, or VPN mutation is part of Order 001/R1.
+
+## Future project gates retained
+
+After the Supervisor merge decision, separate orders are still required for:
+
+1. original PINK design-system/screen-map approval where not already closed;
+2. Android shell and later Android Xtream/player work;
+3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
+4. production VPN capacity/isolation and bandwidth planning;
+5. Windows implementation;
+6. hardening/distribution and explicit public-launch approval.
+
+Public launch remains: NO.

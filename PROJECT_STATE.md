@@ -51,7 +51,7 @@ Sanitized live-proof record:
 - local mapping persistence and mapping match: PASS;
 - Mega password persistence: NO;
 - Xtream correct credentials: `SUCCESS`;
-- Xtream wrong password: `INVALID_CREDENTIALS`;
+- Xtream deliberately incorrect test credential: `INVALID_CREDENTIALS`;
 - final remediation: the observed upstream required a stable Xtream User-Agent; the approved implementation uses `PINK-IPTV/0.1`;
 - final implementation CI: PASS;
 - public launch: NO;

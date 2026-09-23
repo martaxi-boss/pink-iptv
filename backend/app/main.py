@@ -15,9 +15,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="PINK IPTV Backend", version="0.1.0")
     app.state.settings = runtime_settings
-    app.state.session_factory = build_session_factory(
-        runtime_settings.database_url
-    )
+    app.state.session_factory = build_session_factory(runtime_settings.database_url)
     app.state.xtream_client_factory = XtreamClient
 
     @app.post("/v1/session/resolve", response_model=ResolveResponse)
@@ -28,9 +26,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         session: Session = Depends(get_db),
     ) -> ResolveResponse:
         response.headers["Cache-Control"] = "no-store"
-        xtream_client: XtreamClient = (
-            request.app.state.xtream_client_factory()
-        )
+        xtream_client: XtreamClient = request.app.state.xtream_client_factory()
         try:
             return SessionResolver(
                 session,

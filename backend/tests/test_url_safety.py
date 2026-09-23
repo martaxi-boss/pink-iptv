@@ -53,9 +53,7 @@ def test_redirect_is_not_followed() -> None:
         calls.append(str(request.url))
         return httpx.Response(
             302,
-            headers={
-                "Location": "https://other.example.com/player_api.php"
-            },
+            headers={"Location": "https://other.example.com/player_api.php"},
         )
 
     client = XtreamClient(

@@ -15,9 +15,7 @@ def _client(payload):
     return MegaOTTClient(
         base_url="https://megaott.net/api",
         token=token,
-        transport=httpx.MockTransport(
-            lambda _request: httpx.Response(200, json=payload)
-        ),
+        transport=httpx.MockTransport(lambda _request: httpx.Response(200, json=payload)),
     )
 
 
@@ -49,9 +47,7 @@ def test_import_expiry_is_timezone_aware(db, mega_payload) -> None:
         parsed = client.get_subscription(121)
     assert parsed.expiring_at is not None
     assert parsed.expiring_at.tzinfo is not None
-    assert parsed.expiring_at.utcoffset() == UTC.utcoffset(
-        parsed.expiring_at
-    )
+    assert parsed.expiring_at.utcoffset() == UTC.utcoffset(parsed.expiring_at)
     assert SubscriptionMapping.__table__.c.expiring_at.type.timezone is True
 
 

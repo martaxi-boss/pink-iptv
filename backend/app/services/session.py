@@ -27,9 +27,7 @@ class SessionResolver:
 
     def resolve(self, *, username: str, password: str) -> ResolveResponse:
         mapping = self._session.scalar(
-            select(SubscriptionMapping).where(
-                SubscriptionMapping.username == username
-            )
+            select(SubscriptionMapping).where(SubscriptionMapping.username == username)
         )
         if mapping is None:
             return ResolveResponse(code=ResolveCode.INVALID_CREDENTIALS)

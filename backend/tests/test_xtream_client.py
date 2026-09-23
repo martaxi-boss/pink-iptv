@@ -107,9 +107,7 @@ def test_dns_resolution_failure_classified() -> None:
         raise DNSResolutionFailure("no dns")
 
     client = XtreamClient(
-        transport=httpx.MockTransport(
-            lambda _request: httpx.Response(200)
-        ),
+        transport=httpx.MockTransport(lambda _request: httpx.Response(200)),
         resolver=failed_resolver,
     )
     password = "p"  # pragma: allowlist secret

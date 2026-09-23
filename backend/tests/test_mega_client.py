@@ -39,9 +39,7 @@ def test_retrieve_by_id_applies_bearer_without_logging_secret(
 def test_malformed_response_rejected(mega_payload) -> None:
     bad = dict(mega_payload)
     bad.pop("dns_link")
-    transport = httpx.MockTransport(
-        lambda _request: httpx.Response(200, json=bad)
-    )
+    transport = httpx.MockTransport(lambda _request: httpx.Response(200, json=bad))
     token = "test-token"  # pragma: allowlist secret
     with MegaOTTClient(
         base_url="https://megaott.net/api",
@@ -95,9 +93,7 @@ def test_timeout_is_sanitized() -> None:
 def test_id_mismatch_fails_closed(mega_payload) -> None:
     payload = dict(mega_payload)
     payload["id"] = 999
-    transport = httpx.MockTransport(
-        lambda _request: httpx.Response(200, json=payload)
-    )
+    transport = httpx.MockTransport(lambda _request: httpx.Response(200, json=payload))
     token = "test-token"  # pragma: allowlist secret
     with MegaOTTClient(
         base_url="https://megaott.net/api",
@@ -111,9 +107,7 @@ def test_id_mismatch_fails_closed(mega_payload) -> None:
 def test_non_m3u_subscription_rejected(mega_payload) -> None:
     payload = dict(mega_payload)
     payload["type"] = "MAG"
-    transport = httpx.MockTransport(
-        lambda _request: httpx.Response(200, json=payload)
-    )
+    transport = httpx.MockTransport(lambda _request: httpx.Response(200, json=payload))
     token = "test-token"  # pragma: allowlist secret
     with MegaOTTClient(
         base_url="https://megaott.net/api",

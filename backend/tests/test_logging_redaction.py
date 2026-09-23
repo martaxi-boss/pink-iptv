@@ -44,9 +44,7 @@ def test_mega_token_and_raw_password_never_appear_in_logs(
 ) -> None:
     token = "mega-token"  # pragma: allowlist secret
     configure_logging()
-    transport = httpx.MockTransport(
-        lambda _request: httpx.Response(200, json=mega_payload)
-    )
+    transport = httpx.MockTransport(lambda _request: httpx.Response(200, json=mega_payload))
     with caplog.at_level(logging.DEBUG):
         with MegaOTTClient(
             base_url="https://megaott.net/api",

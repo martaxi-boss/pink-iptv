@@ -38,16 +38,10 @@ def import_subscription(
         )
     )
     username_owner = session.scalar(
-        select(SubscriptionMapping).where(
-            SubscriptionMapping.username == subscription.username
-        )
+        select(SubscriptionMapping).where(SubscriptionMapping.username == subscription.username)
     )
-    if username_owner is not None and (
-        mapping is None or username_owner.id != mapping.id
-    ):
-        raise MappingConflictError(
-            "Mega username is already mapped to another subscription"
-        )
+    if username_owner is not None and (mapping is None or username_owner.id != mapping.id):
+        raise MappingConflictError("Mega username is already mapped to another subscription")
 
     if mapping is None:
         mapping = SubscriptionMapping(
@@ -70,9 +64,7 @@ def import_subscription(
         session.commit()
     except IntegrityError as exc:
         session.rollback()
-        raise MappingConflictError(
-            "Subscription mapping uniqueness conflict"
-        ) from exc
+        raise MappingConflictError("Subscription mapping uniqueness conflict") from exc
     session.refresh(mapping)
     return mapping
 

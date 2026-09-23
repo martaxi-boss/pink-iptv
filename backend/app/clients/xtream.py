@@ -93,13 +93,9 @@ class XtreamClient:
         try:
             safe_base = validate_dns_link(dns_link, resolver=self._resolver)
         except DNSResolutionFailure as exc:
-            raise XtreamDNSUnreachable(
-                "Xtream host could not be resolved"
-            ) from exc
+            raise XtreamDNSUnreachable("Xtream host could not be resolved") from exc
         except UnsafeOutboundURL as exc:
-            raise XtreamUpstreamError(
-                "Xtream destination failed safety validation"
-            ) from exc
+            raise XtreamUpstreamError("Xtream destination failed safety validation") from exc
 
         url = player_api_url(safe_base)
         try:
@@ -111,9 +107,7 @@ class XtreamClient:
             raise XtreamUpstreamError("Xtream request timed out") from exc
         except httpx.RequestError as exc:
             if _looks_like_dns_error(exc):
-                raise XtreamDNSUnreachable(
-                    "Xtream host could not be resolved"
-                ) from exc
+                raise XtreamDNSUnreachable("Xtream host could not be resolved") from exc
             raise XtreamUpstreamError("Xtream connection failed") from exc
 
         if 300 <= response.status_code < 400:
@@ -121,17 +115,13 @@ class XtreamClient:
         if response.status_code in {401, 403}:
             return XtreamAuthResult(code="INVALID_CREDENTIALS")
         if response.status_code >= 400:
-            raise XtreamUpstreamError(
-                "Xtream returned an unexpected HTTP status"
-            )
+            raise XtreamUpstreamError("Xtream returned an unexpected HTTP status")
 
         try:
             payload = response.json()
         except ValueError as exc:
             raise XtreamUpstreamError("Xtream returned invalid JSON") from exc
-        if not isinstance(payload, dict) or not isinstance(
-            payload.get("user_info"), dict
-        ):
+        if not isinstance(payload, dict) or not isinstance(payload.get("user_info"), dict):
             raise XtreamUpstreamError("Xtream response schema is invalid")
 
         user_info = payload["user_info"]
@@ -154,10 +144,7 @@ class XtreamClient:
             raise XtreamUpstreamError("Xtream authentication field is invalid")
 
         account_expires_at = _parse_epoch(user_info.get("exp_date"))
-        if (
-            account_expires_at is not None
-            and account_expires_at <= datetime.now(UTC)
-        ):
+        if account_expires_at is not None and account_expires_at <= datetime.now(UTC):
             return XtreamAuthResult(
                 code="EXPIRED",
                 account_expires_at=account_expires_at,

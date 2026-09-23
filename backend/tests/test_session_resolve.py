@@ -32,9 +32,7 @@ def test_success_returns_short_session_without_credentials(
     future_mapping,
     settings,
 ) -> None:
-    fake = FakeXtream(
-        SimpleNamespace(code="SUCCESS", account_expires_at=None)
-    )
+    fake = FakeXtream(SimpleNamespace(code="SUCCESS", account_expires_at=None))
     password = "customer-password"  # pragma: allowlist secret
     response = SessionResolver(db, fake, settings).resolve(
         username=future_mapping.username,
@@ -64,9 +62,7 @@ def test_unknown_username_and_wrong_password_are_indistinguishable(
     future_mapping,
     settings,
 ) -> None:
-    unknown_fake = FakeXtream(
-        SimpleNamespace(code="SUCCESS", account_expires_at=None)
-    )
+    unknown_fake = FakeXtream(SimpleNamespace(code="SUCCESS", account_expires_at=None))
     unknown_password = "anything"  # pragma: allowlist secret
     unknown = SessionResolver(db, unknown_fake, settings).resolve(
         username="missing",
@@ -84,13 +80,17 @@ def test_unknown_username_and_wrong_password_are_indistinguishable(
         username=future_mapping.username,
         password=wrong_password,
     )
-    assert unknown.model_dump() == wrong.model_dump() == {
-        "code": ResolveCode.INVALID_CREDENTIALS,
-        "session_token": None,
-        "session_expires_at": None,
-        "xtream_base_url": None,
-        "account_expires_at": None,
-    }
+    assert (
+        unknown.model_dump()
+        == wrong.model_dump()
+        == {
+            "code": ResolveCode.INVALID_CREDENTIALS,
+            "session_token": None,
+            "session_expires_at": None,
+            "xtream_base_url": None,
+            "account_expires_at": None,
+        }
+    )
     assert unknown_fake.calls == []
 
 
@@ -107,9 +107,7 @@ def test_local_authoritative_expiry_short_circuits_xtream(
     )
     db.add(mapping)
     db.commit()
-    fake = FakeXtream(
-        SimpleNamespace(code="SUCCESS", account_expires_at=None)
-    )
+    fake = FakeXtream(SimpleNamespace(code="SUCCESS", account_expires_at=None))
     password = "p"  # pragma: allowlist secret
     result = SessionResolver(db, fake, settings).resolve(
         username="expired-user",
@@ -124,9 +122,7 @@ def test_explicit_disabled_passes_through(
     future_mapping,
     settings,
 ) -> None:
-    fake = FakeXtream(
-        SimpleNamespace(code="DISABLED", account_expires_at=None)
-    )
+    fake = FakeXtream(SimpleNamespace(code="DISABLED", account_expires_at=None))
     password = "p"  # pragma: allowlist secret
     result = SessionResolver(db, fake, settings).resolve(
         username=future_mapping.username,

@@ -22,9 +22,7 @@ class Settings(BaseSettings):
         if parsed.scheme.lower() != "https" or not parsed.hostname:
             raise ValueError("MEGA_OTT_API_BASE must be an HTTPS URL with a hostname")
         if parsed.username or parsed.password or parsed.query or parsed.fragment:
-            raise ValueError(
-                "MEGA_OTT_API_BASE must not contain credentials, query, or fragment"
-            )
+            raise ValueError("MEGA_OTT_API_BASE must not contain credentials, query, or fragment")
         return value.rstrip("/")
 
     @model_validator(mode="after")
@@ -32,9 +30,7 @@ class Settings(BaseSettings):
         if self.app_env.casefold() != "test":
             signing_key = self.session_signing_key.get_secret_value().strip()
             if not signing_key or signing_key == "change-me":
-                raise ValueError(
-                    "SESSION_SIGNING_KEY must be set to a non-default value"
-                )
+                raise ValueError("SESSION_SIGNING_KEY must be set to a non-default value")
             if len(signing_key.encode()) < 32:
                 raise ValueError("SESSION_SIGNING_KEY must be at least 32 bytes")
         return self
@@ -44,9 +40,7 @@ class Settings(BaseSettings):
             raise RuntimeError("Mega integration requires MEGA_OTT_API_TOKEN")
         token = self.mega_ott_api_token.get_secret_value().strip()
         if not token or token == "change-me":
-            raise RuntimeError(
-                "Mega integration requires a non-default MEGA_OTT_API_TOKEN"
-            )
+            raise RuntimeError("Mega integration requires a non-default MEGA_OTT_API_TOKEN")
         return token
 
 

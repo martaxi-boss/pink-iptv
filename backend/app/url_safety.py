@@ -34,9 +34,7 @@ def _validate_hostname_syntax(hostname: str) -> None:
     if not candidate or len(candidate) > 253:
         raise UnsafeOutboundURL("invalid hostname")
     lowered = candidate.casefold()
-    if lowered == "localhost" or lowered.endswith(
-        (".localhost", ".local", ".internal", ".lan")
-    ):
+    if lowered == "localhost" or lowered.endswith((".localhost", ".local", ".internal", ".lan")):
         raise UnsafeOutboundURL("local hostname is not allowed")
     try:
         ipaddress.ip_address(candidate)
@@ -88,9 +86,7 @@ def validate_dns_link(
         if any(not _is_public_address(address) for address in addresses):
             raise UnsafeOutboundURL("resolved destination is not public")
 
-    normalized = urlunsplit(
-        (parsed.scheme, parsed.netloc, parsed.path.rstrip("/"), "", "")
-    )
+    normalized = urlunsplit((parsed.scheme, parsed.netloc, parsed.path.rstrip("/"), "", ""))
     return normalized.rstrip("/")
 
 

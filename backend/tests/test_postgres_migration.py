@@ -11,8 +11,7 @@ def test_alembic_schema_on_real_postgres() -> None:
     database_url = os.environ["DATABASE_URL"]
     engine = create_engine(database_url)
     columns = {
-        column["name"]: column
-        for column in inspect(engine).get_columns("subscription_mappings")
+        column["name"]: column for column in inspect(engine).get_columns("subscription_mappings")
     }
     assert set(columns) == {
         "id",
@@ -33,9 +32,7 @@ def test_alembic_schema_on_real_postgres() -> None:
 
     unique_sets = {
         tuple(sorted(constraint["column_names"]))
-        for constraint in inspect(engine).get_unique_constraints(
-            "subscription_mappings"
-        )
+        for constraint in inspect(engine).get_unique_constraints("subscription_mappings")
     }
     assert ("mega_subscription_id",) in unique_sets
     assert ("username",) in unique_sets

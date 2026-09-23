@@ -113,9 +113,7 @@ class MegaOTTClient:
         try:
             subscription = MegaSubscription.model_validate(payload)
         except ValidationError as exc:
-            raise MegaProtocolError(
-                "Mega returned an invalid subscription schema"
-            ) from exc
+            raise MegaProtocolError("Mega returned an invalid subscription schema") from exc
         if subscription.id != mega_subscription_id:
             raise MegaProtocolError("Mega subscription id mismatch")
 

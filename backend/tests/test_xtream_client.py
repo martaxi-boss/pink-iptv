@@ -24,6 +24,7 @@ def test_success_uses_exact_username_password_and_dns() -> None:
         seen["host"] = request.url.host
         seen["username"] = request.url.params.get("username")
         seen["password"] = request.url.params.get("password")
+        seen["user_agent"] = request.headers.get("user-agent")
         return httpx.Response(
             200,
             json={"user_info": {"auth": 1, "status": "Active"}},
@@ -45,6 +46,7 @@ def test_success_uses_exact_username_password_and_dns() -> None:
         "host": "exact.example.com",
         "username": "exact-user",
         "password": password,
+        "user_agent": "PINK-IPTV/0.1",
     }
 
 

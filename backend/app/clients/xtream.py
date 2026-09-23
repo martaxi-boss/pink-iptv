@@ -15,6 +15,11 @@ from app.url_safety import (
     system_resolver,
 )
 
+_XTREAM_HEADERS = {
+    "Accept": "application/json",
+    "User-Agent": "PINK-IPTV/0.1",
+}
+
 
 class XtreamError(RuntimeError):
     pass
@@ -77,6 +82,7 @@ class XtreamClient:
         self._timeout = httpx.Timeout(timeout_seconds)
         self._client = (
             httpx.Client(
+                headers=_XTREAM_HEADERS,
                 timeout=self._timeout,
                 follow_redirects=False,
                 transport=transport,
@@ -102,6 +108,7 @@ class XtreamClient:
         close_after = False
         if client is None:
             client = httpx.Client(
+                headers=_XTREAM_HEADERS,
                 timeout=self._timeout,
                 follow_redirects=False,
                 transport=PinnedHTTPTransport(target),

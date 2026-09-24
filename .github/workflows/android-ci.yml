@@ -145,6 +145,45 @@ jobs:
           sha256sum app/build/outputs/apk/debug/app-debug.apk
           sha256sum app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 
+      - name: Free runner disk for phone proof
+        run: |
+          set -euo pipefail
+
+          echo "DISK_BEFORE_CLEANUP"
+          df -h /
+          du -sh "$ANDROID_HOME" 2>/dev/null || true
+
+          # Remove only preinstalled GitHub-hosted-runner components that are
+          # irrelevant to this Android project. Keep JDK 17, Gradle state,
+          # platform-tools, emulator, platform 36, build-tools 36.0.0, checkout,
+          # and the APK/androidTest outputs built above.
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "${AGENT_TOOLSDIRECTORY:-/opt/hostedtoolcache}/CodeQL"
+          sudo rm -rf "$ANDROID_HOME/ndk"
+          sudo rm -rf "$ANDROID_HOME/cmake"
+          sudo rm -rf "$ANDROID_HOME/system-images"
+
+          docker system prune -af --volumes 2>/dev/null || true
+          sudo apt-get clean
+
+          echo "DISK_AFTER_CLEANUP"
+          df -h /
+
+          echo "DISK_BEFORE_EMULATOR"
+          df -h /
+          FREE_BYTES="$(df --output=avail -B1 / | tail -n 1 | tr -d ' ')"
+          REQUIRED_BYTES="$((12 * 1024 * 1024 * 1024))"
+          echo "PHONE_RUNNER_FREE_BYTES=$FREE_BYTES"
+          echo "PHONE_RUNNER_REQUIRED_BYTES=$REQUIRED_BYTES"
+          if [ "$FREE_BYTES" -lt "$REQUIRED_BYTES" ]; then
+            echo "PHONE_RUNNER_DISK_INSUFFICIENT"
+            exit 1
+          fi
+          echo "PHONE_RUNNER_DISK_GATE=PASS"
+
       - name: Run phone device proof
         uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # v2.34.0
         with:

@@ -200,7 +200,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: android
           script: |
-            set -euo pipefail
+            set -eu
 
             PHONE_API="$(adb shell getprop ro.build.version.sdk | tr -d '\r')"
             echo "PHONE_API=$PHONE_API"

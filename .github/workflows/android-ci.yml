@@ -204,7 +204,9 @@ jobs:
           adb shell pm path com.pinkiptv.app.test | grep -q '^package:'
           echo "PHONE_INSTALL=PASS"
 
-          ./gradlew --no-daemon connectedDebugAndroidTest
+          PHONE_TEST_CLASSES="com.pinkiptv.app.MainActivityStartupTest,com.pinkiptv.app.LoginScreenTest,com.pinkiptv.app.NavigationShellTest,com.pinkiptv.app.AndroidKeystoreCredentialStoreTest"
+          ./gradlew --no-daemon connectedDebugAndroidTest \
+            "-Pandroid.testInstrumentationRunnerArguments.class=$PHONE_TEST_CLASSES"
 
           python - <<'PY'
           from pathlib import Path
@@ -244,15 +246,12 @@ jobs:
               print(f"{class_name}=PASS")
 
           tv_only = ["TvLoginDpadTest", "HomeScreenTest"]
-          skipped_tv = []
           for class_name in tv_only:
               matches = [case for case in testcases if case[0].endswith(class_name)]
-              if matches and all(skipped and not failure and not error for _, _, failure, error, skipped in matches):
-                  skipped_tv.append(class_name)
-              elif matches and any(failure or error for _, _, failure, error, _ in matches):
-                  raise SystemExit(f"TV-only test failed on phone: {class_name}")
+              if matches:
+                  raise SystemExit("PHONE_TV_TESTS_NOT_EXCLUDED")
 
-          print("TV_ONLY_SKIPPED=" + (",".join(skipped_tv) if skipped_tv else "NONE"))
+          print("PHONE_TV_TESTS_EXCLUDED=PASS")
           print("PHONE_INSTRUMENTATION=PASS")
           print("PHONE_KEYSTORE=PASS")
           PY

@@ -1,5 +1,8 @@
 package com.pinkiptv.app
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -34,6 +37,9 @@ class LoginScreenTest {
         composeRule.onNodeWithText("USERNAME").assertExists()
         composeRule.onNodeWithText("PASSWORD").assertExists()
         composeRule.onNodeWithText("ENTRAR").assertExists()
+        composeRule.onNodeWithTag("login_password").assert(
+            SemanticsMatcher.keyIsDefined(SemanticsProperties.Password),
+        )
 
         composeRule.onNodeWithText("DNS").assertDoesNotExist()
         composeRule.onNodeWithText("M3U").assertDoesNotExist()

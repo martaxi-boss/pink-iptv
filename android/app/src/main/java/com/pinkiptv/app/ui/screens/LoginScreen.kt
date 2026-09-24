@@ -1,6 +1,8 @@
 package com.pinkiptv.app.ui.screens
 
 import android.content.res.Configuration
+import android.view.KeyEvent as AndroidKeyEvent
+import android.view.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,18 +20,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -48,6 +59,9 @@ fun LoginScreen(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var usernameFocused by remember { mutableStateOf(false) }
+    var passwordFocused by remember { mutableStateOf(false) }
+    var pendingButtonFocus by remember { mutableStateOf(false) }
     var buttonFocused by remember { mutableStateOf(false) }
     val usernameFocus = remember { FocusRequester() }
     val passwordFocus = remember { FocusRequester() }
@@ -55,14 +69,89 @@ fun LoginScreen(
     val configuration = LocalConfiguration.current
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
         Configuration.UI_MODE_TYPE_TELEVISION
+    val view = LocalView.current
+    val currentUsernameFocused by rememberUpdatedState(usernameFocused)
+    val currentPasswordFocused by rememberUpdatedState(passwordFocused)
+    val currentButtonFocused by rememberUpdatedState(buttonFocused)
+
+    DisposableEffect(view, isTv) {
+        if (!isTv) {
+            onDispose { }
+        } else {
+            val listener = View.OnKeyListener { _, keyCode, event ->
+                if (event.action != AndroidKeyEvent.ACTION_DOWN) {
+                    false
+                } else {
+                    when {
+                        keyCode == AndroidKeyEvent.KEYCODE_DPAD_DOWN &&
+                            currentUsernameFocused -> {
+                            passwordFocus.requestFocus()
+                            true
+                        }
+                        keyCode == AndroidKeyEvent.KEYCODE_DPAD_DOWN &&
+                            currentPasswordFocused -> {
+                            pendingButtonFocus = true
+                            true
+                        }
+                        keyCode == AndroidKeyEvent.KEYCODE_DPAD_UP &&
+                            currentPasswordFocused -> {
+                            usernameFocus.requestFocus()
+                            true
+                        }
+                        keyCode == AndroidKeyEvent.KEYCODE_DPAD_UP &&
+                            currentButtonFocused -> {
+                            passwordFocus.requestFocus()
+                            true
+                        }
+                        else -> false
+                    }
+                }
+            }
+            view.setOnKeyListener(listener)
+            onDispose { view.setOnKeyListener(null) }
+        }
+    }
 
     LaunchedEffect(isTv) {
         if (isTv) usernameFocus.requestFocus()
     }
 
+    LaunchedEffect(pendingButtonFocus) {
+        if (pendingButtonFocus) {
+            withFrameNanos { }
+            buttonFocus.requestFocus()
+            pendingButtonFocus = false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .onPreviewKeyEvent { event ->
+                if (isTv && event.type == KeyEventType.KeyDown) {
+                    when {
+                        event.key == Key.DirectionDown && usernameFocused -> {
+                            passwordFocus.requestFocus()
+                            true
+                        }
+                        event.key == Key.DirectionDown && passwordFocused -> {
+                            pendingButtonFocus = true
+                            true
+                        }
+                        event.key == Key.DirectionUp && passwordFocused -> {
+                            usernameFocus.requestFocus()
+                            true
+                        }
+                        event.key == Key.DirectionUp && buttonFocused -> {
+                            passwordFocus.requestFocus()
+                            true
+                        }
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            }
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 32.dp, vertical = 48.dp),
         verticalArrangement = Arrangement.spacedBy(
@@ -92,7 +181,8 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .testTag("login_username")
                 .focusRequester(usernameFocus)
-                .focusProperties { down = passwordFocus },
+                .focusProperties { down = passwordFocus }
+                .onFocusChanged { usernameFocused = it.isFocused },
         )
 
         OutlinedTextField(
@@ -111,10 +201,28 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .testTag("login_password")
                 .focusRequester(passwordFocus)
+                .onPreviewKeyEvent { event ->
+                    if (isTv && event.type == KeyEventType.KeyDown) {
+                        when (event.key) {
+                            Key.DirectionUp -> {
+                                usernameFocus.requestFocus()
+                                true
+                            }
+                            Key.DirectionDown -> {
+                                buttonFocus.requestFocus()
+                                true
+                            }
+                            else -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
                 .focusProperties {
                     up = usernameFocus
                     down = buttonFocus
-                },
+                }
+                .onFocusChanged { passwordFocused = it.isFocused },
         )
 
         loginError?.let { error ->

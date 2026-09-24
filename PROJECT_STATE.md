@@ -1,6 +1,6 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-09-23
+Date: 2026-09-24
 Phase: Phase 2 — Android Shell
 Public launch: NO
 
@@ -78,17 +78,21 @@ Order 002 status: IMPLEMENTATION PREPARED / IN REVIEW. It is not merged and must
 2. Separate future orders for direct Xtream catalog/networking, player/Media3, VPN/WireGuard and Windows.
 3. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
-## Infrastructure observed and retained
+## Current development/staging infrastructure
 
-Existing DigitalOcean development/POC environment observed in the architecture baseline:
+Current approved development/staging host:
 
-- Ubuntu 24.04 LTS;
-- London region;
-- 1 vCPU / 1 GB RAM;
-- 25 GB plan disk with approximately 11 GB free at the baseline audit;
-- existing Nginx, PostgreSQL, Gunicorn, Python, and Node workloads.
+- provider: OVHcloud;
+- host: `vps-32bea5b6`;
+- OS: Ubuntu 24.04 LTS;
+- 4 vCores;
+- approximately 8 GB RAM;
+- approximately 72 GB root filesystem;
+- KVM virtualization available for Android emulator validation.
 
-This environment remains POC/staging only. Production VPN use has not been approved, and the production design still expects a dedicated VPN gateway once capacity/isolation are proven. No DigitalOcean service, firewall, routing, deployment, or VPN mutation is part of Order 001/R1.
+The previous DigitalOcean 1 vCPU / 1 GB RAM / 25 GB environment is no longer an operational dependency or design constraint. Its historical resource limits must not drive application, dependency, test, or tooling decisions.
+
+The current OVH host remains development/staging. Public launch is not approved. Production VPN use remains a future gate, and production VPN capacity must be measured before any user/stream capacity claim. The production architecture may still use a dedicated VPN gateway when capacity/isolation evidence justifies it.
 
 ## Future project gates retained
 

@@ -1,5 +1,7 @@
 package com.pinkiptv.app
 
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -15,7 +17,10 @@ class NavigationShellTest {
 
     @Test
     fun liveShellNavigatesAndBackReturnsHome() {
+        var backDispatcher: OnBackPressedDispatcher? = null
+
         composeRule.setContent {
+            backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
             PinkTheme {
                 AuthenticatedShell(onLogout = {})
             }
@@ -25,7 +30,10 @@ class NavigationShellTest {
         composeRule.onNodeWithText("TV ao Vivo").assertExists()
         composeRule.onNodeWithText("Disponível numa fase seguinte.").assertExists()
 
-        composeRule.onNodeWithText("Voltar").performClick()
+        composeRule.runOnIdle {
+            requireNotNull(backDispatcher).onBackPressed()
+        }
+        composeRule.waitForIdle()
         composeRule.onNodeWithTag("home_live").assertExists()
     }
 }

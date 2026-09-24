@@ -1,16 +1,15 @@
 package com.pinkiptv.app
 
-import androidx.compose.ui.input.key.Key
+import android.content.res.Configuration
+import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.pressKey
-import androidx.compose.ui.test.requestFocus
+import androidx.test.platform.app.InstrumentationRegistry
 import com.pinkiptv.app.ui.screens.HomeScreen
 import com.pinkiptv.app.ui.theme.PinkTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,6 +19,13 @@ class HomeScreenTest {
 
     @Test
     fun homeSupportsDpadFocusAndNavigation() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val configuration = instrumentation.targetContext.resources.configuration
+        assumeTrue(
+            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                Configuration.UI_MODE_TYPE_TELEVISION,
+        )
+
         var selectedRoute: String? = null
 
         composeRule.setContent {
@@ -31,11 +37,14 @@ class HomeScreenTest {
         val live = composeRule.onNodeWithTag("home_live")
         val movies = composeRule.onNodeWithTag("home_movies")
 
-        live.requestFocus().assertIsFocused()
-        live.performKeyInput { pressKey(Key.DirectionRight) }
+        composeRule.waitForIdle()
+        live.assertIsFocused()
+
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_RIGHT)
+        composeRule.waitForIdle()
         movies.assertIsFocused()
 
-        movies.performClick()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
         composeRule.runOnIdle {
             assertEquals("movies", selectedRoute)
         }

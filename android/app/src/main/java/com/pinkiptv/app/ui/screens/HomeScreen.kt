@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -88,10 +89,6 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
                 List(items.size) { FocusRequester() }
             }
 
-            LaunchedEffect(isTv, columns) {
-                if (isTv) focusRequesters.first().requestFocus()
-            }
-
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
                 modifier = Modifier.fillMaxSize(),
@@ -108,6 +105,7 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
                             .takeIf { index % columns != columns - 1 },
                         up = focusRequesters.getOrNull(index - columns),
                         down = focusRequesters.getOrNull(index + columns),
+                        requestInitialFocus = isTv && index == 0,
                         onClick = { onNavigate(item.route) },
                     )
                 }
@@ -124,9 +122,17 @@ private fun HomeCard(
     right: FocusRequester?,
     up: FocusRequester?,
     down: FocusRequester?,
+    requestInitialFocus: Boolean,
     onClick: () -> Unit,
 ) {
     var focused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(requestInitialFocus) {
+        if (requestInitialFocus) {
+            withFrameNanos { }
+            focusRequester.requestFocus()
+        }
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = SurfaceRaised),

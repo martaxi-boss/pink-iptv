@@ -21,6 +21,7 @@ on:
       - "docs/UX_STRUCTURE.md"
       - "docs/TEST_STRATEGY.md"
       - "design/BRAND_SYSTEM.md"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -93,3 +94,157 @@ jobs:
               raise SystemExit(1)
           print("detect-secrets: no findings")
           PY
+
+  phone-device-proof:
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: phone-device-proof-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Install Android SDK 36
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify KVM
+        run: |
+          set -euo pipefail
+          test -e /dev/kvm
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+          echo "PHONE_KVM=PASS"
+
+      - name: Build phone proof APKs
+        working-directory: android
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest
+          sha256sum app/build/outputs/apk/debug/app-debug.apk
+          sha256sum app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+
+      - name: Run phone device proof
+        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # v2.34.0
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          cores: 2
+          ram-size: 2048M
+          disable-linux-hw-accel: false
+          enable-hw-keyboard: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          working-directory: android
+          script: |
+            set -euo pipefail
+
+            PHONE_API="$(adb shell getprop ro.build.version.sdk | tr -d '\r')"
+            echo "PHONE_API=$PHONE_API"
+            test "$PHONE_API" = "36"
+            test -r /dev/kvm
+            test -w /dev/kvm
+            echo "PHONE_KVM=PASS"
+
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell pm path com.pinkiptv.app | grep -q '^package:'
+            adb shell pm path com.pinkiptv.app.test | grep -q '^package:'
+            echo "PHONE_INSTALL=PASS"
+
+            ./gradlew --no-daemon connectedDebugAndroidTest
+
+            python - <<'PY'
+            from pathlib import Path
+            import xml.etree.ElementTree as ET
+
+            root = Path("app/build/outputs/androidTest-results")
+            xml_files = sorted(root.rglob("TEST-*.xml"))
+            if not xml_files:
+                raise SystemExit("No instrumentation XML results found")
+
+            testcases = []
+            for path in xml_files:
+                suite = ET.parse(path).getroot()
+                for case in suite.iter("testcase"):
+                    testcases.append(
+                        (
+                            case.attrib.get("classname", ""),
+                            case.attrib.get("name", ""),
+                            case.find("failure") is not None,
+                            case.find("error") is not None,
+                            case.find("skipped") is not None,
+                        )
+                    )
+
+            required = [
+                "MainActivityStartupTest",
+                "LoginScreenTest",
+                "NavigationShellTest",
+                "AndroidKeystoreCredentialStoreTest",
+            ]
+            for class_name in required:
+                matches = [case for case in testcases if case[0].endswith(class_name)]
+                if not matches:
+                    raise SystemExit(f"Required phone test did not run: {class_name}")
+                if any(failure or error or skipped for _, _, failure, error, skipped in matches):
+                    raise SystemExit(f"Required phone test did not PASS: {class_name}")
+                print(f"{class_name}=PASS")
+
+            tv_only = ["TvLoginDpadTest", "HomeScreenTest"]
+            skipped_tv = []
+            for class_name in tv_only:
+                matches = [case for case in testcases if case[0].endswith(class_name)]
+                if matches and all(skipped and not failure and not error for _, _, failure, error, skipped in matches):
+                    skipped_tv.append(class_name)
+                elif matches and any(failure or error for _, _, failure, error, _ in matches):
+                    raise SystemExit(f"TV-only test failed on phone: {class_name}")
+
+            print("TV_ONLY_SKIPPED=" + (",".join(skipped_tv) if skipped_tv else "NONE"))
+            print("PHONE_INSTRUMENTATION=PASS")
+            print("PHONE_KEYSTORE=PASS")
+            PY
+
+            adb install -r app/build/outputs/apk/debug/app-debug.apk >/dev/null
+            adb shell am force-stop com.pinkiptv.app
+            adb logcat -c
+
+            LAUNCH_RESULT="$(adb shell am start -W -n com.pinkiptv.app/.MainActivity)"
+            printf '%s\n' "$LAUNCH_RESULT"
+            printf '%s\n' "$LAUNCH_RESULT" | grep -q 'Status: ok'
+            sleep 2
+            adb shell pidof com.pinkiptv.app >/dev/null
+
+            adb logcat -d -v threadtime > /tmp/pink-phone-logcat.txt
+            if grep -Eq 'ANR in com\.pinkiptv\.app|Process: com\.pinkiptv\.app' /tmp/pink-phone-logcat.txt; then
+              echo "PHONE_CRASH_ANR=DETECTED"
+              grep -E -C 8 'ANR in com\.pinkiptv\.app|Process: com\.pinkiptv\.app' /tmp/pink-phone-logcat.txt
+              exit 1
+            fi
+
+            echo "PHONE_LAUNCH_SMOKE=PASS"
+            echo "PHONE_CRASH_ANR=NONE"
+            echo "PHONE_DEVICE_PROOF=PASS"

@@ -204,57 +204,65 @@ jobs:
           adb shell pm path com.pinkiptv.app.test | grep -q '^package:'
           echo "PHONE_INSTALL=PASS"
 
-          PHONE_TEST_CLASSES="com.pinkiptv.app.MainActivityStartupTest,com.pinkiptv.app.LoginScreenTest,com.pinkiptv.app.NavigationShellTest,com.pinkiptv.app.AndroidKeystoreCredentialStoreTest"
-          ./gradlew --no-daemon connectedDebugAndroidTest \
-            "-Pandroid.testInstrumentationRunnerArguments.class=$PHONE_TEST_CLASSES"
+          INSTRUMENTATION_COMPONENT="com.pinkiptv.app.test/androidx.test.runner.AndroidJUnitRunner"
+          INSTRUMENTATION_TARGET="com.pinkiptv.app"
+          INSTRUMENTATIONS="$(adb shell pm list instrumentation | tr -d '\r')"
+          printf '%s\n' "$INSTRUMENTATIONS"
+          EXPECTED_INSTRUMENTATION="instrumentation:$INSTRUMENTATION_COMPONENT (target=$INSTRUMENTATION_TARGET)"
+          if ! printf '%s\n' "$INSTRUMENTATIONS" | grep -Fqx "$EXPECTED_INSTRUMENTATION"; then
+            echo "PHONE_INSTRUMENTATION_RUNNER_MISSING"
+            exit 1
+          fi
+          echo "PHONE_INSTRUMENTATION_COMPONENT=$INSTRUMENTATION_COMPONENT"
+          echo "PHONE_INSTRUMENTATION_TARGET=$INSTRUMENTATION_TARGET"
 
-          python - <<'PY'
-          from pathlib import Path
-          import xml.etree.ElementTree as ET
+          run_phone_test() {
+            local full_class="$1"
+            local short_class="${full_class##*.}"
+            local output_file="$RUNNER_TEMP/phone-${short_class}.txt"
 
-          root = Path("app/build/outputs/androidTest-results")
-          xml_files = sorted(root.rglob("TEST-*.xml"))
-          if not xml_files:
-              raise SystemExit("No instrumentation XML results found")
+            adb shell am instrument -w -r \
+              -e class "$full_class" \
+              "$INSTRUMENTATION_COMPONENT" | tee "$output_file"
 
-          testcases = []
-          for path in xml_files:
-              suite = ET.parse(path).getroot()
-              for case in suite.iter("testcase"):
-                  testcases.append(
-                      (
-                          case.attrib.get("classname", ""),
-                          case.attrib.get("name", ""),
-                          case.find("failure") is not None,
-                          case.find("error") is not None,
-                          case.find("skipped") is not None,
-                      )
-                  )
+            if ! grep -Fq "$full_class" "$output_file"; then
+              echo "PHONE_TEST_CLASS_NOT_IDENTIFIED=$full_class"
+              exit 1
+            fi
 
-          required = [
-              "MainActivityStartupTest",
-              "LoginScreenTest",
-              "NavigationShellTest",
-              "AndroidKeystoreCredentialStoreTest",
-          ]
-          for class_name in required:
-              matches = [case for case in testcases if case[0].endswith(class_name)]
-              if not matches:
-                  raise SystemExit(f"Required phone test did not run: {class_name}")
-              if any(failure or error or skipped for _, _, failure, error, skipped in matches):
-                  raise SystemExit(f"Required phone test did not PASS: {class_name}")
-              print(f"{class_name}=PASS")
+            if grep -Eq 'INSTRUMENTATION_FAILED|FAILURES!!!|Process crashed|INSTRUMENTATION_STATUS_CODE: -[0-9]+' "$output_file"; then
+              echo "PHONE_TEST_FAILED=$full_class"
+              exit 1
+            fi
 
-          tv_only = ["TvLoginDpadTest", "HomeScreenTest"]
-          for class_name in tv_only:
-              matches = [case for case in testcases if case[0].endswith(class_name)]
-              if matches:
-                  raise SystemExit("PHONE_TV_TESTS_NOT_EXCLUDED")
+            if ! grep -Fq 'INSTRUMENTATION_CODE: -1' "$output_file"; then
+              echo "PHONE_TEST_COMPLETION_MISSING=$full_class"
+              exit 1
+            fi
 
-          print("PHONE_TV_TESTS_EXCLUDED=PASS")
-          print("PHONE_INSTRUMENTATION=PASS")
-          print("PHONE_KEYSTORE=PASS")
-          PY
+            echo "${short_class}=PASS"
+          }
+
+          run_phone_test "com.pinkiptv.app.MainActivityStartupTest"
+          run_phone_test "com.pinkiptv.app.LoginScreenTest"
+          run_phone_test "com.pinkiptv.app.NavigationShellTest"
+          run_phone_test "com.pinkiptv.app.AndroidKeystoreCredentialStoreTest"
+
+          cat \
+            "$RUNNER_TEMP/phone-MainActivityStartupTest.txt" \
+            "$RUNNER_TEMP/phone-LoginScreenTest.txt" \
+            "$RUNNER_TEMP/phone-NavigationShellTest.txt" \
+            "$RUNNER_TEMP/phone-AndroidKeystoreCredentialStoreTest.txt" \
+            > "$RUNNER_TEMP/phone-instrumentation-all.txt"
+
+          if grep -Eq 'TvLoginDpadTest|HomeScreenTest' "$RUNNER_TEMP/phone-instrumentation-all.txt"; then
+            echo "PHONE_TV_TESTS_NOT_EXCLUDED"
+            exit 1
+          fi
+
+          echo "PHONE_TV_TESTS_EXCLUDED=PASS"
+          echo "PHONE_INSTRUMENTATION=PASS"
+          echo "PHONE_KEYSTORE=PASS"
 
           adb install -r app/build/outputs/apk/debug/app-debug.apk >/dev/null
           adb shell am force-stop com.pinkiptv.app

@@ -1,5 +1,8 @@
 # PINK IPTV - SUPERVISOR HANDOFF 001
 
+> Historical note (2026-09-24): references in this handoff to the original DigitalOcean host and its 1 vCPU / 1 GB RAM / 25 GB limits describe the project's initial baseline only. They are SUPERSEDED for current development/staging by the OVH infrastructure recorded in `PROJECT_STATE.md` and `docs/INFRASTRUCTURE.md`. This note does not rewrite the historical decisions below.
+
+
 ## Role
 
 You are the SUPERVISOR for PINK IPTV.

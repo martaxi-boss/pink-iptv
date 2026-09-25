@@ -2,66 +2,51 @@
 
 ## Goal
 
-PINK IPTV should offer an integrated VPN experience without requiring Surfshark, AirGuard or a separate consumer VPN app.
-
-WireGuard is the preferred tunnel protocol.
+PINK IPTV should offer an integrated VPN experience without requiring a separate consumer VPN application. WireGuard remains the preferred tunnel protocol.
 
 ## Concept
 
 Client -> encrypted WireGuard tunnel -> PINK VPN Gateway -> Internet/provider.
 
-The VPN service is created by WireGuard between the client and a server we control.
-There is no external VPN subscription required for the software itself.
+The VPN service is created by WireGuard between the client and infrastructure controlled for PINK IPTV. There is no external consumer VPN subscription requirement in the product architecture.
 
-## POC
+## POC policy
 
-The existing DigitalOcean Droplet may host one temporary WireGuard interface for proof-of-concept only.
+The current approved development/staging environment is the OVH host documented in `PROJECT_STATE.md` and `docs/INFRASTRUCTURE.md`.
 
-Before any change:
-- take a snapshot or establish a rollback/backup method;
-- audit existing firewall/Nginx/PostgreSQL/app workloads;
+A future Order 004 may authorize a bounded WireGuard POC in an approved environment. Android Shell 002 does not authorize WireGuard installation, VPN networking changes, firewall/routing mutation, IP forwarding or NAT.
+
+Before any future WireGuard mutation:
+
+- establish snapshot/rollback;
+- audit existing backend/Nginx/PostgreSQL/system services;
 - choose a non-conflicting UDP port;
-- preserve existing services.
-
-Current server location is London, so its public egress will normally geolocate as UK/London-region data-center traffic, subject to IP geolocation databases.
+- preserve existing services and backend reachability.
 
 ## Production
 
-Use a dedicated VPN gateway once real users are onboarded.
+Use a dedicated VPN gateway once real production demand, isolation requirements and measured capacity justify it.
 
 Each installation gets:
-- unique WireGuard keypair
-- private key generated/stored on device
-- public key registered with backend
-- unique VPN address/peer
-- revocable enrollment
+
+- unique WireGuard keypair;
+- private key generated/stored on device;
+- public key registered with backend;
+- unique VPN address/peer;
+- revocable enrollment.
 
 Never ship one shared private key in the APK/EXE.
 
-## App behavior
+## Future app behavior
 
-First run:
-1. bootstrap PINK backend configuration
-2. request OS VPN permission/setup
-3. generate device WireGuard key
-4. enroll public key
-5. connect tunnel
-6. verify tunnel health
-7. resolve/login to Xtream
-
-Normal run:
-- auto-connect VPN when PINK IPTV needs network access
-- reconnect on network changes
-- if VPN policy is required and tunnel drops, pause/stop playback until tunnel is restored
-- close or idle tunnel according to policy when app is not in use
+A separately authorized VPN phase may add OS VPN permission/setup, device key generation, enrollment, tunnel health and reconnect policy. None of that is implemented by Android Shell 002.
 
 ## Routing
 
-Android should prefer app-scoped VPN where technically supported and stable.
-Windows implementation may initially use the WireGuard tunnel while the app is active; split-tunnel policy must be tested against provider host/IP changes.
+Android should prefer app-scoped VPN where technically supported and stable. Windows policy remains a later phase. Split-tunnel behavior must be tested against provider host/IP changes before production use.
 
 ## Capacity
 
-WireGuard binaries are small; disk is not the scaling concern.
-Streaming bandwidth is the scaling concern because provider video traverses the VPN gateway.
-Do not promise unlimited users on the current 1 vCPU / 1 GB shared Droplet.
+Streaming bandwidth is the primary scaling concern because provider video traverses the future VPN gateway. CPU, memory, network throughput, concurrency and isolation must be measured under representative load.
+
+Production VPN capacity must be measured. No current development/staging host specification is itself evidence for a specific number of concurrent users or streams.

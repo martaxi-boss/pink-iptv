@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PINK IPTV</string>
+    <string name="splash_loading">A iniciar…</string>
+    <string name="username_label">USERNAME</string>
+    <string name="password_label">PASSWORD</string>
+    <string name="login_action">ENTRAR</string>
+    <string name="login_error_invalid">Credenciais incorretas.</string>
+    <string name="login_error_expired">Subscrição expirada.</string>
+    <string name="login_error_disabled">Subscrição indisponível.</string>
+    <string name="login_error_temporary">Não foi possível ligar ao serviço. Tente novamente.</string>
+    <string name="login_error_required">Preencha username e password.</string>
+    <string name="home_title">PINK IPTV</string>
+    <string name="live_tv">TV ao Vivo</string>
+    <string name="movies">Filmes</string>
+    <string name="series">Séries</string>
+    <string name="epg">EPG</string>
+    <string name="favorites">Favoritos</string>
+    <string name="settings">Definições</string>
+    <string name="next_phase">Disponível numa fase seguinte.</string>
+    <string name="back">Voltar</string>
+    <string name="logout">Terminar sessão</string>
+    <string name="settings_local_session">Sessão local segura desta instalação.</string>
+    <string name="logo_content_description">Logótipo PINK IPTV</string>
+</resources>

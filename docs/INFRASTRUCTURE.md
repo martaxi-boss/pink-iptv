@@ -1,60 +1,50 @@
 # Infrastructure Plan
 
-## Current DigitalOcean baseline
+## Current development/staging baseline
 
-Audited 2026-09-23:
+Audited 2026-09-24:
+
+- Provider: OVHcloud
+- Host: `vps-32bea5b6`
 - Ubuntu 24.04 LTS
-- London region
-- 1 vCPU
-- 1 GB RAM
-- 25 GB plan disk
-- about 13 GB used / 11 GB free on root filesystem
-- 4 GB swap configured
-- existing Nginx, PostgreSQL, Gunicorn, Python and Node processes
-- current load low
-- no DigitalOcean backups enabled at audit time
+- 4 vCores
+- approximately 8 GB RAM
+- approximately 72 GB root filesystem
+- KVM available for Android emulator validation
+- PINK backend bound to `127.0.0.1:8010`
 
-## Use of current Droplet
+The previous DigitalOcean 1 vCPU / 1 GB RAM / 25 GB host is historical only and is no longer an operational dependency or resource constraint for PINK IPTV development.
 
-Allowed for:
-- backend development/staging
-- Mega API adapter POC
-- one-client WireGuard POC
-- integration tests
+## Allowed current use
 
-Not approved yet for:
-- production VPN for multiple paying users
-- restreaming
-- high-bandwidth proxy
-- destructive firewall changes
-- replacing existing workloads
+The OVH host is approved for:
 
-## Target production topology
+- backend development/staging;
+- Android build and emulator validation;
+- Mega integration development/testing under existing security controls;
+- integration tests;
+- future POC work only when separately authorized.
 
-PINK Backend Droplet:
-- HTTPS API
-- PostgreSQL
-- Mega adapter
-- app config
-- VPN control plane
+Public launch remains NO.
 
-PINK VPN Gateway:
-- WireGuard
-- peer management
-- NAT/forwarding
-- monitoring
-- bandwidth sizing
+## Production architecture
 
-They may begin co-located for POC, but production separation is the design target.
+PINK Backend / control plane:
+
+- HTTPS API;
+- PostgreSQL;
+- Mega adapter;
+- app configuration;
+- future VPN control-plane functions when authorized.
+
+A dedicated VPN gateway remains the production design target when real capacity/isolation evidence justifies separation. Development co-location does not prove production capacity.
+
+Production VPN capacity, throughput and user/stream limits must be measured before any production claim. The current 4 vCore / 8 GB OVH host must not be translated into an assumed number of concurrent streams without benchmark evidence.
 
 ## Deployment
 
-GitHub is source of truth.
-Deploy by tagged/approved commit.
-Secrets remain in server environment/secret storage.
-Use systemd services and Nginx reverse proxy unless supervisor approves a different standard.
+GitHub remains source of truth. Deploy only approved commits. Secrets remain in runtime environment/secret storage. The current backend bind, firewall, routing, Nginx and systemd configuration must not be changed without the corresponding authorized order.
 
-## Backups
+## Backups and infrastructure mutation
 
-Before infrastructure mutation, create a recoverable snapshot/backup plan.
-Database backups must be automated before production launch.
+Before material infrastructure/network mutation, establish a recoverable snapshot/rollback plan. Database backups must be automated before production launch. WireGuard, firewall forwarding/NAT and production VPN configuration remain outside Android Shell 002.

@@ -2,7 +2,7 @@
 
 Private project for an original IPTV player for Android/Android TV and Windows.
 
-Status: PRE-BUILD / architecture approved for supervisor review only.
+Status: Phase 2 — Android Shell 002 implementation/in review. Foundation / Mega Proof 001 is COMPLETE / MERGED.
 Public launch: NO.
 Repository must never contain production credentials, Mega OTT tokens, Xtream passwords, WireGuard private keys, or server private keys.
 
@@ -29,9 +29,9 @@ Important terminology: Mega OTT calls username/password subscriptions type M3U i
 
 ## High-level architecture
 
-Client -> PINK Backend -> Mega OTT API for subscription metadata/dns_link.
-Client -> WireGuard Gateway -> assigned Xtream host for playback/catalog.
-Video must not proxy through the PINK Backend.
+Current Android Shell 002: Client -> PINK Backend -> `POST /v1/session/resolve`.
+
+Future separately authorized phases may add direct Xtream catalog/playback networking and the planned WireGuard path. Video must not proxy through the PINK Backend.
 
 See:
 - docs/PRODUCT_SPEC.md
@@ -43,4 +43,4 @@ See:
 - docs/ROADMAP.md
 - SUPERVISOR_HANDOFF.md
 
-No implementation begins until the project supervisor reviews this baseline and issues a builder order.
+Implementation proceeds only under explicit Owner/Supervisor builder orders. Android Shell 002 is not complete or merged until Supervisor audit and merge authorization.

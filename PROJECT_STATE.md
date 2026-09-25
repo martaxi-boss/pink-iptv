@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-09-23
-Phase: Phase 1 — Backend / Mega Proof
+Date: 2026-09-24
+Phase: Phase 2 — Android Shell
 Public launch: NO
 
 ## Governance
@@ -21,11 +21,16 @@ BUILDER: implements only approved orders and reports evidence.
 - Mega response password and customer Xtream password are never persisted.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
-- WireGuard remains a later phase and is not implemented by Order 001.
-- Android and Windows remain later phases.
+- WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
+- Android Shell 002 is the active implementation phase; direct Xtream catalog/provider networking remains future work.
+- Windows remains a later phase.
 - GitHub remains source of truth.
 
-## Order 001 implementation state
+## Foundation / Mega Proof 001 — COMPLETE / MERGED
+
+Order 001 merge: `284b28999cd0e02d07ca94d26a75fce70368a854`.
+
+Backend implementation state
 
 Backend implementation includes:
 
@@ -55,35 +60,46 @@ Sanitized live-proof record:
 - final remediation: the observed upstream required a stable Xtream User-Agent; the approved implementation uses `PINK-IPTV/0.1`;
 - final implementation CI: PASS;
 - public launch: NO;
-- PR #2: NOT MERGED.
+- PR #2: MERGED.
 
 No username, customer password, Mega token, provider hostname, session token, or credential-bearing URL is recorded in this state document.
 
+## Android Shell 002 implementation state
+
+Order 002 is authorized and is being implemented on `builder/android-shell-002`.
+
+Prepared scope includes the Android project shell for phone/tablet, Android TV and TV Box; Splash, Login, Home and the Live TV, Movies, Series, EPG, Favorites and Settings shell routes; PINK Backend session client; secure Android Keystore/DataStore credential storage; D-pad/focus behavior; automated Android tests and Android CI.
+
+Order 002 status: IMPLEMENTATION PREPARED / IN REVIEW. It is not merged and must not be described as complete until Supervisor audit and merge.
+
 ## Remaining technical gates
 
-1. Supervisor audit/merge decision for Order 001.
-2. Only after the Order 001 merge decision: issue any later Android/VPN/Windows order explicitly.
+1. Android Shell 002 build/test/CI evidence and Supervisor audit/merge decision.
+2. Separate future orders for direct Xtream catalog/networking, player/Media3, VPN/WireGuard and Windows.
+3. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
-Implementation status: FOUNDATION / MEGA PROOF 001 TECHNICALLY COMPLETE; awaiting only Supervisor decision/merge for PR #2.
+## Current development/staging infrastructure
 
-## Infrastructure observed and retained
+Current approved development/staging host:
 
-Existing DigitalOcean development/POC environment observed in the architecture baseline:
+- provider: OVHcloud;
+- host: `vps-32bea5b6`;
+- OS: Ubuntu 24.04 LTS;
+- 4 vCores;
+- approximately 8 GB RAM;
+- approximately 72 GB root filesystem;
+- KVM virtualization available for Android emulator validation.
 
-- Ubuntu 24.04 LTS;
-- London region;
-- 1 vCPU / 1 GB RAM;
-- 25 GB plan disk with approximately 11 GB free at the baseline audit;
-- existing Nginx, PostgreSQL, Gunicorn, Python, and Node workloads.
+The previous DigitalOcean 1 vCPU / 1 GB RAM / 25 GB environment is no longer an operational dependency or design constraint. Its historical resource limits must not drive application, dependency, test, or tooling decisions.
 
-This environment remains POC/staging only. Production VPN use has not been approved, and the production design still expects a dedicated VPN gateway once capacity/isolation are proven. No DigitalOcean service, firewall, routing, deployment, or VPN mutation is part of Order 001/R1.
+The current OVH host remains development/staging. Public launch is not approved. Production VPN use remains a future gate, and production VPN capacity must be measured before any user/stream capacity claim. The production architecture may still use a dedicated VPN gateway when capacity/isolation evidence justifies it.
 
 ## Future project gates retained
 
-After the Supervisor merge decision, separate orders are still required for:
+Beyond Android Shell 002, separate orders are still required for:
 
-1. original PINK design-system/screen-map approval where not already closed;
-2. Android shell and later Android Xtream/player work;
+1. final distribution/store artwork and design assets;
+2. Android direct Xtream catalog/provider networking and player work;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

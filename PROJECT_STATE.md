@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 and Stage 003A are complete and merged. Stage 003A established the authenticated Xtream runtime session and real Live/VOD/Series catalog foundation. Stage 003B is active for foreground Media3 Live/VOD playback.
+- Android Shell 002, Stage 003A and Stage 003B are complete and merged. Stage 003C is active for Series detail, seasons, episodes and playback on the existing Media3 core.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -133,7 +133,7 @@ The current OVH host remains development/staging. Public launch is not approved.
 Beyond Android Shell 002, separate orders are still required for:
 
 1. final distribution/store artwork and design assets;
-2. Android Phase 3 continuation after Stage 003B, including Series episodes, EPG/Catch Up and favorites/history;
+2. Android Phase 3 continuation after Stage 003C, including EPG/Catch Up and favorites/history;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

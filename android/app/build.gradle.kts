@@ -23,7 +23,7 @@ android {
         buildConfigField(
             "String",
             "PINK_API_BASE_URL",
-            """ + configuredApiBaseUrl.get() + """,
+            "\"" + configuredApiBaseUrl.get() + "\"",
         )
     }
 

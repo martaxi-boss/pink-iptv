@@ -3,7 +3,6 @@ package com.pinkiptv.app
 import android.content.res.Configuration
 import android.view.KeyEvent
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.createComposeRule

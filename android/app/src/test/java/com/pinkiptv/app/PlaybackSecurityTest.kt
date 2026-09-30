@@ -2,10 +2,8 @@ package com.pinkiptv.app
 
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
-import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlaybackKind
-import com.pinkiptv.app.model.SeriesDetail
-import com.pinkiptv.app.model.SeriesEpisode
+import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlayerUiState
 import com.pinkiptv.app.model.SeriesDetail
 import com.pinkiptv.app.model.SeriesEpisode
@@ -26,8 +24,6 @@ class PlaybackSecurityTest {
             SeriesSeason::class.java,
             SeriesEpisode::class.java,
             PlayerUiState::class.java,
-            SeriesDetail::class.java,
-            SeriesEpisode::class.java,
         )
         val forbidden = setOf(
             "username",

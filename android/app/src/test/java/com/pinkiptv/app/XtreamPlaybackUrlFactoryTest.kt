@@ -2,6 +2,7 @@ package com.pinkiptv.app
 
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
+import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionResult
@@ -90,6 +91,7 @@ class XtreamPlaybackUrlFactoryTest {
         assertEquals("http", http.url.scheme)
         assertEquals("catalog.invalid", http.url.host)
         assertEquals(8080, http.url.port)
+        assertEquals(PlaybackKind.Series, http.kind)
         assertEquals(
             "/series/fixture-user/fixture-pass/501.mkv",
             http.url.encodedPath,

@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-09-30
-Phase: Phase 3 — Android Catalog + Player 003B
+Phase: Phase 3 — Android Catalog + Player 003C
 Public launch: NO
 
 ## Governance
@@ -86,17 +86,29 @@ Stage 003A merge commit: `135df164de9bb30e66b3b4268fbfc38c8b204e1a`.
 
 Stage 003A implements the in-memory authenticated-provider session, exact backend-resolved Xtream origin handling, direct catalog networking through `player_api.php`, and real Live TV, Movies/VOD and Series browsing states.
 
-## Phase 3 / Stage 003B — ACTIVE
+## Phase 3 / Stage 003B — COMPLETE / MERGED
+
+Stage 003B approved head: `484b51007ee55ca9fbc5c921bb9bc1b5199a63c4`.
+
+Stage 003B merge commit: `b98ce7a819d6c752c3ec8e5b45646c79fbe2a3d8`.
 
 Stage 003B adds AndroidX Media3 1.11.1 foreground playback for Live TV and Movies/VOD, with credential-contained Xtream source construction, lifecycle-safe ExoPlayer ownership, touch controls, Android TV/D-pad controls, safe player errors and retry.
 
-Series episodes/playback, full EPG/Catch Up, favorites/history/continue-watching, VPN/WireGuard and Windows remain unimplemented and outside Stage 003B.
+## Phase 3 / Stage 003C — ACTIVE
+
+Stage 003C extends the existing authenticated Xtream and Media3 architecture with Series detail, provider-defined seasons, episodes and credential-contained episode playback through the canonical `/series/` path.
+
+Series detail uses `get_series_info` with the exact selected `series_id`, defensive response parsing and phone/TV navigation. Episode playback reuses the Stage 003B player lifecycle and transport; no second player or credential store is introduced.
+
+Real-provider Series info and episode-playback certification are not yet certified unless separately executed in an approved secure environment.
+
+Full EPG/Catch Up, favorites/history/continue-watching, VPN/WireGuard and Windows remain unimplemented and outside Stage 003C.
 
 ## Remaining technical gates
 
-1. Supervisor audit of Android Catalog + Player 003B.
+1. Supervisor audit of Android Catalog + Player 003C.
 2. Separate real-provider/player device proof gate when authorized and securely available.
-3. Separate Series episode/playback, EPG/Catch Up and favorites/history stages.
+3. Separate EPG/Catch Up and favorites/history stages after Series 003C.
 4. Separate VPN/WireGuard and Windows phases.
 5. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 

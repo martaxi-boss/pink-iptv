@@ -99,7 +99,6 @@ class AppViewModel(
                 episodeId = episode.episodeId,
                 title = episode.title,
                 containerExtension = episode.containerExtension,
-                artworkUrl = episode.artworkUrl,
             ),
         )
     }

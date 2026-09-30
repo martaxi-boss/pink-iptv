@@ -131,7 +131,7 @@ internal class Media3PlaybackFacade(
                 )
                 val mediaItem = MediaItem.Builder()
                     .setMediaId(ref.streamId)
-                    .setUri(result.source.url)
+                    .setUri(result.source.url.toString())
                     .build()
                 player.setMediaItem(mediaItem)
                 player.prepare()

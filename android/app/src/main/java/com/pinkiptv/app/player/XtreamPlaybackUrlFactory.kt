@@ -25,7 +25,7 @@ internal sealed interface PlaybackSourceResult {
 internal class XtreamPlaybackUrlFactory(
     private val sessionStore: RuntimeProviderSessionStore,
 ) {
-    fun resolve(ref: PlaybackRef): PlaybackSourceResult {
+    internal fun resolve(ref: PlaybackRef): PlaybackSourceResult {
         val session = sessionStore.current()
             ?: return PlaybackSourceResult.Failure(PlayerError.SessionUnavailable)
 

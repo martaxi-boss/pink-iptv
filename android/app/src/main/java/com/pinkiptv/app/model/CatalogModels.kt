@@ -28,6 +28,35 @@ data class SeriesItem(
     val artworkUrl: String?,
 )
 
+data class SeriesDetail(
+    val seriesId: String,
+    val name: String?,
+    val plot: String?,
+    val artworkUrl: String?,
+    val genre: String?,
+    val rating: String?,
+    val seasons: List<SeriesSeason>,
+    val episodes: List<SeriesEpisode>,
+)
+
+data class SeriesSeason(
+    val seasonId: String,
+    val displayName: String,
+    val episodeCount: Int?,
+    val artworkUrl: String?,
+)
+
+data class SeriesEpisode(
+    val episodeId: String,
+    val episodeNumber: String?,
+    val title: String,
+    val seasonId: String,
+    val containerExtension: String?,
+    val artworkUrl: String?,
+    val duration: String?,
+    val plot: String?,
+)
+
 enum class CatalogKind {
     Live,
     Movies,
@@ -66,8 +95,37 @@ data class CatalogUiState(
     val error: CatalogUiError? = null,
 )
 
+enum class SeriesDetailPhase {
+    Idle,
+    Loading,
+    Content,
+    Empty,
+    Error,
+}
+
+enum class SeriesDetailUiError {
+    SessionUnavailable,
+    ProviderUnavailable,
+    InvalidResponse,
+}
+
+data class SeriesDetailUiState(
+    val phase: SeriesDetailPhase = SeriesDetailPhase.Idle,
+    val selectedSeriesId: String? = null,
+    val title: String? = null,
+    val plot: String? = null,
+    val artworkUrl: String? = null,
+    val genre: String? = null,
+    val rating: String? = null,
+    val seasons: List<SeriesSeason> = emptyList(),
+    val selectedSeasonId: String? = null,
+    val episodes: List<SeriesEpisode> = emptyList(),
+    val error: SeriesDetailUiError? = null,
+)
+
 enum class CatalogError {
     MissingSession,
+    InvalidMetadata,
     InvalidResponse,
     HttpFailure,
     NetworkFailure,
@@ -85,4 +143,5 @@ interface CatalogRepository {
     suspend fun vodStreams(): CatalogResult<List<VodItem>>
     suspend fun seriesCategories(): CatalogResult<List<CatalogCategory>>
     suspend fun series(): CatalogResult<List<SeriesItem>>
+    suspend fun seriesInfo(seriesId: String): CatalogResult<SeriesDetail>
 }

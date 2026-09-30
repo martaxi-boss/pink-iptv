@@ -6,7 +6,10 @@ import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.CatalogResult
 import com.pinkiptv.app.model.LiveStream
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
+import com.pinkiptv.app.model.SeriesDetail
+import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.model.SeriesItem
+import com.pinkiptv.app.model.SeriesSeason
 import com.pinkiptv.app.model.VodItem
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -16,6 +19,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -44,39 +48,62 @@ class XtreamCatalogClient(
     }
 
     override suspend fun liveCategories(): CatalogResult<List<CatalogCategory>> =
-        request("get_live_categories", XtreamJsonParser::categories)
+        requestList("get_live_categories", XtreamJsonParser::categories)
 
     override suspend fun liveStreams(): CatalogResult<List<LiveStream>> =
-        request("get_live_streams", XtreamJsonParser::liveStreams)
+        requestList("get_live_streams", XtreamJsonParser::liveStreams)
 
     override suspend fun vodCategories(): CatalogResult<List<CatalogCategory>> =
-        request("get_vod_categories", XtreamJsonParser::categories)
+        requestList("get_vod_categories", XtreamJsonParser::categories)
 
     override suspend fun vodStreams(): CatalogResult<List<VodItem>> =
-        request("get_vod_streams", XtreamJsonParser::vodItems)
+        requestList("get_vod_streams", XtreamJsonParser::vodItems)
 
     override suspend fun seriesCategories(): CatalogResult<List<CatalogCategory>> =
-        request("get_series_categories", XtreamJsonParser::categories)
+        requestList("get_series_categories", XtreamJsonParser::categories)
 
     override suspend fun series(): CatalogResult<List<SeriesItem>> =
-        request("get_series", XtreamJsonParser::seriesItems)
+        requestList("get_series", XtreamJsonParser::seriesItems)
 
-    private suspend fun <T> request(
+    override suspend fun seriesInfo(seriesId: String): CatalogResult<SeriesDetail> {
+        val normalizedId = seriesId.trim()
+        if (!PROVIDER_ID.matches(normalizedId)) {
+            return CatalogResult.Failure(CatalogError.InvalidMetadata)
+        }
+
+        return requestValue(
+            action = "get_series_info",
+            extraQuery = mapOf("series_id" to normalizedId),
+        ) { body ->
+            XtreamJsonParser.seriesDetail(normalizedId, body)
+        }
+    }
+
+    private suspend fun <T> requestList(
         action: String,
         parser: (String) -> List<T>,
-    ): CatalogResult<List<T>> = withContext(Dispatchers.IO) {
+    ): CatalogResult<List<T>> =
+        requestValue(action = action, extraQuery = emptyMap(), parser = parser)
+
+    private suspend fun <T> requestValue(
+        action: String,
+        extraQuery: Map<String, String>,
+        parser: (String) -> T,
+    ): CatalogResult<T> = withContext(Dispatchers.IO) {
         val session = sessionStore.current()
             ?: return@withContext CatalogResult.Failure(CatalogError.MissingSession)
 
-        val url = session.origin.newBuilder()
+        val builder = session.origin.newBuilder()
             .addPathSegment("player_api.php")
             .addQueryParameter("username", session.username)
             .addQueryParameter("password", session.password)
             .addQueryParameter("action", action)
-            .build()
+        extraQuery.forEach { (name, value) ->
+            builder.addQueryParameter(name, value)
+        }
 
         val request = Request.Builder()
-            .url(url)
+            .url(builder.build())
             .get()
             .header("Accept", "application/json")
             .header("User-Agent", PINK_XTREAM_USER_AGENT)
@@ -101,6 +128,10 @@ class XtreamCatalogClient(
         } catch (_: IOException) {
             CatalogResult.Failure(CatalogError.NetworkFailure)
         }
+    }
+
+    private companion object {
+        val PROVIDER_ID = Regex("^[A-Za-z0-9_-]{1,64}$")
     }
 }
 
@@ -154,6 +185,118 @@ internal object XtreamJsonParser {
                 artworkUrl = item.text("cover"),
             )
         }
+
+    fun seriesDetail(seriesId: String, body: String): SeriesDetail {
+        val root = json.parseToJsonElement(body) as? JsonObject
+            ?: throw SerializationException("Unexpected Xtream series response")
+        if (
+            !root.containsKey("info") &&
+            !root.containsKey("seasons") &&
+            !root.containsKey("episodes")
+        ) {
+            throw SerializationException("Missing Xtream series fields")
+        }
+
+        val info = root["info"] as? JsonObject
+        val episodes = parseEpisodes(root["episodes"])
+        val declaredSeasons = parseSeasons(root["seasons"])
+        val known = declaredSeasons.map { it.seasonId }.toSet()
+        val derivedSeasons = episodes
+            .map { it.seasonId }
+            .distinct()
+            .filterNot(known::contains)
+            .map { seasonId ->
+                SeriesSeason(
+                    seasonId = seasonId,
+                    displayName = "Temporada " + seasonId,
+                    episodeCount = episodes.count { it.seasonId == seasonId },
+                    artworkUrl = null,
+                )
+            }
+
+        return SeriesDetail(
+            seriesId = seriesId,
+            name = info?.text("name"),
+            plot = info?.text("plot"),
+            artworkUrl = info?.text("cover"),
+            genre = info?.text("genre"),
+            rating = info?.text("rating"),
+            seasons = declaredSeasons + derivedSeasons,
+            episodes = episodes,
+        )
+    }
+
+    private fun parseSeasons(element: JsonElement?): List<SeriesSeason> {
+        if (element == null) return emptyList()
+        val array = element as? JsonArray
+            ?: throw SerializationException("Unexpected seasons shape")
+        return array.mapNotNull { seasonElement ->
+            val item = seasonElement as? JsonObject ?: return@mapNotNull null
+            val seasonId = item.text("season_number")
+                ?: item.text("id")
+                ?: return@mapNotNull null
+            SeriesSeason(
+                seasonId = seasonId,
+                displayName = item.text("name") ?: "Temporada " + seasonId,
+                episodeCount = item.text("episode_count")?.toIntOrNull(),
+                artworkUrl = item.text("cover") ?: item.text("cover_big"),
+            )
+        }
+    }
+
+    private fun parseEpisodes(element: JsonElement?): List<SeriesEpisode> {
+        if (element == null) return emptyList()
+        return when (element) {
+            is JsonObject -> element.entries.flatMap { (seasonKey, group) ->
+                val array = group as? JsonArray
+                    ?: throw SerializationException("Unexpected episode group")
+                array.mapNotNull { episode ->
+                    parseEpisode(episode as? JsonObject, seasonKey)
+                }
+            }
+            is JsonArray -> element.mapNotNull { episode ->
+                parseEpisode(episode as? JsonObject, null)
+            }
+            else -> throw SerializationException("Unexpected episodes shape")
+        }
+    }
+
+    private fun parseEpisode(
+        item: JsonObject?,
+        groupedSeasonId: String?,
+    ): SeriesEpisode? {
+        item ?: return null
+        val episodeId = item.text("id")
+            ?: item.text("episode_id")
+            ?: return null
+        val seasonId = groupedSeasonId
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() && it != "null" }
+            ?: item.text("season")
+            ?: item.text("season_number")
+            ?: return null
+        val episodeNumber = item.text("episode_num")
+            ?: item.text("episode_number")
+        val metadata = item["info"] as? JsonObject
+        val title = item.text("title")
+            ?: item.text("name")
+            ?: episodeNumber?.let { "Episódio " + it }
+            ?: "Episódio"
+
+        return SeriesEpisode(
+            episodeId = episodeId,
+            episodeNumber = episodeNumber,
+            title = title,
+            seasonId = seasonId,
+            containerExtension = item.text("container_extension"),
+            artworkUrl = metadata?.text("movie_image")
+                ?: item.text("movie_image"),
+            duration = metadata?.text("duration")
+                ?: item.text("duration"),
+            plot = metadata?.text("plot")
+                ?: item.text("plot"),
+        )
+    }
 
     private fun <T> parseArray(
         body: String,

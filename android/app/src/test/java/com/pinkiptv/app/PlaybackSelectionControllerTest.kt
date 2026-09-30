@@ -1,6 +1,7 @@
 package com.pinkiptv.app
 
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.state.PlaybackSelectionController
@@ -27,6 +28,17 @@ class PlaybackSelectionControllerTest {
         assertNull(controller.selection.value)
 
         assertFalse(controller.select(item("30", null)))
+        assertNull(controller.selection.value)
+    }
+
+    @Test
+    fun episodeReferenceCanBeSelectedAndClearedWithoutCredentials() {
+        val controller = PlaybackSelectionController()
+        val episode = EpisodePlaybackRef("501", "Episode", "mkv")
+
+        assertTrue(controller.select(episode))
+        assertSame(episode, controller.selection.value)
+        controller.clear()
         assertNull(controller.selection.value)
     }
 

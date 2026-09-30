@@ -158,7 +158,9 @@ class CatalogController(
             phase = CatalogPhase.Error,
             error = when (error) {
                 CatalogError.MissingSession -> CatalogUiError.SessionUnavailable
-                CatalogError.InvalidResponse -> CatalogUiError.InvalidResponse
+                CatalogError.InvalidMetadata,
+                CatalogError.InvalidResponse,
+                -> CatalogUiError.InvalidResponse
                 CatalogError.HttpFailure,
                 CatalogError.NetworkFailure,
                 -> CatalogUiError.ProviderUnavailable

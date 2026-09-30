@@ -1,5 +1,6 @@
 package com.pinkiptv.app
 
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlayerUiState
@@ -14,6 +15,7 @@ class PlaybackSecurityTest {
         val publicTypes = listOf(
             LivePlaybackRef::class.java,
             VodPlaybackRef::class.java,
+            EpisodePlaybackRef::class.java,
             PlayerUiState::class.java,
         )
         val forbidden = setOf(

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false" />
+    <!-- Stage 003A must honor backend-authoritative Xtream origins that may use HTTP.
+         PINK Backend cleartext remains rejected in BackendSessionClient. -->
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>

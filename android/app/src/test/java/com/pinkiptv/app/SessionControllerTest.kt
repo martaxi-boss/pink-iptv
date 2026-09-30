@@ -1,7 +1,9 @@
 package com.pinkiptv.app
 
+import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionRepository
 import com.pinkiptv.app.model.SessionResult
+import com.pinkiptv.app.state.AppUiState
 import com.pinkiptv.app.state.LoginError
 import com.pinkiptv.app.state.RootScreen
 import com.pinkiptv.app.state.SessionController
@@ -10,6 +12,8 @@ import com.pinkiptv.app.storage.StoredCredentials
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -17,20 +21,23 @@ class SessionControllerTest {
     @Test
     fun startupWithoutStoredCredentialsShowsLogin() = runTest {
         val store = FakeCredentialStore()
+        val runtime = RuntimeProviderSessionStore()
         val controller = SessionController(
             repository = FakeSessionRepository(SessionResult.TemporaryUnavailable),
             credentialStore = store,
             scope = this,
+            providerSessionStore = runtime,
         )
 
         advanceUntilIdle()
 
         assertEquals(RootScreen.Login, controller.state.value.screen)
         assertEquals(0, store.clearCount)
+        assertNull(runtime.current())
     }
 
     @Test
-    fun startupWithValidStoredCredentialsShowsHome() = runTest {
+    fun startupWithValidStoredCredentialsRebuildsRuntimeSession() = runTest {
         val store = FakeCredentialStore(
             stored = StoredCredentials(
                 username = "stored-user",
@@ -38,27 +45,33 @@ class SessionControllerTest {
             ),
         )
         val repository = FakeSessionRepository(success())
+        val runtime = RuntimeProviderSessionStore()
 
-        val controller = SessionController(repository, store, this)
+        val controller = SessionController(repository, store, this, runtime)
         advanceUntilIdle()
 
         assertEquals(RootScreen.Home, controller.state.value.screen)
         assertEquals(1, repository.calls.size)
         assertEquals(0, store.clearCount)
+        assertNotNull(runtime.current())
+        assertEquals("https://catalog.invalid/", runtime.current()?.xtreamBaseUrl)
     }
 
     @Test
-    fun invalidStoredCredentialsAreClearedBeforeLogin() = runTest {
+    fun invalidStoredCredentialsClearRuntimeAndStoredCredentials() = runTest {
         val store = FakeCredentialStore(
             stored = StoredCredentials(
                 username = "stored-user",
                 password = "stale-pass", // pragma: allowlist secret
             ),
         )
+        val runtime = RuntimeProviderSessionStore()
+        runtime.establish("old-user", "old-pass", success()) // pragma: allowlist secret
         val controller = SessionController(
             repository = FakeSessionRepository(SessionResult.InvalidCredentials),
             credentialStore = store,
             scope = this,
+            providerSessionStore = runtime,
         )
         advanceUntilIdle()
 
@@ -66,15 +79,18 @@ class SessionControllerTest {
         assertEquals(LoginError.InvalidCredentials, controller.state.value.loginError)
         assertEquals(1, store.clearCount)
         assertNull(store.stored)
+        assertNull(runtime.current())
     }
 
     @Test
-    fun successfulLoginSavesCredentialsAndShowsHome() = runTest {
+    fun successfulLoginSavesCredentialsAndCreatesRuntimeSession() = runTest {
         val store = FakeCredentialStore()
+        val runtime = RuntimeProviderSessionStore()
         val controller = SessionController(
             repository = FakeSessionRepository(success()),
             credentialStore = store,
             scope = this,
+            providerSessionStore = runtime,
         )
         advanceUntilIdle()
 
@@ -84,34 +100,21 @@ class SessionControllerTest {
         assertEquals(RootScreen.Home, controller.state.value.screen)
         assertEquals("fixture-user", store.stored?.username)
         assertEquals("fixture-pass", store.stored?.password) // pragma: allowlist secret
+        assertEquals("fixture-user", runtime.current()?.username)
+        assertEquals("https://catalog.invalid/", runtime.current()?.xtreamBaseUrl)
     }
 
     @Test
-    fun failedLoginNeverSavesCredentials() = runTest {
+    fun backendSuccessWithoutValidXtreamOriginFailsClosed() = runTest {
         val store = FakeCredentialStore()
+        val runtime = RuntimeProviderSessionStore()
         val controller = SessionController(
-            repository = FakeSessionRepository(SessionResult.InvalidCredentials),
+            repository = FakeSessionRepository(
+                success(xtreamBaseUrl = "ftp://catalog.invalid/"),
+            ),
             credentialStore = store,
             scope = this,
-        )
-        advanceUntilIdle()
-
-        controller.login("fixture-user", "bad-fixture") // pragma: allowlist secret
-        advanceUntilIdle()
-
-        assertEquals(RootScreen.Login, controller.state.value.screen)
-        assertEquals(LoginError.InvalidCredentials, controller.state.value.loginError)
-        assertEquals(0, store.saveCount)
-        assertNull(store.stored)
-    }
-
-    @Test
-    fun temporaryFailureIsRecoverableAndDoesNotSaveCredentials() = runTest {
-        val store = FakeCredentialStore()
-        val controller = SessionController(
-            repository = FakeSessionRepository(SessionResult.TemporaryUnavailable),
-            credentialStore = store,
-            scope = this,
+            providerSessionStore = runtime,
         )
         advanceUntilIdle()
 
@@ -121,23 +124,72 @@ class SessionControllerTest {
         assertEquals(RootScreen.Login, controller.state.value.screen)
         assertEquals(LoginError.TemporaryUnavailable, controller.state.value.loginError)
         assertEquals(0, store.saveCount)
+        assertNull(runtime.current())
     }
 
     @Test
-    fun logoutClearsCredentialsAndReturnsToLogin() = runTest {
+    fun failedExpiredAndDisabledLoginsLeaveNoRuntimeSession() = runTest {
+        for (result in listOf(
+            SessionResult.InvalidCredentials,
+            SessionResult.Expired,
+            SessionResult.Disabled,
+        )) {
+            val runtime = RuntimeProviderSessionStore()
+            runtime.establish("old-user", "old-pass", success()) // pragma: allowlist secret
+            val controller = SessionController(
+                repository = FakeSessionRepository(result),
+                credentialStore = FakeCredentialStore(),
+                scope = this,
+                providerSessionStore = runtime,
+            )
+            advanceUntilIdle()
+
+            controller.login("fixture-user", "fixture-pass") // pragma: allowlist secret
+            advanceUntilIdle()
+
+            assertNull(runtime.current())
+        }
+    }
+
+    @Test
+    fun temporaryFailureIsRecoverableAndDoesNotSaveCredentials() = runTest {
+        val store = FakeCredentialStore()
+        val runtime = RuntimeProviderSessionStore()
+        val controller = SessionController(
+            repository = FakeSessionRepository(SessionResult.TemporaryUnavailable),
+            credentialStore = store,
+            scope = this,
+            providerSessionStore = runtime,
+        )
+        advanceUntilIdle()
+
+        controller.login("fixture-user", "fixture-pass") // pragma: allowlist secret
+        advanceUntilIdle()
+
+        assertEquals(RootScreen.Login, controller.state.value.screen)
+        assertEquals(LoginError.TemporaryUnavailable, controller.state.value.loginError)
+        assertEquals(0, store.saveCount)
+        assertNull(runtime.current())
+    }
+
+    @Test
+    fun logoutClearsCredentialsRuntimeAndReturnsToLogin() = runTest {
         val store = FakeCredentialStore(
             stored = StoredCredentials(
                 username = "stored-user",
                 password = "stored-pass", // pragma: allowlist secret
             ),
         )
+        val runtime = RuntimeProviderSessionStore()
         val controller = SessionController(
             repository = FakeSessionRepository(success()),
             credentialStore = store,
             scope = this,
+            providerSessionStore = runtime,
         )
         advanceUntilIdle()
         assertEquals(RootScreen.Home, controller.state.value.screen)
+        assertNotNull(runtime.current())
 
         controller.logout()
         advanceUntilIdle()
@@ -145,13 +197,25 @@ class SessionControllerTest {
         assertEquals(RootScreen.Login, controller.state.value.screen)
         assertEquals(1, store.clearCount)
         assertNull(store.stored)
+        assertNull(runtime.current())
     }
 
-    private fun success() = SessionResult.Success(
+    @Test
+    fun publicUiStateContainsNoPasswordField() {
+        assertFalse(
+            AppUiState::class.java.declaredFields.any {
+                it.name.contains("password", ignoreCase = true)
+            },
+        )
+    }
+
+    private fun success(
+        xtreamBaseUrl: String = "https://catalog.invalid/",
+    ) = SessionResult.Success(
         sessionToken = "fixture-session",
         sessionExpiresAt = null,
-        xtreamBaseUrl = null,
-        accountExpiresAt = null,
+        xtreamBaseUrl = xtreamBaseUrl,
+        accountExpiresAt = "2030-01-01T00:00:00Z",
     )
 
     private class FakeSessionRepository(

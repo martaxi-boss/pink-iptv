@@ -56,7 +56,7 @@ Order 001 live proof is complete and passed before merge. Automated CI remains s
 
 Android CI uses JDK 17 and the committed Gradle wrapper. It runs `lintDebug`, all debug JVM unit tests, `assembleDebug`, compilation/assembly of Android instrumentation-test sources, and repository secret scanning without production signing or credentials.
 
-Order 002 JVM tests cover exact username/password request serialization, backend response-code mapping, login success/failure/temporary states, startup decisions with and without stored credentials, failed-login no-save behavior, invalid stored-credential clearing, logout clearing, HTTPS backend URL policy, and the encrypted credential-store contract.
+Order 002 JVM tests cover exact username/password request serialization, backend response-code mapping, login success/failure/temporary states, startup decisions with and without stored credentials, failed-login no-save behavior, invalid stored-credential clearing, logout clearing, HTTPS backend URL policy, and the encrypted credential-store contract. Stage 003A extends these tests with provider runtime-session lifecycle and catalog networking.
 
 Compose instrumentation sources cover the Login control contract, Home navigation, and D-pad focus movement. They must compile in CI. Device execution is reported separately and is never invented when an emulator/device is unavailable.
 
@@ -66,6 +66,27 @@ Compose instrumentation sources cover the Login control contract, Home navigatio
 - Android TV / TV Box: launch, D-pad-only Home navigation, strong focus state, OK activation, Back behavior and Login with remote plus system keyboard.
 
 No Order 002 device proof may use hidden production fake-login behavior. Test-only composition/fakes are allowed only in test sources.
+
+Order 002 is complete and merged at `f83542a31ff7ac0fbd08ceab3531d3d92ee03a10`; phone proof PASS and TV proof PASS.
+
+## Android Catalog + Player 003A automated proof
+
+Stage 003A adds JVM coverage for:
+
+- runtime provider session creation only after backend SUCCESS;
+- runtime session rebuild after startup reauthentication and clearing on logout/auth failure;
+- absence of password fields from public `AppUiState`;
+- exact Xtream origin preservation and HTTP/HTTPS origin policy;
+- continued HTTPS-only policy for the PINK Backend;
+- disabled provider redirects and stable `PINK-IPTV/0.1` User-Agent;
+- Live, VOD and Series category/item parsing including numeric/string ids and nullable metadata;
+- empty payloads, malformed top-level payloads, HTTP failures, timeout/network failures and missing runtime sessions;
+- credential-free error representations;
+- catalog controller content/category filtering, empty and recoverable-error states.
+
+Compose instrumentation sources cover Live/Movies/Series loading/content/empty/error surfaces, category/item browsing, TV focus movement, retry and Back behavior using deterministic fake UI state. CI never calls a live provider.
+
+Order 002 phone-device proof remains enabled on pull requests. Its `NavigationShellTest` is reconciled to the real Live catalog route rather than the former placeholder.
 
 ## Future client/platform matrices retained
 

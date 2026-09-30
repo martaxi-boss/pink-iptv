@@ -5,6 +5,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pinkiptv.app.R
+import com.pinkiptv.app.model.CatalogKind
+import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.ui.screens.CatalogScreen
 import com.pinkiptv.app.ui.screens.HomeScreen
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.screens.ShellScreen
@@ -20,7 +23,14 @@ private object Routes {
 }
 
 @Composable
-fun AuthenticatedShell(onLogout: () -> Unit) {
+fun AuthenticatedShell(
+    liveCatalog: CatalogUiState,
+    movieCatalog: CatalogUiState,
+    seriesCatalog: CatalogUiState,
+    onLoadCatalog: (CatalogKind) -> Unit,
+    onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
+    onLogout: () -> Unit,
+) {
     val navController = rememberNavController()
 
     NavHost(
@@ -31,13 +41,31 @@ fun AuthenticatedShell(onLogout: () -> Unit) {
             HomeScreen(onNavigate = { route -> navController.navigate(route) })
         }
         composable(Routes.LIVE) {
-            ShellScreen(R.string.live_tv, onBack = { navController.popBackStack() })
+            CatalogScreen(
+                titleRes = R.string.live_tv,
+                state = liveCatalog,
+                onLoad = { onLoadCatalog(CatalogKind.Live) },
+                onSelectCategory = { onSelectCatalogCategory(CatalogKind.Live, it) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.MOVIES) {
-            ShellScreen(R.string.movies, onBack = { navController.popBackStack() })
+            CatalogScreen(
+                titleRes = R.string.movies,
+                state = movieCatalog,
+                onLoad = { onLoadCatalog(CatalogKind.Movies) },
+                onSelectCategory = { onSelectCatalogCategory(CatalogKind.Movies, it) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.SERIES) {
-            ShellScreen(R.string.series, onBack = { navController.popBackStack() })
+            CatalogScreen(
+                titleRes = R.string.series,
+                state = seriesCatalog,
+                onLoad = { onLoadCatalog(CatalogKind.Series) },
+                onSelectCategory = { onSelectCatalogCategory(CatalogKind.Series, it) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.EPG) {
             ShellScreen(R.string.epg, onBack = { navController.popBackStack() })

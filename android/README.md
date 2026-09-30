@@ -1,41 +1,52 @@
 # Android Client
 
-Order 002 implements the PINK IPTV application shell for phone/tablet, Android TV and TV Box from one `:app` module.
+PINK IPTV uses one Android `:app` module for phone/tablet, Android TV and TV Box.
 
 ## Stack
 
 - Kotlin 2.4.10
 - Android Gradle Plugin 9.4.0
 - Gradle 9.6.0
-- Jetpack Compose 1.11.4 / Material 3 1.4.0 with Compose BOM 2026.06.01
-- Navigation Compose 2.9.8
+- Jetpack Compose / Material 3
+- Navigation Compose
 - Android ViewModel / StateFlow
 - DataStore Preferences
 - Android Keystore AES/GCM
-- OkHttp 5.4.0 for the PINK Backend session endpoint
+- OkHttp 5.4.0
+- Kotlin serialization / coroutines
 
-SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17. API 36 is used as the stable non-preview SDK available in the CI environment; Order 002 does not opt into Android 17 preview SDK tooling.
+SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17.
 
-## Order 002 scope
+## Completed baseline
 
-Implemented screens: Splash, Login, Home, TV ao Vivo shell, Filmes shell, Séries shell, EPG shell, Favoritos shell and Definições.
+Foundation / Mega Proof 001 is complete and merged.
 
-The Login surface exposes only USERNAME, PASSWORD and ENTRAR. The backend URL is build configuration, not a user field.
+Android Shell 002 is complete and merged at merge commit `f83542a31ff7ac0fbd08ceab3531d3d92ee03a10`. Phone device proof and Android TV device proof both passed.
 
-The application calls only PINK Backend `POST /v1/session/resolve`. Direct Xtream provider networking is not part of Order 002.
+The Login surface remains exactly USERNAME, PASSWORD and ENTRAR. The PINK Backend URL is build configuration and is never a customer field.
 
-## Security
+## Phase 3 / Stage 003A
 
-The versioned fallback `PINK_API_BASE_URL` is `https://pink-api.invalid/`. Runtime builds must supply an HTTPS PINK Backend base URL using the Gradle property. Cleartext traffic is disabled by manifest/network security configuration.
+Stage 003A adds the authenticated provider runtime and catalog foundation:
 
-Valid credentials may be retained for reauthentication with the password encrypted using a per-installation Android Keystore AES/GCM key; only ciphertext/IV metadata and username are stored in DataStore. Logout clears the local record and destroys the key alias.
+- PINK Backend `POST /v1/session/resolve` remains the only login/discovery contract;
+- a successful backend response creates an in-memory provider session containing the customer credentials plus the exact authoritative `xtream_base_url`;
+- the runtime session is rebuilt only after successful startup reauthentication and is cleared on logout/invalid/expired/disabled authentication;
+- direct provider requests use `player_api.php` only after backend success;
+- exact backend-resolved HTTP or HTTPS Xtream origins are supported without scheme/host rewriting;
+- redirects are disabled and provider requests use `User-Agent: PINK-IPTV/0.1`;
+- Live TV, Movies/VOD and Series expose loading, content, empty and recoverable-error catalog states with category/item browsing.
 
-No HTTP body logger is included.
+Android platform cleartext policy permits provider HTTP because the backend-authoritative Xtream origin may legitimately use HTTP. This does not weaken `BackendSessionClient`: the PINK Backend remains HTTPS-only in production code.
+
+The password remains absent from navigation arguments, Compose saved state and public `AppUiState`. Existing Android Keystore/DataStore encrypted credential persistence is unchanged.
 
 ## TV / input
 
-The same APK declares normal and Leanback launcher entry points. Touchscreen is not required. Home defines deterministic D-pad focus neighbors and a strong PINK focus border; Login is usable with D-pad plus the system keyboard.
+Catalog surfaces are touch-scrollable and D-pad focusable. Focused catalog categories, items and actions use the PINK focus treatment. Home/Login behavior from Order 002 remains intact.
 
-## Explicitly future
+## Explicitly not implemented in 003A
 
-No Media3/player, real catalog, stream URL handling, VPN/WireGuard, Room, Windows, Samsung/Tizen or LG/webOS implementation is included.
+No Media3/ExoPlayer playback, stream playback URL generation, Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard or Windows implementation is included.
+
+Public launch remains NO.

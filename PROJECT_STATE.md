@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-09-24
-Phase: Phase 2 — Android Shell
+Date: 2026-09-30
+Phase: Phase 3 — Android Catalog + Player 003A
 Public launch: NO
 
 ## Governance
@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 is the active implementation phase; direct Xtream catalog/provider networking remains future work.
+- Android Shell 002 is complete and merged. Phase 3 / Stage 003A adds the authenticated Xtream runtime session and real Live/VOD/Series catalog foundation; playback remains a later Stage 003 step.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -64,19 +64,32 @@ Sanitized live-proof record:
 
 No username, customer password, Mega token, provider hostname, session token, or credential-bearing URL is recorded in this state document.
 
-## Android Shell 002 implementation state
+## Android Shell 002 — COMPLETE / MERGED
 
-Order 002 is authorized and is being implemented on `builder/android-shell-002`.
+Order 002 approved head: `6d93c4e8359fc18d97f68b434f2b1b90bb054565`.
 
-Prepared scope includes the Android project shell for phone/tablet, Android TV and TV Box; Splash, Login, Home and the Live TV, Movies, Series, EPG, Favorites and Settings shell routes; PINK Backend session client; secure Android Keystore/DataStore credential storage; D-pad/focus behavior; automated Android tests and Android CI.
+Order 002 merge commit: `f83542a31ff7ac0fbd08ceab3531d3d92ee03a10`.
 
-Order 002 status: IMPLEMENTATION PREPARED / IN REVIEW. It is not merged and must not be described as complete until Supervisor audit and merge.
+Certified evidence:
+
+- phone device proof: PASS;
+- Android TV device proof: PASS;
+- Login remains USERNAME + PASSWORD only;
+- secure Android Keystore/DataStore credential persistence remains the only credential persistence path;
+- public launch: NO.
+
+## Phase 3 / Stage 003A — ACTIVE
+
+Stage 003A implements the in-memory authenticated-provider session, exact backend-resolved Xtream origin handling, direct catalog networking through `player_api.php`, and real Live TV, Movies/VOD and Series browsing states.
+
+Playback/Media3, full EPG, favorites/history, VPN/WireGuard and Windows remain unimplemented and outside Stage 003A.
 
 ## Remaining technical gates
 
-1. Android Shell 002 build/test/CI evidence and Supervisor audit/merge decision.
-2. Separate future orders for direct Xtream catalog/networking, player/Media3, VPN/WireGuard and Windows.
-3. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
+1. Supervisor audit of Android Catalog + Player 003A.
+2. Separate Phase 3 player/Media3 and later EPG/favorites/history stages.
+3. Separate VPN/WireGuard and Windows phases.
+4. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
 ## Current development/staging infrastructure
 
@@ -99,7 +112,7 @@ The current OVH host remains development/staging. Public launch is not approved.
 Beyond Android Shell 002, separate orders are still required for:
 
 1. final distribution/store artwork and design assets;
-2. Android direct Xtream catalog/provider networking and player work;
+2. Android Phase 3 player/Media3 and later catalog-adjacent work after Stage 003A;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

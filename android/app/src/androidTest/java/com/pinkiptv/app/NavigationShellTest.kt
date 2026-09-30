@@ -15,11 +15,16 @@ import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogPhase
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.PlayerPhase
 import com.pinkiptv.app.model.PlayerUiState
+import com.pinkiptv.app.model.SeriesDetailPhase
+import com.pinkiptv.app.model.SeriesDetailUiState
+import com.pinkiptv.app.model.SeriesEpisode
+import com.pinkiptv.app.model.SeriesSeason
 import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.ui.navigation.AuthenticatedShell
 import com.pinkiptv.app.ui.theme.PinkTheme
@@ -63,7 +68,7 @@ class NavigationShellTest {
     }
 
     @Test
-    fun liveAndMovieOpenPlayerBackReturnsAndSeriesStaysBrowseOnly() {
+    fun liveMovieAndSeriesEpisodeNavigationStayDeterministic() {
         val factory = TestPlaybackFacadeFactory(
             PlayerUiState(
                 phase = PlayerPhase.Playing,
@@ -110,11 +115,44 @@ class NavigationShellTest {
                             playbackRef = null,
                         ),
                     ),
+                    seriesDetail = SeriesDetailUiState(
+                        phase = SeriesDetailPhase.Content,
+                        selectedSeriesId = "series-1",
+                        title = "Series One",
+                        seasons = listOf(
+                            SeriesSeason("1", "Season 1", 1, null),
+                        ),
+                        selectedSeasonId = "1",
+                        episodes = listOf(
+                            SeriesEpisode(
+                                episodeId = "episode-1",
+                                episodeNumber = "1",
+                                title = "Episode One",
+                                seasonId = "1",
+                                containerExtension = "mp4",
+                                artworkUrl = null,
+                                duration = null,
+                                plot = null,
+                            ),
+                        ),
+                    ),
                     selectedPlayback = selected,
                     playbackFacadeFactory = factory,
                     onLoadCatalog = {},
                     onSelectCatalogCategory = { _, _ -> },
+                    onOpenSeries = {},
+                    onRetrySeriesDetail = {},
+                    onSelectSeriesSeason = {},
+                    onClearSeriesDetail = {},
                     onSelectPlayback = { selected = it.playbackRef },
+                    onSelectEpisode = { episode ->
+                        selected = EpisodePlaybackRef(
+                            episodeId = episode.episodeId,
+                            title = episode.title,
+                            containerExtension = episode.containerExtension,
+                            artworkUrl = episode.artworkUrl,
+                        )
+                    },
                     onClearPlayback = { selected = null },
                     onLogout = {},
                 )
@@ -138,8 +176,12 @@ class NavigationShellTest {
         composeRule.onNodeWithTag("catalog_back").performClick()
         composeRule.onNodeWithTag("home_series").performClick()
         composeRule.onNodeWithTag("catalog_item_series-1").performClick()
-        composeRule.onNodeWithTag("player_screen").assertDoesNotExist()
-        composeRule.onNodeWithTag("series_future_playback").assertIsDisplayed()
+        composeRule.onNodeWithTag("series_detail_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("series_episode_episode-1").performClick()
+        composeRule.onNodeWithTag("player_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("player_back").performClick()
+        composeRule.onNodeWithTag("series_detail_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("series_episode_episode-1").assertIsDisplayed()
     }
 
     private fun contentState(

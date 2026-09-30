@@ -59,11 +59,8 @@ fun SeriesDetailScreen(
         Configuration.UI_MODE_TYPE_TELEVISION
     val primaryFocus = remember { FocusRequester() }
 
-    LaunchedEffect(isTv, state.phase, state.selectedSeasonId) {
-        if (
-            isTv &&
-            (state.phase == SeriesDetailPhase.Content || state.phase == SeriesDetailPhase.Error)
-        ) {
+    LaunchedEffect(isTv, state.phase) {
+        if (isTv && state.phase == SeriesDetailPhase.Error) {
             withFrameNanos { }
             primaryFocus.requestFocus()
         }
@@ -106,7 +103,7 @@ fun SeriesDetailScreen(
             )
             SeriesDetailPhase.Content -> SeriesDetailContent(
                 state = state,
-                initialFocus = if (isTv) primaryFocus else null,
+                requestInitialFocus = isTv,
                 onSelectSeason = onSelectSeason,
                 onOpenEpisode = onOpenEpisode,
             )
@@ -177,7 +174,7 @@ private fun ErrorSeriesDetail(
 @Composable
 private fun SeriesDetailContent(
     state: SeriesDetailUiState,
-    initialFocus: FocusRequester?,
+    requestInitialFocus: Boolean,
     onSelectSeason: (String) -> Unit,
     onOpenEpisode: (SeriesEpisode) -> Unit,
 ) {
@@ -210,6 +207,13 @@ private fun SeriesDetailContent(
         it.seasonId == state.selectedSeasonId
     }.coerceAtLeast(0)
 
+    LaunchedEffect(requestInitialFocus, selectedSeasonIndex, seasonIds) {
+        if (requestInitialFocus && seasonRequesters.isNotEmpty()) {
+            withFrameNanos { }
+            seasonRequesters[selectedSeasonIndex.coerceAtMost(seasonRequesters.lastIndex)].requestFocus()
+        }
+    }
+
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -221,7 +225,6 @@ private fun SeriesDetailContent(
                 season = season,
                 selected = season.seasonId == state.selectedSeasonId,
                 focusRequester = seasonRequesters.getOrNull(index),
-                initialFocus = if (index == selectedSeasonIndex) initialFocus else null,
                 left = seasonRequesters.getOrNull(index - 1),
                 right = seasonRequesters.getOrNull(index + 1),
                 down = episodeRequesters.firstOrNull(),
@@ -260,7 +263,6 @@ private fun SeasonChip(
     season: SeriesSeason,
     selected: Boolean,
     focusRequester: FocusRequester?,
-    initialFocus: FocusRequester?,
     left: FocusRequester?,
     right: FocusRequester?,
     down: FocusRequester?,
@@ -276,7 +278,6 @@ private fun SeasonChip(
             down?.let { this.down = it }
         }
     if (focusRequester != null) modifier = modifier.focusRequester(focusRequester)
-    if (initialFocus != null) modifier = modifier.focusRequester(initialFocus)
 
     Card(
         colors = CardDefaults.cardColors(

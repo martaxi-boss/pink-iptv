@@ -66,16 +66,15 @@ class XtreamCatalogClient(
         requestList("get_series", XtreamJsonParser::seriesItems)
 
     override suspend fun seriesInfo(seriesId: String): CatalogResult<SeriesDetail> {
-        val normalizedId = seriesId.trim()
-        if (!PROVIDER_ID.matches(normalizedId)) {
+        if (!PROVIDER_ID.matches(seriesId)) {
             return CatalogResult.Failure(CatalogError.InvalidMetadata)
         }
 
         return requestValue(
             action = "get_series_info",
-            extraQuery = mapOf("series_id" to normalizedId),
+            extraQuery = mapOf("series_id" to seriesId),
         ) { body ->
-            XtreamJsonParser.seriesDetail(normalizedId, body)
+            XtreamJsonParser.seriesDetail(seriesId, body)
         }
     }
 
@@ -171,13 +170,13 @@ internal object XtreamJsonParser {
                 name = name,
                 categoryId = item.text("category_id"),
                 artworkUrl = item.text("stream_icon"),
-                containerExtension = item.text("container_extension"),
+                containerExtension = item.rawText("container_extension"),
             )
         }
 
     fun seriesItems(body: String): List<SeriesItem> =
         parseArray(body) { item ->
-            val id = item.text("series_id") ?: return@parseArray null
+            val id = item.providerId("series_id") ?: return@parseArray null
             val name = item.text("name") ?: return@parseArray null
             SeriesItem(
                 seriesId = id,
@@ -267,10 +266,9 @@ internal object XtreamJsonParser {
         groupedSeasonId: String?,
     ): SeriesEpisode? {
         item ?: return null
-        val episodeId = item.text("id")
-            ?: item.text("episode_id")
+        val episodeId = item.providerId("id")
+            ?: item.providerId("episode_id")
             ?: return null
-        if (!providerMediaId.matches(episodeId)) return null
         val seasonId = groupedSeasonId
             ?.trim()
             ?.takeIf { it.isNotEmpty() && it != "null" }
@@ -312,10 +310,19 @@ internal object XtreamJsonParser {
         }
     }
 
-    private fun JsonObject.text(name: String): String? {
+    private fun JsonObject.providerId(name: String): String? {
+        val value = rawText(name) ?: return null
+        return value.takeIf(providerMediaId::matches)
+    }
+
+    private fun JsonObject.rawText(name: String): String? {
         val primitive = this[name] as? JsonPrimitive ?: return null
         return primitive.contentOrNull
-            ?.trim()
             ?.takeIf { value -> value.isNotEmpty() && value != "null" }
     }
+
+    private fun JsonObject.text(name: String): String? =
+        rawText(name)
+            ?.trim()
+            ?.takeIf { value -> value.isNotEmpty() && value != "null" }
 }

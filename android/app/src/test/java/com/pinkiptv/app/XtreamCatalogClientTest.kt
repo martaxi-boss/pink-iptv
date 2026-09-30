@@ -320,7 +320,8 @@ class XtreamCatalogClientTest {
               "episodes":{
                 "1":[
                   {"id":"../bad","episode_num":"1","container_extension":"mp4"},
-                  {"id":"1001","episode_num":"2","container_extension":"mp4"}
+                  {"id":" 1000 ","episode_num":"2","container_extension":"mp4"},
+                  {"id":"1001","episode_num":"3","container_extension":"mp4"}
                 ]
               }
             }
@@ -363,12 +364,43 @@ class XtreamCatalogClientTest {
         assertEquals(CatalogError.InvalidResponse, failureValue(malformed))
 
         val interceptor = RecordingInterceptor("""{"info":{},"seasons":[],"episodes":{}}""")
-        val invalid = XtreamCatalogClient(
+        val catalog = XtreamCatalogClient(
             activeStore(),
             testClient(interceptor),
-        ).seriesInfo("../789")
-        assertEquals(CatalogError.InvalidMetadata, failureValue(invalid))
+        )
+        for (seriesId in listOf("../789", " 789", "789 ", "78/9", "78?9", "78#9", "78\t9")) {
+            val invalid = catalog.seriesInfo(seriesId)
+            assertEquals(CatalogError.InvalidMetadata, failureValue(invalid))
+        }
         assertEquals(null, interceptor.request)
+    }
+
+
+    @Test
+    fun seriesInfoDoesNotNormalizeUnsafeEpisodeExtension() = runTest {
+        val body = """
+            {
+              "info":{"name":"Show"},
+              "seasons":[{"season_number":"1"}],
+              "episodes":{
+                "1":[
+                  {
+                    "id":"1001",
+                    "episode_num":"1",
+                    "container_extension":" mp4 "
+                  }
+                ]
+              }
+            }
+        """.trimIndent()
+        val detail = successValue<SeriesDetail>(
+            XtreamCatalogClient(
+                activeStore(),
+                testClient(RecordingInterceptor(body)),
+            ).seriesInfo("789"),
+        )
+
+        assertEquals(" mp4 ", detail.episodes.single().containerExtension)
     }
 
     @Test

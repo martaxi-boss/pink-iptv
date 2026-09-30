@@ -355,6 +355,25 @@ class XtreamCatalogClientTest {
         assertTrue(detail.episodes.isEmpty())
     }
 
+
+    @Test
+    fun seriesInfoTreatsNullSeasonsAndEpisodesAsEmptyOptionalData() = runTest {
+        val detail = successValue<SeriesDetail>(
+            XtreamCatalogClient(
+                activeStore(),
+                testClient(
+                    RecordingInterceptor(
+                        """{"info":{"name":"Sparse"},"seasons":null,"episodes":null}""",
+                    ),
+                ),
+            ).seriesInfo("44"),
+        )
+
+        assertEquals("Sparse", detail.name)
+        assertTrue(detail.seasons.isEmpty())
+        assertTrue(detail.episodes.isEmpty())
+    }
+
     @Test
     fun seriesInfoRejectsMalformedTopLevelAndInvalidSeriesIdentity() = runTest {
         val malformed = XtreamCatalogClient(

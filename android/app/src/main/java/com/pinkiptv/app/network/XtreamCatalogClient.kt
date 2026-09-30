@@ -21,6 +21,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import okhttp3.OkHttpClient
@@ -227,7 +228,7 @@ internal object XtreamJsonParser {
     }
 
     private fun parseSeasons(element: JsonElement?): List<SeriesSeason> {
-        if (element == null) return emptyList()
+        if (element == null || element is JsonNull) return emptyList()
         val array = element as? JsonArray
             ?: throw SerializationException("Unexpected seasons shape")
         return array.mapNotNull { seasonElement ->
@@ -245,7 +246,7 @@ internal object XtreamJsonParser {
     }
 
     private fun parseEpisodes(element: JsonElement?): List<SeriesEpisode> {
-        if (element == null) return emptyList()
+        if (element == null || element is JsonNull) return emptyList()
         return when (element) {
             is JsonObject -> element.entries.flatMap { (seasonKey, group) ->
                 val array = group as? JsonArray

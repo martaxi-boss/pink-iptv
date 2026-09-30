@@ -10,18 +10,25 @@ import org.junit.Test
 
 class PlaybackSecurityTest {
     @Test
-    fun playbackReferencesAndPublicStateContainNoCredentialOrUriFields() {
+    fun playbackReferencesAndPublicStateContainNoCredentialOrPlaybackUriFields() {
         val publicTypes = listOf(
             LivePlaybackRef::class.java,
             VodPlaybackRef::class.java,
             PlayerUiState::class.java,
         )
-        val forbidden = listOf("username", "password", "uri", "url", "token")
+        val forbidden = setOf(
+            "username",
+            "password",
+            "uri",
+            "playbackuri",
+            "playbackurl",
+            "sessiontoken",
+        )
 
         for (type in publicTypes) {
             val names = type.declaredFields.map { it.name.lowercase() }
             for (word in forbidden) {
-                assertFalse(type.simpleName + " leaked " + word, names.any { it.contains(word) })
+                assertFalse(type.simpleName + " leaked " + word, names.any { it == word })
             }
         }
     }

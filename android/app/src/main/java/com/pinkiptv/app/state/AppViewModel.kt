@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
+import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.model.SessionRepository
 import com.pinkiptv.app.storage.CredentialStore
 
@@ -26,12 +28,17 @@ class AppViewModel(
         repository = catalogRepository,
         scope = viewModelScope,
     )
+    private val seriesDetailController = SeriesDetailController(
+        repository = catalogRepository,
+        scope = viewModelScope,
+    )
     private val playbackSelectionController = PlaybackSelectionController()
 
     val uiState = sessionController.state
     val liveCatalog = catalogController.live
     val movieCatalog = catalogController.movies
     val seriesCatalog = catalogController.series
+    val seriesDetail = seriesDetailController.state
     val selectedPlayback = playbackSelectionController.selection
 
     fun login(username: String, password: String) {
@@ -40,6 +47,7 @@ class AppViewModel(
 
     fun logout() {
         playbackSelectionController.clear()
+        seriesDetailController.clear()
         catalogController.clear()
         sessionController.logout()
     }
@@ -52,8 +60,35 @@ class AppViewModel(
         catalogController.selectCategory(kind, categoryId)
     }
 
+    fun openSeries(item: CatalogUiItem) {
+        seriesDetailController.openSeries(item)
+    }
+
+    fun retrySeriesDetail() {
+        seriesDetailController.retry()
+    }
+
+    fun selectSeriesSeason(seasonId: String) {
+        seriesDetailController.selectSeason(seasonId)
+    }
+
+    fun clearSeriesDetail() {
+        seriesDetailController.clear()
+    }
+
     fun selectPlayback(item: CatalogUiItem) {
         playbackSelectionController.select(item)
+    }
+
+    fun selectEpisode(episode: SeriesEpisode) {
+        playbackSelectionController.select(
+            EpisodePlaybackRef(
+                episodeId = episode.episodeId,
+                title = episode.title,
+                containerExtension = episode.containerExtension,
+                artworkUrl = episode.artworkUrl,
+            ),
+        )
     }
 
     fun clearPlayback() {

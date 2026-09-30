@@ -48,6 +48,7 @@ class Media3PlaybackFacadeFactory(
         Media3PlaybackFacade(
             context = applicationContext,
             urlFactory = XtreamPlaybackUrlFactory(sessionStore),
+            sessionStore = sessionStore,
             client = client,
         )
 }
@@ -56,6 +57,7 @@ class Media3PlaybackFacadeFactory(
 internal class Media3PlaybackFacade(
     context: Context,
     private val urlFactory: XtreamPlaybackUrlFactory,
+    private val sessionStore: RuntimeProviderSessionStore,
     client: OkHttpClient,
 ) : PlaybackFacade {
     private val mutableState = MutableStateFlow(PlayerUiState())
@@ -100,6 +102,16 @@ internal class Media3PlaybackFacade(
     init {
         requireMainThread()
         player.addListener(listener)
+        scope.launch {
+            sessionStore.available.collect { available ->
+                if (!available && currentRef != null && !released) {
+                    player.stop()
+                    player.clearMediaItems()
+                    currentError = PlayerError.SessionUnavailable
+                    syncState()
+                }
+            }
+        }
         scope.launch {
             while (isActive) {
                 delay(500)

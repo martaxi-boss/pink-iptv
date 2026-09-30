@@ -58,7 +58,8 @@ fun PlayerScreen(
     val configuration = LocalConfiguration.current
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
         Configuration.UI_MODE_TYPE_TELEVISION
-    val primaryFocus = remember { FocusRequester() }
+    val playFocus = remember { FocusRequester() }
+    val retryFocus = remember { FocusRequester() }
 
     DisposableEffect(facade) {
         val previousKeepScreenOn = view.keepScreenOn
@@ -75,10 +76,15 @@ fun PlayerScreen(
         }
     }
 
-    LaunchedEffect(isTv, state.phase, playbackRef) {
+    val showingError = state.phase == PlayerPhase.Error
+    LaunchedEffect(isTv, playbackRef, showingError) {
         if (isTv && playbackRef != null) {
             withFrameNanos { }
-            primaryFocus.requestFocus()
+            if (showingError) {
+                retryFocus.requestFocus()
+            } else {
+                playFocus.requestFocus()
+            }
         }
     }
 
@@ -130,13 +136,13 @@ fun PlayerScreen(
             when {
                 playbackRef == null -> PlayerErrorPanel(
                     message = "O conteúdo selecionado já não está disponível.",
-                    focusRequester = primaryFocus,
+                    focusRequester = retryFocus,
                     onRetry = {},
                     retryEnabled = false,
                 )
                 state.phase == PlayerPhase.Error -> PlayerErrorPanel(
                     message = playerErrorMessage(state.error),
-                    focusRequester = primaryFocus,
+                    focusRequester = retryFocus,
                     onRetry = facade::retry,
                     retryEnabled = true,
                 )
@@ -187,7 +193,7 @@ fun PlayerScreen(
                         label = if (state.isPlaying) "Pausa" else "Reproduzir",
                         testTag = "player_play_pause",
                         focusRequester = if (state.phase != PlayerPhase.Error) {
-                            primaryFocus
+                            playFocus
                         } else {
                             null
                         },

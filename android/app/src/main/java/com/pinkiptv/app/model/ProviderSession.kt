@@ -1,5 +1,8 @@
 package com.pinkiptv.app.model
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
@@ -45,6 +48,8 @@ class AuthenticatedProviderSession internal constructor(
 class RuntimeProviderSessionStore {
     @Volatile
     private var activeSession: AuthenticatedProviderSession? = null
+    private val mutableAvailable = MutableStateFlow(false)
+    val available: StateFlow<Boolean> = mutableAvailable.asStateFlow()
 
     fun establish(
         username: String,
@@ -65,6 +70,7 @@ class RuntimeProviderSessionStore {
             origin = validated,
             accountExpiresAt = result.accountExpiresAt,
         )
+        mutableAvailable.value = true
         return true
     }
 
@@ -72,5 +78,6 @@ class RuntimeProviderSessionStore {
 
     fun clear() {
         activeSession = null
+        mutableAvailable.value = false
     }
 }

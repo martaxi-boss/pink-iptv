@@ -86,6 +86,7 @@ class XtreamPlaybackUrlFactoryTest {
     fun missingOrClearedRuntimeSessionFailsClosedWithoutSecretText() {
         val store = RuntimeProviderSessionStore()
         val factory = XtreamPlaybackUrlFactory(store)
+        assertFalse(store.available.value)
 
         var result = factory.resolve(LivePlaybackRef("1", "One"))
         assertEquals(
@@ -98,7 +99,9 @@ class XtreamPlaybackUrlFactoryTest {
             "fixture-pass", // pragma: allowlist secret
             success("https://catalog.invalid/"),
         )
+        assertTrue(store.available.value)
         store.clear()
+        assertFalse(store.available.value)
         result = factory.resolve(LivePlaybackRef("1", "One"))
         val text = result.toString()
         assertTrue(result is PlaybackSourceResult.Failure)

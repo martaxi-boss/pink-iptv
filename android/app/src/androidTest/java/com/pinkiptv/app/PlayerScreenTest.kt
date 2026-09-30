@@ -1,6 +1,8 @@
 package com.pinkiptv.app
 
 import android.content.res.Configuration
+import android.view.KeyEvent
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -175,4 +177,99 @@ class PlayerScreenTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("player_play_pause").assertIsFocused()
     }
+    @Test
+    fun playerDisposalClosesFacade() {
+        val visible = mutableStateOf(true)
+        val factory = TestPlaybackFacadeFactory(
+            PlayerUiState(
+                phase = PlayerPhase.Playing,
+                title = "Live",
+                kind = PlaybackKind.Live,
+                isPlaying = true,
+            ),
+        )
+        composeRule.setContent {
+            PinkTheme {
+                if (visible.value) {
+                    PlayerScreen(
+                        playbackRef = LivePlaybackRef("6", "Live"),
+                        facadeFactory = factory,
+                        onBack = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.runOnIdle { visible.value = false }
+        composeRule.waitForIdle()
+        composeRule.runOnIdle {
+            assertEquals(1, factory.lastFacade.closeCount)
+        }
+    }
+
+    @Test
+    fun tvDpadMovesActivatesSeekAndRetryControls() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val configuration = instrumentation.targetContext.resources.configuration
+        assumeTrue(
+            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                Configuration.UI_MODE_TYPE_TELEVISION,
+        )
+
+        val vodFactory = TestPlaybackFacadeFactory(
+            PlayerUiState(
+                phase = PlayerPhase.Paused,
+                title = "Movie",
+                kind = PlaybackKind.Vod,
+                durationMs = 120_000L,
+                positionMs = 20_000L,
+                seekable = true,
+            ),
+        )
+        composeRule.setContent {
+            PinkTheme {
+                PlayerScreen(
+                    playbackRef = VodPlaybackRef("7", "Movie", "mp4"),
+                    facadeFactory = vodFactory,
+                    onBack = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("player_play_pause").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_RIGHT)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("player_seek_forward").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER)
+        composeRule.runOnIdle {
+            assertEquals(10_000L, vodFactory.lastFacade.seekTotalMs)
+        }
+
+        val errorFactory = TestPlaybackFacadeFactory(
+            PlayerUiState(
+                phase = PlayerPhase.Error,
+                title = "Live",
+                kind = PlaybackKind.Live,
+                error = PlayerError.Network,
+            ),
+        )
+        composeRule.setContent {
+            PinkTheme {
+                PlayerScreen(
+                    playbackRef = LivePlaybackRef("8", "Live"),
+                    facadeFactory = errorFactory,
+                    onBack = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("player_retry").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER)
+        composeRule.runOnIdle {
+            assertEquals(1, errorFactory.lastFacade.retryCount)
+        }
+    }
+
 }

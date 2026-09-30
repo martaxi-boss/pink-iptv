@@ -25,7 +25,11 @@ Android Shell 002 is complete and merged at merge commit `f83542a31ff7ac0fbd08ce
 
 The Login surface remains exactly USERNAME, PASSWORD and ENTRAR. The PINK Backend URL is build configuration and is never a customer field.
 
-## Phase 3 / Stage 003A
+## Phase 3 / Stage 003A — COMPLETE / MERGED
+
+Stage 003A approved head: `f6ad7a5f53afb7aded8db9e8841ae626f236f5d4`.
+
+Stage 003A merge commit: `135df164de9bb30e66b3b4268fbfc38c8b204e1a`.
 
 Stage 003A adds the authenticated provider runtime and catalog foundation:
 
@@ -41,12 +45,20 @@ Android platform cleartext policy permits provider HTTP because the backend-auth
 
 The password remains absent from navigation arguments, Compose saved state and public `AppUiState`. Existing Android Keystore/DataStore encrypted credential persistence is unchanged.
 
+## Phase 3 / Stage 003B — ACTIVE
+
+Stage 003B adds AndroidX Media3 1.11.1 foreground playback for Live TV and Movies/VOD. The player reuses the redirect-disabled provider OkHttp transport through Media3 OkHttpDataSource with `PINK-IPTV/0.1`.
+
+Playback uses credential-free typed Live/VOD references outside the player layer. The credential-bearing media URI is constructed only inside the player layer from the active runtime provider session and is never placed in navigation, public player UI state, saved state, logs or documentation.
+
+Live uses the canonical Xtream live path. Movies/VOD use the catalog-provided container extension after conservative validation. Series remains browse-only. ExoPlayer ownership is scoped to the active player surface and released when that surface is permanently disposed.
+
 ## TV / input
 
-Catalog surfaces are touch-scrollable and D-pad focusable. Focused catalog categories, items and actions use the PINK focus treatment. Home/Login behavior from Order 002 remains intact.
+Catalog surfaces are touch-scrollable and D-pad focusable. Focused catalog categories, items and actions use the PINK focus treatment. The Stage 003B player adds touch play/pause/retry/Back, seek controls only when media is seekable, and focusable TV/D-pad player controls. Home/Login behavior from Order 002 remains intact.
 
-## Explicitly not implemented in 003A
+## Explicitly not implemented after Stage 003B
 
-No Media3/ExoPlayer playback, stream playback URL generation, Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard or Windows implementation is included.
+Series episodes/playback, Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain outside Stage 003B.
 
 Public launch remains NO.

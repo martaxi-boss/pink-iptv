@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogRepository
+import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionRepository
 import com.pinkiptv.app.storage.CredentialStore
@@ -25,17 +26,20 @@ class AppViewModel(
         repository = catalogRepository,
         scope = viewModelScope,
     )
+    private val playbackSelectionController = PlaybackSelectionController()
 
     val uiState = sessionController.state
     val liveCatalog = catalogController.live
     val movieCatalog = catalogController.movies
     val seriesCatalog = catalogController.series
+    val selectedPlayback = playbackSelectionController.selection
 
     fun login(username: String, password: String) {
         sessionController.login(username, password)
     }
 
     fun logout() {
+        playbackSelectionController.clear()
         catalogController.clear()
         sessionController.logout()
     }
@@ -46,6 +50,14 @@ class AppViewModel(
 
     fun selectCatalogCategory(kind: CatalogKind, categoryId: String?) {
         catalogController.selectCategory(kind, categoryId)
+    }
+
+    fun selectPlayback(item: CatalogUiItem) {
+        playbackSelectionController.select(item)
+    }
+
+    fun clearPlayback() {
+        playbackSelectionController.clear()
     }
 
     class Factory(

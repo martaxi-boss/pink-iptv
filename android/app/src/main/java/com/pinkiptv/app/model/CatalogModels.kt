@@ -54,6 +54,7 @@ data class CatalogUiItem(
     val categoryId: String?,
     val artworkUrl: String?,
     val subtitle: String?,
+    val playbackRef: PlaybackRef? = null,
 )
 
 data class CatalogUiState(

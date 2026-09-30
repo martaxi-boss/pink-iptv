@@ -2,7 +2,10 @@ package com.pinkiptv.app.ui
 
 import androidx.compose.runtime.Composable
 import com.pinkiptv.app.model.CatalogKind
+import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.PlaybackRef
+import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.state.AppUiState
 import com.pinkiptv.app.state.RootScreen
 import com.pinkiptv.app.ui.navigation.AuthenticatedShell
@@ -15,10 +18,14 @@ fun PinkApp(
     liveCatalog: CatalogUiState,
     movieCatalog: CatalogUiState,
     seriesCatalog: CatalogUiState,
+    selectedPlayback: PlaybackRef?,
+    playbackFacadeFactory: PlaybackFacadeFactory,
     onLogin: (String, String) -> Unit,
     onLogout: () -> Unit,
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
+    onSelectPlayback: (CatalogUiItem) -> Unit,
+    onClearPlayback: () -> Unit,
 ) {
     when (state.screen) {
         RootScreen.Splash -> SplashScreen()
@@ -31,8 +38,12 @@ fun PinkApp(
             liveCatalog = liveCatalog,
             movieCatalog = movieCatalog,
             seriesCatalog = seriesCatalog,
+            selectedPlayback = selectedPlayback,
+            playbackFacadeFactory = playbackFacadeFactory,
             onLoadCatalog = onLoadCatalog,
             onSelectCatalogCategory = onSelectCatalogCategory,
+            onSelectPlayback = onSelectPlayback,
+            onClearPlayback = onClearPlayback,
             onLogout = onLogout,
         )
     }

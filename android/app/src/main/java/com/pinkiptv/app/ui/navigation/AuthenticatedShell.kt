@@ -6,9 +6,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pinkiptv.app.R
 import com.pinkiptv.app.model.CatalogKind
+import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.PlaybackRef
+import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.ui.screens.CatalogScreen
 import com.pinkiptv.app.ui.screens.HomeScreen
+import com.pinkiptv.app.ui.screens.PlayerScreen
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.screens.ShellScreen
 
@@ -20,6 +24,7 @@ private object Routes {
     const val EPG = "epg"
     const val FAVORITES = "favorites"
     const val SETTINGS = "settings"
+    const val PLAYER = "player"
 }
 
 @Composable
@@ -30,6 +35,10 @@ fun AuthenticatedShell(
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
     onLogout: () -> Unit,
+    selectedPlayback: PlaybackRef? = null,
+    playbackFacadeFactory: PlaybackFacadeFactory? = null,
+    onSelectPlayback: (CatalogUiItem) -> Unit = {},
+    onClearPlayback: () -> Unit = {},
 ) {
     val navController = rememberNavController()
 
@@ -46,6 +55,10 @@ fun AuthenticatedShell(
                 state = liveCatalog,
                 onLoad = { onLoadCatalog(CatalogKind.Live) },
                 onSelectCategory = { onSelectCatalogCategory(CatalogKind.Live, it) },
+                onOpenItem = { item ->
+                    onSelectPlayback(item)
+                    navController.navigate(Routes.PLAYER)
+                },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -55,6 +68,10 @@ fun AuthenticatedShell(
                 state = movieCatalog,
                 onLoad = { onLoadCatalog(CatalogKind.Movies) },
                 onSelectCategory = { onSelectCatalogCategory(CatalogKind.Movies, it) },
+                onOpenItem = { item ->
+                    onSelectPlayback(item)
+                    navController.navigate(Routes.PLAYER)
+                },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -66,6 +83,27 @@ fun AuthenticatedShell(
                 onSelectCategory = { onSelectCatalogCategory(CatalogKind.Series, it) },
                 onBack = { navController.popBackStack() },
             )
+        }
+        composable(Routes.PLAYER) {
+            val factory = playbackFacadeFactory
+            if (factory == null) {
+                ShellScreen(
+                    titleRes = R.string.next_phase,
+                    onBack = {
+                        onClearPlayback()
+                        navController.popBackStack()
+                    },
+                )
+            } else {
+                PlayerScreen(
+                    playbackRef = selectedPlayback,
+                    facadeFactory = factory,
+                    onBack = {
+                        onClearPlayback()
+                        navController.popBackStack()
+                    },
+                )
+            }
         }
         composable(Routes.EPG) {
             ShellScreen(R.string.epg, onBack = { navController.popBackStack() })

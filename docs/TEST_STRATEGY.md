@@ -71,6 +71,12 @@ Order 002 is complete and merged at `f83542a31ff7ac0fbd08ceab3531d3d92ee03a10`; 
 
 ## Android Catalog + Player 003A automated proof
 
+Stage 003A is complete and merged.
+
+Approved head: `f6ad7a5f53afb7aded8db9e8841ae626f236f5d4`.
+
+Merge commit: `135df164de9bb30e66b3b4268fbfc38c8b204e1a`.
+
 Stage 003A adds JVM coverage for:
 
 - runtime provider session creation only after backend SUCCESS;
@@ -87,6 +93,27 @@ Stage 003A adds JVM coverage for:
 Compose instrumentation sources cover Live/Movies/Series loading/content/empty/error surfaces, category/item browsing, TV focus movement, retry and Back behavior using deterministic fake UI state. CI never calls a live provider.
 
 Order 002 phone-device proof remains enabled on pull requests. Its `NavigationShellTest` is reconciled to the real Live catalog route rather than the former placeholder.
+
+## Android Catalog + Player 003B automated proof
+
+Stage 003B adds deterministic coverage for:
+
+- credential-free typed Live and VOD playback references;
+- exact authoritative HTTP/HTTPS playback origin and explicit-port preservation;
+- structured Live and Movies/VOD path construction;
+- stream-id and VOD container-extension validation;
+- missing runtime-session fail-closed behavior;
+- absence of credential/URI fields from public player UI state;
+- Series selection remaining non-playback;
+- safe Media3 state/error mapping;
+- player loading/error/retry and seek-control rendering through deterministic fakes;
+- Live and Movie catalog navigation into the player with no credential route argument;
+- Back returning to the previous catalog;
+- TV-focusable player controls.
+
+No Android CI test requires live provider media or production/provider credentials. The existing pull-request phone-device-proof remains unchanged and continues to execute `NavigationShellTest`, which now covers deterministic Live/Movie player navigation and Back without real media.
+
+Real-provider playback proof, when separately authorized and securely available, remains sanitized and outside CI.
 
 ## Future client/platform matrices retained
 

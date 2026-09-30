@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-09-30
-Phase: Phase 3 — Android Catalog + Player 003A
+Phase: Phase 3 — Android Catalog + Player 003B
 Public launch: NO
 
 ## Governance
@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 is complete and merged. Phase 3 / Stage 003A adds the authenticated Xtream runtime session and real Live/VOD/Series catalog foundation; playback remains a later Stage 003 step.
+- Android Shell 002 and Stage 003A are complete and merged. Stage 003A established the authenticated Xtream runtime session and real Live/VOD/Series catalog foundation. Stage 003B is active for foreground Media3 Live/VOD playback.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -78,18 +78,27 @@ Certified evidence:
 - secure Android Keystore/DataStore credential persistence remains the only credential persistence path;
 - public launch: NO.
 
-## Phase 3 / Stage 003A — ACTIVE
+## Phase 3 / Stage 003A — COMPLETE / MERGED
+
+Stage 003A approved head: `f6ad7a5f53afb7aded8db9e8841ae626f236f5d4`.
+
+Stage 003A merge commit: `135df164de9bb30e66b3b4268fbfc38c8b204e1a`.
 
 Stage 003A implements the in-memory authenticated-provider session, exact backend-resolved Xtream origin handling, direct catalog networking through `player_api.php`, and real Live TV, Movies/VOD and Series browsing states.
 
-Playback/Media3, full EPG, favorites/history, VPN/WireGuard and Windows remain unimplemented and outside Stage 003A.
+## Phase 3 / Stage 003B — ACTIVE
+
+Stage 003B adds AndroidX Media3 1.11.1 foreground playback for Live TV and Movies/VOD, with credential-contained Xtream source construction, lifecycle-safe ExoPlayer ownership, touch controls, Android TV/D-pad controls, safe player errors and retry.
+
+Series episodes/playback, full EPG/Catch Up, favorites/history/continue-watching, VPN/WireGuard and Windows remain unimplemented and outside Stage 003B.
 
 ## Remaining technical gates
 
-1. Supervisor audit of Android Catalog + Player 003A.
-2. Separate Phase 3 player/Media3 and later EPG/favorites/history stages.
-3. Separate VPN/WireGuard and Windows phases.
-4. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
+1. Supervisor audit of Android Catalog + Player 003B.
+2. Separate real-provider/player device proof gate when authorized and securely available.
+3. Separate Series episode/playback, EPG/Catch Up and favorites/history stages.
+4. Separate VPN/WireGuard and Windows phases.
+5. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
 ## Current development/staging infrastructure
 
@@ -112,7 +121,7 @@ The current OVH host remains development/staging. Public launch is not approved.
 Beyond Android Shell 002, separate orders are still required for:
 
 1. final distribution/store artwork and design assets;
-2. Android Phase 3 player/Media3 and later catalog-adjacent work after Stage 003A;
+2. Android Phase 3 continuation after Stage 003B, including Series episodes, EPG/Catch Up and favorites/history;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

@@ -23,22 +23,29 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val container = (application as PinkApplication).container
+
         setContent {
             PinkTheme {
                 val state by appViewModel.uiState.collectAsStateWithLifecycle()
                 val liveCatalog by appViewModel.liveCatalog.collectAsStateWithLifecycle()
                 val movieCatalog by appViewModel.movieCatalog.collectAsStateWithLifecycle()
                 val seriesCatalog by appViewModel.seriesCatalog.collectAsStateWithLifecycle()
+                val selectedPlayback by appViewModel.selectedPlayback.collectAsStateWithLifecycle()
 
                 PinkApp(
                     state = state,
                     liveCatalog = liveCatalog,
                     movieCatalog = movieCatalog,
                     seriesCatalog = seriesCatalog,
+                    selectedPlayback = selectedPlayback,
+                    playbackFacadeFactory = container.playbackFacadeFactory,
                     onLogin = appViewModel::login,
                     onLogout = appViewModel::logout,
                     onLoadCatalog = appViewModel::loadCatalog,
                     onSelectCatalogCategory = appViewModel::selectCatalogCategory,
+                    onSelectPlayback = appViewModel::selectPlayback,
+                    onClearPlayback = appViewModel::clearPlayback,
                 )
             }
         }

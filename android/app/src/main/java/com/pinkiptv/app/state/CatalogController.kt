@@ -8,6 +8,8 @@ import com.pinkiptv.app.model.CatalogResult
 import com.pinkiptv.app.model.CatalogUiError
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.LivePlaybackRef
+import com.pinkiptv.app.model.VodPlaybackRef
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,6 +57,11 @@ class CatalogController(
                             categoryId = item.categoryId,
                             artworkUrl = item.artworkUrl,
                             subtitle = item.streamType,
+                            playbackRef = LivePlaybackRef(
+                                streamId = item.streamId,
+                                title = item.name,
+                                artworkUrl = item.artworkUrl,
+                            ),
                         )
                     }
                     is CatalogResult.Failure -> {
@@ -70,6 +77,12 @@ class CatalogController(
                             categoryId = item.categoryId,
                             artworkUrl = item.artworkUrl,
                             subtitle = item.containerExtension,
+                            playbackRef = VodPlaybackRef(
+                                streamId = item.streamId,
+                                title = item.name,
+                                containerExtension = item.containerExtension,
+                                artworkUrl = item.artworkUrl,
+                            ),
                         )
                     }
                     is CatalogResult.Failure -> {
@@ -85,6 +98,7 @@ class CatalogController(
                             categoryId = item.categoryId,
                             artworkUrl = item.artworkUrl,
                             subtitle = null,
+                            playbackRef = null,
                         )
                     }
                     is CatalogResult.Failure -> {

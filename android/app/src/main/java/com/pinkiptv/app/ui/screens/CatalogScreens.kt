@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pinkiptv.app.model.CatalogCategory
+import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogPhase
 import com.pinkiptv.app.model.CatalogUiError
 import com.pinkiptv.app.model.CatalogUiItem
@@ -57,6 +58,7 @@ fun CatalogScreen(
     onLoad: () -> Unit,
     onSelectCategory: (String?) -> Unit,
     onBack: () -> Unit,
+    onOpenItem: (CatalogUiItem) -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
@@ -118,7 +120,13 @@ fun CatalogScreen(
                 firstCategoryFocus = firstCategoryFocus,
                 selectedItemName = selectedItemName,
                 onSelectCategory = onSelectCategory,
-                onSelectItem = { selectedItemName = it.name },
+                onSelectItem = { item ->
+                    if (state.kind == CatalogKind.Series) {
+                        selectedItemName = item.name
+                    } else {
+                        onOpenItem(item)
+                    }
+                },
             )
         }
     }
@@ -206,7 +214,7 @@ private fun ColumnScope.CatalogContent(
         }
     }
 
-    if (selectedItemName != null) {
+    if (state.kind == CatalogKind.Series && selectedItemName != null) {
         Text(
             text = "Selecionado: " + selectedItemName,
             modifier = Modifier.testTag("catalog_selection"),
@@ -214,7 +222,8 @@ private fun ColumnScope.CatalogContent(
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
-            text = "Reprodução ainda não está ativa nesta fase.",
+            text = "Disponível numa fase seguinte.",
+            modifier = Modifier.testTag("series_future_playback"),
             style = MaterialTheme.typography.bodyMedium,
         )
     }

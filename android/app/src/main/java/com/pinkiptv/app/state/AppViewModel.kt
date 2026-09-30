@@ -11,6 +11,8 @@ import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.model.SessionRepository
 import com.pinkiptv.app.storage.CredentialStore
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class AppViewModel(
     repository: SessionRepository,
@@ -40,6 +42,17 @@ class AppViewModel(
     val seriesCatalog = catalogController.series
     val seriesDetail = seriesDetailController.state
     val selectedPlayback = playbackSelectionController.selection
+
+    init {
+        viewModelScope.launch {
+            providerSessionStore.available.collect { available ->
+                if (!available) {
+                    playbackSelectionController.clear()
+                    seriesDetailController.clear()
+                }
+            }
+        }
+    }
 
     fun login(username: String, password: String) {
         sessionController.login(username, password)

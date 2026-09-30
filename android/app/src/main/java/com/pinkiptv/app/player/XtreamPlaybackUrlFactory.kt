@@ -22,7 +22,7 @@ internal sealed interface PlaybackSourceResult {
     data class Failure(val error: PlayerError) : PlaybackSourceResult
 }
 
-class XtreamPlaybackUrlFactory(
+internal class XtreamPlaybackUrlFactory(
     private val sessionStore: RuntimeProviderSessionStore,
 ) {
     fun resolve(ref: PlaybackRef): PlaybackSourceResult {

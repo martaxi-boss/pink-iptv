@@ -75,8 +75,8 @@ fun PlayerScreen(
         }
     }
 
-    LaunchedEffect(isTv, state.phase) {
-        if (isTv) {
+    LaunchedEffect(isTv, state.phase, playbackRef) {
+        if (isTv && playbackRef != null) {
             withFrameNanos { }
             primaryFocus.requestFocus()
         }

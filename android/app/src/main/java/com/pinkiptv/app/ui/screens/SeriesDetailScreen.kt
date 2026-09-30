@@ -59,11 +59,23 @@ fun SeriesDetailScreen(
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
         Configuration.UI_MODE_TYPE_TELEVISION
     val primaryFocus = remember { FocusRequester() }
+    val backFocus = remember { FocusRequester() }
 
     LaunchedEffect(isTv, state.phase) {
-        if (isTv && state.phase == SeriesDetailPhase.Error) {
-            withFrameNanos { }
-            primaryFocus.requestFocus()
+        if (!isTv) return@LaunchedEffect
+        when (state.phase) {
+            SeriesDetailPhase.Error -> {
+                withFrameNanos { }
+                primaryFocus.requestFocus()
+            }
+            SeriesDetailPhase.Content -> Unit
+            SeriesDetailPhase.Idle,
+            SeriesDetailPhase.Loading,
+            SeriesDetailPhase.Empty,
+            -> {
+                withFrameNanos { }
+                backFocus.requestFocus()
+            }
         }
     }
 
@@ -88,6 +100,7 @@ fun SeriesDetailScreen(
             SeriesActionButton(
                 label = "Voltar",
                 testTag = "series_detail_back",
+                focusRequester = if (isTv) backFocus else null,
                 onClick = onBack,
             )
         }
@@ -209,9 +222,15 @@ private fun ColumnScope.SeriesDetailContent(
     }.coerceAtLeast(0)
 
     LaunchedEffect(requestInitialFocus, selectedSeasonIndex, seasonIds) {
-        if (requestInitialFocus && seasonRequesters.isNotEmpty()) {
+        if (requestInitialFocus) {
             withFrameNanos { }
-            seasonRequesters[selectedSeasonIndex.coerceAtMost(seasonRequesters.lastIndex)].requestFocus()
+            if (seasonRequesters.isNotEmpty()) {
+                seasonRequesters[
+                    selectedSeasonIndex.coerceAtMost(seasonRequesters.lastIndex)
+                ].requestFocus()
+            } else {
+                episodeRequesters.firstOrNull()?.requestFocus()
+            }
         }
     }
 

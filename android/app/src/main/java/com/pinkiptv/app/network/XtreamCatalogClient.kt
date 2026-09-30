@@ -136,6 +136,7 @@ class XtreamCatalogClient(
 }
 
 internal object XtreamJsonParser {
+    private val providerMediaId = Regex("^[A-Za-z0-9_-]{1,64}$")
     private val json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
@@ -269,6 +270,7 @@ internal object XtreamJsonParser {
         val episodeId = item.text("id")
             ?: item.text("episode_id")
             ?: return null
+        if (!providerMediaId.matches(episodeId)) return null
         val seasonId = groupedSeasonId
             ?.trim()
             ?.takeIf { it.isNotEmpty() && it != "null" }

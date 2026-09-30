@@ -104,6 +104,34 @@ class SeriesDetailScreenTest {
     }
 
     @Test
+    fun tvLoadingKeepsBackFocusableInsteadOfTrappingFocus() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val configuration = instrumentation.targetContext.resources.configuration
+        assumeTrue(
+            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                Configuration.UI_MODE_TYPE_TELEVISION,
+        )
+
+        composeRule.setContent {
+            PinkTheme {
+                SeriesDetailScreen(
+                    state = SeriesDetailUiState(
+                        phase = SeriesDetailPhase.Loading,
+                        title = "Show",
+                    ),
+                    onRetry = {},
+                    onSelectSeason = {},
+                    onOpenEpisode = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("series_detail_back").assertIsFocused()
+    }
+
+    @Test
     fun tvDpadMovesFromSeasonToEpisodeAndOkActivates() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val configuration = instrumentation.targetContext.resources.configuration

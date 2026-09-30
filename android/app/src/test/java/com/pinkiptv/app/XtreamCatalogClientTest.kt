@@ -312,6 +312,29 @@ class XtreamCatalogClientTest {
     }
 
     @Test
+    fun seriesInfoSkipsUnusableEpisodeIdentityWithoutCrashing() = runTest {
+        val body = """
+            {
+              "info":{"name":"Show"},
+              "seasons":[{"season_number":"1"}],
+              "episodes":{
+                "1":[
+                  {"id":"../bad","episode_num":"1","container_extension":"mp4"},
+                  {"id":"1001","episode_num":"2","container_extension":"mp4"}
+                ]
+              }
+            }
+        """.trimIndent()
+        val result = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor(body)),
+        ).seriesInfo("789")
+        val detail = successValue<SeriesDetail>(result)
+
+        assertEquals(listOf("1001"), detail.episodes.map { it.episodeId })
+    }
+
+    @Test
     fun seriesInfoToleratesMissingOptionalMetadataAndEmptyEpisodeGroups() = runTest {
         val body = """
             {

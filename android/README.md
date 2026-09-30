@@ -14,39 +14,45 @@ PINK IPTV uses one Android `:app` module for phone/tablet, Android TV and TV Box
 - Android Keystore AES/GCM
 - OkHttp 5.4.0
 - Kotlin serialization / coroutines
+- AndroidX Media3 1.11.1
 
 SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17.
 
 ## Completed baseline
 
-Foundation / Mega Proof 001 is complete and merged.
+Foundation / Mega Proof 001 and Android Shell 002 are complete and merged.
 
-Android Shell 002 is complete and merged at merge commit `f83542a31ff7ac0fbd08ceab3531d3d92ee03a10`. Phone device proof and Android TV device proof both passed.
+Stage 003A is complete and merged. Approved head: `f6ad7a5f53afb7aded8db9e8841ae626f236f5d4`. Merge commit: `135df164de9bb30e66b3b4268fbfc38c8b204e1a`.
 
 The Login surface remains exactly USERNAME, PASSWORD and ENTRAR. The PINK Backend URL is build configuration and is never a customer field.
 
-## Phase 3 / Stage 003A
+## Stage 003A catalog foundation
 
-Stage 003A adds the authenticated provider runtime and catalog foundation:
+The authenticated provider runtime and catalog foundation preserve:
 
-- PINK Backend `POST /v1/session/resolve` remains the only login/discovery contract;
-- a successful backend response creates an in-memory provider session containing the customer credentials plus the exact authoritative `xtream_base_url`;
-- the runtime session is rebuilt only after successful startup reauthentication and is cleared on logout/invalid/expired/disabled authentication;
-- direct provider requests use `player_api.php` only after backend success;
-- exact backend-resolved HTTP or HTTPS Xtream origins are supported without scheme/host rewriting;
-- redirects are disabled and provider requests use `User-Agent: PINK-IPTV/0.1`;
-- Live TV, Movies/VOD and Series expose loading, content, empty and recoverable-error catalog states with category/item browsing.
+- backend-only login resolution through `POST /v1/session/resolve`;
+- in-memory provider session rebuilt only after successful authentication;
+- exact backend-resolved HTTP or HTTPS Xtream origin;
+- direct provider catalog access through `player_api.php`;
+- redirects disabled and stable `PINK-IPTV/0.1` identity;
+- Live TV, Movies/VOD and Series catalog loading/content/empty/error states.
 
-Android platform cleartext policy permits provider HTTP because the backend-authoritative Xtream origin may legitimately use HTTP. This does not weaken `BackendSessionClient`: the PINK Backend remains HTTPS-only in production code.
+## Stage 003B player
 
-The password remains absent from navigation arguments, Compose saved state and public `AppUiState`. Existing Android Keystore/DataStore encrypted credential persistence is unchanged.
+Stage 003B is active and introduces a foreground-only Media3 player for Live TV and Movies/VOD.
 
-## TV / input
+Media3 modules are pinned to 1.11.1. Playback reuses the redirect-disabled provider OkHttp client through Media3's OkHttp data source and uses `PINK-IPTV/0.1`.
 
-Catalog surfaces are touch-scrollable and D-pad focusable. Focused catalog categories, items and actions use the PINK focus treatment. Home/Login behavior from Order 002 remains intact.
+Playback URLs are generated only inside the player layer from the current runtime provider session plus a credential-free typed playback reference. The generated media URI is never placed in navigation, public UI state, saved state, documentation or logs.
 
-## Explicitly not implemented in 003A
+Live uses the canonical Xtream live path. Movies/VOD use the catalog-provided container extension after conservative validation. Series remains browse-only.
 
-No Media3/ExoPlayer playback, stream playback URL generation, Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard or Windows implementation is included.
+The player is foreground-only: no MediaSession service, background playback, PiP, downloads or notification controls. The active ExoPlayer instance is created for the player surface and released when that surface leaves composition.
+
+Phone/touch and Android TV/D-pad controls include play/pause, retry and Back. Seek controls are exposed only when Media3 reports the current item as seekable.
+
+## Explicitly not implemented in 003B
+
+Series episodes/playback, full EPG, Catch Up, favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain future stages.
 
 Public launch remains NO.

@@ -7,6 +7,8 @@ import com.pinkiptv.app.model.SessionRepository
 import com.pinkiptv.app.network.BackendSessionClient
 import com.pinkiptv.app.network.XtreamCatalogClient
 import com.pinkiptv.app.network.buildXtreamHttpClient
+import com.pinkiptv.app.player.Media3PlaybackFacadeFactory
+import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.storage.AndroidKeystoreCredentialCipher
 import com.pinkiptv.app.storage.CredentialStore
 import com.pinkiptv.app.storage.DataStoreCredentialPersistence
@@ -33,6 +35,12 @@ class AppContainer(context: Context) {
     )
 
     val catalogRepository: CatalogRepository = XtreamCatalogClient(
+        sessionStore = providerSessionStore,
+        client = providerHttpClient,
+    )
+
+    val playbackFacadeFactory: PlaybackFacadeFactory = Media3PlaybackFacadeFactory(
+        context = context.applicationContext,
         sessionStore = providerSessionStore,
         client = providerHttpClient,
     )

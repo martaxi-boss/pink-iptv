@@ -1,6 +1,9 @@
 package com.pinkiptv.app
 
+import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
+import com.pinkiptv.app.library.FavoriteEntity
+import com.pinkiptv.app.library.PinkLibraryDatabase
 import com.pinkiptv.app.storage.AndroidKeystoreCredentialCipher
 import com.pinkiptv.app.storage.DataStoreCredentialPersistence
 import com.pinkiptv.app.storage.SecureCredentialStore
@@ -53,6 +56,56 @@ class AndroidKeystoreCredentialStoreTest {
             assertEquals(password, requireNotNull(store.load()).password)
         } finally {
             store.clear()
+        }
+    }
+
+
+    @Test
+    fun localLibraryRoomCreatesVersionOneAndFiltersProfiles() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            PinkLibraryDatabase::class.java,
+        ).allowMainThreadQueries().build()
+
+        try {
+            assertEquals(1, database.openHelper.readableDatabase.version)
+            val dao = database.favoriteDao()
+            dao.upsert(
+                FavoriteEntity(
+                    profileKey = "profile-a",
+                    contentKind = "Live",
+                    providerId = "10",
+                    title = "A",
+                    artworkUrl = null,
+                    containerExtension = null,
+                    createdAtEpochMs = 1L,
+                    updatedAtEpochMs = 1L,
+                ),
+            )
+            dao.upsert(
+                FavoriteEntity(
+                    profileKey = "profile-b",
+                    contentKind = "Live",
+                    providerId = "10",
+                    title = "B",
+                    artworkUrl = null,
+                    containerExtension = null,
+                    createdAtEpochMs = 1L,
+                    updatedAtEpochMs = 1L,
+                ),
+            )
+
+            assertEquals(
+                "A",
+                kotlinx.coroutines.flow.first(dao.observeForProfile("profile-a")).single().title,
+            )
+            assertEquals(
+                "B",
+                kotlinx.coroutines.flow.first(dao.observeForProfile("profile-b")).single().title,
+            )
+        } finally {
+            database.close()
         }
     }
 

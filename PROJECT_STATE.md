@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-01
-Phase: Phase 3 — Android Catalog + Player 003E
+Phase: Phase 3 — Android Catalog + Player 003F — Global Search
 Public launch: NO
 
 ## Governance
@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 and Stages 003A/003B/003C/003D are complete and merged. Stage 003E is active for the device-local, account-isolated Favorites/History/Continue Watching library.
+- Android Shell 002 and Stages 003A/003B/003C/003D/003E are complete and merged. Stage 003F is active for credential-free, runtime-only Global Search over the authenticated provider catalogs.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -118,7 +118,11 @@ Catch Up uses a credential-free typed playback reference and the canonical HLS t
 
 Real-provider EPG/Catch Up playback proof remains NOT CERTIFIED unless separately executed in an approved secure environment.
 
-## Phase 3 / Stage 003E — ACTIVE
+## Phase 3 / Stage 003E — COMPLETE / MERGED
+
+Stage 003E approved head: `0c5fcecc713a7936d748ff5cd4d73c2743edb98c`.
+
+Stage 003E merge commit: `da8164045280f05cb3467ac0da025128a65de9dd`.
 
 Stage 003E implements a device-local, account-isolated media library using Room 2.8.5 with KSP 2.3.12 and schema version 1.
 
@@ -126,13 +130,23 @@ Favorites cover Live, Movies/VOD and Series. Recent history covers Live, Movies/
 
 The local profile partition is derived from the exact authenticated username as a SHA-256 digest under the fixed PINK namespace; plaintext usernames, passwords, provider origins and credential-bearing media URLs are not stored in Room. Logout clears visible/in-memory library state without deleting persisted profile rows.
 
-Catch Up history persistence is NOT IMPLEMENTED. Global Search is NOT IMPLEMENTED. VPN/WireGuard and Windows remain unimplemented.
+Catch Up history persistence remains NOT IMPLEMENTED.
+
+## Phase 3 / Stage 003F — ACTIVE
+
+Stage 003F adds Global Search for Live TV, Movies/VOD and Series by reusing the existing authenticated `get_live_streams`, `get_vod_streams` and `get_series` catalog operations.
+
+Search does not introduce a provider search endpoint. The catalog index, query, filters and result set are runtime/in-memory only, are cleared when the authenticated provider session is invalidated, and are never persisted to Room, DataStore, the filesystem or the backend.
+
+Matching is local, case-insensitive and accent/diacritic-insensitive with deterministic exact/prefix/contains ranking and bounded rendered results. Search reuses the existing Live/VOD Player, Series Detail and local Favorites architecture.
+
+Room remains schema version 1. Media3 remains 1.11.1. VPN/WireGuard and Windows remain unimplemented. Public launch remains NO.
 
 ## Remaining technical gates
 
-1. Supervisor audit of Android Catalog + Player 003E.
+1. Builder completion and Supervisor audit of Android Catalog + Player 003F Global Search.
 2. Separate real-provider EPG/Catch Up proof when authorized and securely available.
-3. Global Search remains a later Phase 3 stage.
+3. Optional sanitized real-provider catalog-source proof for Search when secure credentials are available.
 4. Separate VPN/WireGuard and Windows phases.
 5. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
@@ -157,7 +171,7 @@ The current OVH host remains development/staging. Public launch is not approved.
 Beyond Android Shell 002, separate orders are still required for:
 
 1. final distribution/store artwork and design assets;
-2. Android Phase 3 continuation after Stage 003E, including global Search;
+2. Android Phase 3 continuation after Stage 003F;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

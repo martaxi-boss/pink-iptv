@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -33,6 +34,12 @@ import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.PlayerPhase
 import com.pinkiptv.app.model.PlayerUiState
+import com.pinkiptv.app.model.SearchItem
+import com.pinkiptv.app.model.SearchKind
+import com.pinkiptv.app.model.SearchPhase
+import com.pinkiptv.app.model.SearchSourceState
+import com.pinkiptv.app.model.SearchSourceStatus
+import com.pinkiptv.app.model.SearchUiState
 import com.pinkiptv.app.model.SeriesDetailPhase
 import com.pinkiptv.app.model.SeriesDetailUiState
 import com.pinkiptv.app.model.SeriesEpisode
@@ -452,6 +459,119 @@ class NavigationShellTest {
         }
         composeRule.onNodeWithTag("player_back").performClick()
         composeRule.onNodeWithTag("library_screen").assertIsDisplayed()
+    }
+
+    @Test
+    fun globalSearchReusesPlayerAndSeriesDetailAndBackPreservesContext() {
+        val factory = TestPlaybackFacadeFactory(
+            PlayerUiState(
+                phase = PlayerPhase.Playing,
+                title = "Search Playback",
+                kind = PlaybackKind.Live,
+                isPlaying = true,
+            ),
+        )
+        val searchItems = listOf(
+            SearchItem(
+                kind = SearchKind.Live,
+                providerId = "search-live",
+                title = "One Live",
+                artworkUrl = null,
+                playbackRef = LivePlaybackRef("search-live", "One Live"),
+            ),
+            SearchItem(
+                kind = SearchKind.Movies,
+                providerId = "search-movie",
+                title = "One Movie",
+                artworkUrl = null,
+                playbackRef = VodPlaybackRef("search-movie", "One Movie", "mp4"),
+            ),
+            SearchItem(
+                kind = SearchKind.Series,
+                providerId = "search-series",
+                title = "One Series",
+                artworkUrl = null,
+                playbackRef = null,
+            ),
+        )
+
+        composeRule.setContent {
+            var selected by remember { mutableStateOf<PlaybackRef?>(null) }
+            var searchState by remember {
+                mutableStateOf(
+                    SearchUiState(
+                        phase = SearchPhase.Ready,
+                        query = "one",
+                        selectedKind = SearchKind.All,
+                        results = searchItems,
+                        liveSource = SearchSourceState(SearchSourceStatus.Ready),
+                        movieSource = SearchSourceState(SearchSourceStatus.Ready),
+                        seriesSource = SearchSourceState(SearchSourceStatus.Ready),
+                    ),
+                )
+            }
+            PinkTheme {
+                AuthenticatedShell(
+                    liveCatalog = CatalogUiState(CatalogKind.Live),
+                    movieCatalog = CatalogUiState(CatalogKind.Movies),
+                    seriesCatalog = CatalogUiState(CatalogKind.Series),
+                    searchState = searchState,
+                    seriesDetail = SeriesDetailUiState(
+                        phase = SeriesDetailPhase.Content,
+                        selectedSeriesId = "search-series",
+                        title = "One Series",
+                        seasons = emptyList(),
+                        episodes = emptyList(),
+                    ),
+                    selectedPlayback = selected,
+                    playbackFacadeFactory = factory,
+                    onLoadCatalog = {},
+                    onSelectCatalogCategory = { _, _ -> },
+                    onLoadSearch = {},
+                    onSearchQueryChange = { value ->
+                        searchState = searchState.copy(query = value)
+                    },
+                    onSelectSearchKind = { kind ->
+                        searchState = searchState.copy(selectedKind = kind)
+                    },
+                    onRetrySearch = {},
+                    onSelectSearchPlayback = { item ->
+                        selected = item.playbackRef
+                    },
+                    onOpenSearchSeries = {},
+                    onToggleSearchFavorite = {},
+                    onClearSeriesDetail = {},
+                    onClearPlayback = { selected = null },
+                    onLogout = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("home_search").performClick()
+        composeRule.onNodeWithTag("search_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("search_query").assertTextContains("one")
+        composeRule.onNodeWithTag("search_filter_movies").performClick()
+
+        composeRule.onNodeWithTag("search_result_Live_search-live").performClick()
+        composeRule.onNodeWithTag("player_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("player_back").performClick()
+        composeRule.onNodeWithTag("search_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("search_query").assertTextContains("one")
+
+        composeRule.onNodeWithTag("search_result_Movies_search-movie").performClick()
+        composeRule.onNodeWithTag("player_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("player_back").performClick()
+        composeRule.onNodeWithTag("search_screen").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("search_result_Series_search-series").performClick()
+        composeRule.onNodeWithTag("series_detail_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("series_detail_back").performClick()
+        composeRule.onNodeWithTag("search_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("search_query").assertTextContains("one")
+
+        composeRule.runOnIdle {
+            assertEquals(SearchKind.Movies, searchState.selectedKind)
+        }
     }
 
     private fun favorite(

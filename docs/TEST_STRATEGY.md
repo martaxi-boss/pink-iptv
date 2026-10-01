@@ -178,7 +178,11 @@ Real-provider EPG/Catch Up fetch/playback is a separate sanitized proof and is N
 
 ## Android Catalog + Player 003E automated proof
 
-Status: ACTIVE.
+Status: COMPLETE / MERGED.
+
+Approved head: `0c5fcecc713a7936d748ff5cd4d73c2743edb98c`.
+
+Merge commit: `da8164045280f05cb3467ac0da025128a65de9dd`.
 
 Stage 003E uses Room 2.8.5 with KSP 2.3.12 and exported Room schema version 1.
 
@@ -195,7 +199,29 @@ Stage 003E adds deterministic coverage for:
 - deterministic phone navigation for Favorite Live/Movie/Series, Continue Watching and Recent playback through existing Player/Series Detail surfaces;
 - deterministic Android TV/D-pad section focus and action controls without live provider credentials.
 
-Room remains device-local and no Favorites/history data is uploaded to the PINK Backend. Catch Up history persistence and global Search are explicitly outside Stage 003E. Public launch remains NO.
+Room remains device-local and no Favorites/history data is uploaded to the PINK Backend. Catch Up history persistence remains outside Stage 003E. Public launch remains NO.
+
+## Android Catalog + Player 003F automated proof
+
+Status: ACTIVE.
+
+Stage 003F adds deterministic coverage for:
+
+- runtime-only concurrent loading of existing Live, VOD and Series catalog list operations with no invented provider Search endpoint;
+- no provider request on query or content-filter changes and selective retry of failed sources;
+- query trim, empty/one-character behavior, Unicode-safe case-insensitive and accent/diacritic-insensitive matching;
+- deterministic exact-title, prefix, contains, alphabetical and stable-provider-identity ordering with bounded results per type;
+- soft partial failure, full recoverable failure and successful-source searchability during a partial failure;
+- provider-session invalidation clearing query, filters, source cache and results;
+- generation/session identity preventing late old-account or old-retry results from repopulating Search;
+- exact typed `LivePlaybackRef` and `VodPlaybackRef`, VOD extension preservation and exact Series `seriesId` without eager `seriesInfo` calls;
+- Home -> Pesquisa, query/filter/result/favorite interaction, existing Player/Series Detail reuse and Back context preservation;
+- deterministic phone navigation plus Android TV/D-pad focus from query to filters, results and favorite actions;
+- continued Room schema version 1, Room runtime smoke, Media3 1.11.1 and existing Login/EPG/Catch Up behavior.
+
+The pull-request phone-device proof continues to execute the genuine startup, Login, NavigationShell and Keystore/Room smoke classes. `NavigationShellTest` includes deterministic Search -> Live/Movie Player -> Back and Search -> Series Detail -> Back flows without provider credentials.
+
+Real-provider Search proof, if separately available, consists only of sanitized evidence that the existing `get_live_streams`, `get_vod_streams` and `get_series` sources populated Search and produced a local query match. It is not a separate provider search endpoint and is not required for code-audit acceptance.
 
 ## Future client/platform matrices retained
 

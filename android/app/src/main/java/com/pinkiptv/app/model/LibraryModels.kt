@@ -96,7 +96,13 @@ fun HistoryItem.continueWatchingPositionMs(): Long? {
     if (playbackKind != PlaybackKind.Vod && playbackKind != PlaybackKind.Series) return null
     if (!seekable || completed || duration < 60_000L) return null
     if (lastPositionMs < 30_000L || lastPositionMs < 0L) return null
-    if (lastPositionMs * 10L >= duration * 9L) return null
+    if (
+        lastPositionMs > Long.MAX_VALUE / 10L ||
+        duration > Long.MAX_VALUE / 9L ||
+        lastPositionMs * 10L >= duration * 9L
+    ) {
+        return null
+    }
     return lastPositionMs
 }
 
@@ -106,7 +112,8 @@ fun HistoryItem.isContinueWatchingEligible(): Boolean =
 fun HistoryItem.progressPercent(): Int {
     val duration = durationMs ?: return 0
     if (duration <= 0L) return 0
-    return ((lastPositionMs.coerceIn(0L, duration) * 100L) / duration)
+    val clamped = lastPositionMs.coerceIn(0L, duration)
+    return ((clamped.toDouble() / duration.toDouble()) * 100.0)
         .toInt()
         .coerceIn(0, 100)
 }

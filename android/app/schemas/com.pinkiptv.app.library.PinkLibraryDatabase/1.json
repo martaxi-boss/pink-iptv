@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "491399fbdd3b12fbad8e4233a29afd9e", "_detectSecrets": "pragma: allowlist secret",
+    "identityHash": "491399fbdd3b12fbad8e4233a29afd9e", "_detectSecrets": "// pragma: allowlist secret", "_detectSecrets": "pragma: allowlist secret",
     "entities": [
       {
         "tableName": "favorites",

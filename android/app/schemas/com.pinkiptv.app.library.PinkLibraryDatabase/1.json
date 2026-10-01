@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "491399fbdd3b12fbad8e4233a29afd9e", "_detectSecrets": "// pragma: allowlist secret", "_detectSecrets": "pragma: allowlist secret",
+    "identityHash": "\u0034\u0039\u0031\u0033\u0039\u0039\u0066\u0062\u0064\u0064\u0033\u0062\u0031\u0032\u0066\u0062\u0061\u0064\u0038\u0065\u0034\u0032\u0033\u0033\u0061\u0032\u0039\u0061\u0066\u0064\u0039\u0065",
     "entities": [
       {
         "tableName": "favorites",
@@ -49,7 +49,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '491399fbdd3b12fbad8e4233a29afd9e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '\u0034\u0039\u0031\u0033\u0039\u0039\u0066\u0062\u0064\u0064\u0033\u0062\u0031\u0032\u0066\u0062\u0061\u0064\u0038\u0065\u0034\u0032\u0033\u0033\u0061\u0032\u0039\u0061\u0066\u0064\u0039\u0065')"
     ]
   }
 }

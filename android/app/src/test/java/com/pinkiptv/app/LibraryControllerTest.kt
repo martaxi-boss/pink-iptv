@@ -5,16 +5,12 @@ import com.pinkiptv.app.library.LocalLibraryRepository
 import com.pinkiptv.app.library.LocalProfileKey
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
-import com.pinkiptv.app.model.CatalogKind
-import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.FavoriteKind
 import com.pinkiptv.app.model.HistoryItem
 import com.pinkiptv.app.model.LibraryPhase
 import com.pinkiptv.app.model.LivePlaybackRef
-import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
-import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionResult
@@ -259,19 +255,6 @@ class LibraryControllerTest {
         assertTrue(controller.state.value.recents.isEmpty())
     }
 
-
-    private fun catalogItem(
-        id: String,
-        title: String,
-        playbackRef: com.pinkiptv.app.model.PlaybackRef?,
-    ) = CatalogUiItem(
-        id = id,
-        name = title,
-        categoryId = null,
-        artworkUrl = null,
-        subtitle = null,
-        playbackRef = playbackRef,
-    )
 
     private fun success() = SessionResult.Success(
         sessionToken = "fixture-session",

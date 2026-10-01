@@ -52,6 +52,7 @@ class Media3PlayerStateTest {
         assertEquals(0L, safeResumePositionMs(-1L, 120_000L, true))
         assertEquals(0L, safeResumePositionMs(108_000L, 120_000L, true))
         assertEquals(0L, safeResumePositionMs(200_000L, 120_000L, true))
+        assertEquals(0L, safeResumePositionMs(Long.MAX_VALUE, Long.MAX_VALUE, true))
     }
 
     @Test

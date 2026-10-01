@@ -198,6 +198,51 @@ class LibraryScreenTest {
         composeRule.onNodeWithTag("library_tab_recents").assertIsFocused()
     }
 
+
+    @Test
+    fun tvDpadMovesFromTabToFavoriteActionsAndOkActivates() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val configuration = instrumentation.targetContext.resources.configuration
+        assumeTrue(
+            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                Configuration.UI_MODE_TYPE_TELEVISION,
+        )
+        val item = favorite(FavoriteKind.Live, "10", "Canal")
+        var opened = 0
+        var removed = 0
+
+        composeRule.setContent {
+            PinkTheme {
+                LibraryScreen(
+                    state = LibraryUiState(
+                        phase = LibraryPhase.Ready,
+                        favorites = listOf(item),
+                    ),
+                    onOpenFavorite = { opened += 1 },
+                    onRemoveFavorite = { removed += 1 },
+                    onOpenContinue = {},
+                    onOpenRecent = {},
+                    onClearHistory = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("library_tab_favorites").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("library_favorite_open_Live_10").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_RIGHT)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("library_favorite_remove_Live_10").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER)
+        composeRule.runOnIdle {
+            assertEquals(0, opened)
+            assertEquals(1, removed)
+        }
+    }
+
     private fun favorite(
         kind: FavoriteKind,
         id: String,

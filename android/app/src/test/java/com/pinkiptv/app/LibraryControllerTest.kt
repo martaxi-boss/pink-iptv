@@ -3,11 +3,15 @@ package com.pinkiptv.app
 import com.pinkiptv.app.library.ActiveLibraryProfileStore
 import com.pinkiptv.app.library.LocalLibraryRepository
 import com.pinkiptv.app.library.LocalProfileKey
+import com.pinkiptv.app.model.CatalogKind
+import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.FavoriteKind
 import com.pinkiptv.app.model.HistoryItem
 import com.pinkiptv.app.model.LibraryPhase
+import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
+import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionResult
 import com.pinkiptv.app.state.LibraryController
@@ -113,11 +117,114 @@ class LibraryControllerTest {
         assertEquals(25, controller.state.value.continueWatching.single().progressPercent)
     }
 
+
+    @Test
+    fun favoriteToggleSupportsLiveMovieSeriesAndKindScopedIdentity() = runTest {
+        val repository = FakeLibraryRepository()
+        val runtime = RuntimeProviderSessionStore()
+        val profileStore = ActiveLibraryProfileStore()
+        val controller = LibraryController(
+            repository = repository,
+            providerSessionStore = runtime,
+            profileStore = profileStore,
+            scope = this,
+            clockMs = { 10L },
+        )
+        runtime.establish("account-a", "fixture-pass", success()) // pragma: allowlist secret
+        advanceUntilIdle()
+
+        val live = catalogItem(
+            id = "same-id",
+            name = "Live",
+            ref = LivePlaybackRef("same-id", "Live"),
+        )
+        val movie = catalogItem(
+            id = "same-id",
+            name = "Movie",
+            ref = VodPlaybackRef("same-id", "Movie", "mp4"),
+        )
+        val series = catalogItem(
+            id = "same-id",
+            name = "Series",
+            ref = null,
+        )
+
+        controller.toggleFavorite(CatalogKind.Live, live)
+        controller.toggleFavorite(CatalogKind.Movies, movie)
+        controller.toggleFavorite(CatalogKind.Series, series)
+        advanceUntilIdle()
+
+        assertEquals(3, controller.state.value.favorites.size)
+        assertEquals(
+            setOf(FavoriteKind.Live, FavoriteKind.Movie, FavoriteKind.Series),
+            controller.state.value.favorites.map { it.kind }.toSet(),
+        )
+
+        controller.toggleFavorite(CatalogKind.Live, live)
+        advanceUntilIdle()
+        assertFalse(controller.state.value.favorites.any { it.kind == FavoriteKind.Live })
+
+        controller.toggleFavorite(CatalogKind.Live, live)
+        advanceUntilIdle()
+        assertEquals(
+            1,
+            controller.state.value.favorites.count {
+                it.kind == FavoriteKind.Live && it.providerId == "same-id"
+            },
+        )
+    }
+
+    @Test
+    fun favoriteRemovalAndHistoryClearStayIndependent() = runTest {
+        val repository = FakeLibraryRepository()
+        val runtime = RuntimeProviderSessionStore()
+        val profileStore = ActiveLibraryProfileStore()
+        val profile = LocalProfileKey.derive("account-a")
+        val savedFavorite = favorite("Favorite")
+        repository.favoriteFlow(profile).value = listOf(savedFavorite)
+        repository.historyFlow(profile).value = listOf(history("Recent"))
+
+        runtime.establish("account-a", "fixture-pass", success()) // pragma: allowlist secret
+        val controller = LibraryController(
+            repository = repository,
+            providerSessionStore = runtime,
+            profileStore = profileStore,
+            scope = this,
+        )
+        advanceUntilIdle()
+
+        controller.removeFavorite(savedFavorite)
+        advanceUntilIdle()
+        assertTrue(controller.state.value.favorites.isEmpty())
+        assertEquals(listOf("Recent"), controller.state.value.recents.map { it.title })
+
+        repository.favoriteFlow(profile).value = listOf(savedFavorite)
+        advanceUntilIdle()
+        controller.clearHistory()
+        advanceUntilIdle()
+        assertEquals(listOf("Favorite"), controller.state.value.favorites.map { it.title })
+        assertTrue(controller.state.value.recents.isEmpty())
+    }
+
     private fun success() = SessionResult.Success(
         sessionToken = "fixture-session",
         sessionExpiresAt = null,
         xtreamBaseUrl = "https://catalog.invalid/",
         accountExpiresAt = null,
+    )
+
+
+    private fun catalogItem(
+        id: String,
+        name: String,
+        ref: com.pinkiptv.app.model.PlaybackRef?,
+    ) = CatalogUiItem(
+        id = id,
+        name = name,
+        categoryId = null,
+        artworkUrl = null,
+        subtitle = null,
+        playbackRef = ref,
     )
 
     private fun favorite(title: String) = FavoriteItem(

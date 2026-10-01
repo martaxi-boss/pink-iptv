@@ -180,6 +180,8 @@ Real-provider EPG/Catch Up fetch/playback is a separate sanitized proof and is N
 
 Status: ACTIVE.
 
+Stage 003E uses Room 2.8.5 with KSP 2.3.12 and exported Room schema version 1.
+
 Stage 003E adds deterministic coverage for:
 
 - SHA-256 local profile-key derivation, same-account stability, account isolation and absence of plaintext username in persisted entities;
@@ -193,7 +195,7 @@ Stage 003E adds deterministic coverage for:
 - deterministic phone navigation for Favorite Live/Movie/Series, Continue Watching and Recent playback through existing Player/Series Detail surfaces;
 - deterministic Android TV/D-pad section focus and action controls without live provider credentials.
 
-Room remains device-local and no Favorites/history data is uploaded to the PINK Backend. Catch Up history persistence and global Search are explicitly outside Stage 003E.
+Room remains device-local and no Favorites/history data is uploaded to the PINK Backend. Catch Up history persistence and global Search are explicitly outside Stage 003E. Public launch remains NO.
 
 ## Future client/platform matrices retained
 

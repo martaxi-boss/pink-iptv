@@ -4,6 +4,7 @@ import com.pinkiptv.app.library.ActiveLibraryProfileStore
 import com.pinkiptv.app.library.LocalLibraryRepository
 import com.pinkiptv.app.library.RoomPlaybackActivityRecorder
 import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.HistoryItem
 import com.pinkiptv.app.model.LivePlaybackRef
@@ -163,6 +164,38 @@ class PlaybackActivityRecorderTest {
         recorder.onExit(ref, PlayerUiState(phase = PlayerPhase.Playing))
         advanceUntilIdle()
         assertEquals(1, repository.writes.size)
+    }
+
+
+    @Test
+    fun seriesEpisodeCreatesRecentEntryWithOnlyReconstructionMetadata() = runTest {
+        val repository = FakeLibraryRepository()
+        val profile = ActiveLibraryProfileStore().apply { activate("profile-a") }
+        val recorder = RoomPlaybackActivityRecorder(
+            repository = repository,
+            profileStore = profile,
+            scope = this,
+            clockMs = { 2_000L },
+        )
+        val ref = EpisodePlaybackRef(
+            episodeId = "501",
+            title = "Episode",
+            containerExtension = "mkv",
+            artworkUrl = "https://images.invalid/episode.jpg",
+        )
+
+        recorder.onState(
+            ref,
+            usableState(PlaybackKind.Series, 35_000L),
+        )
+        advanceUntilIdle()
+
+        assertEquals(1, repository.writes.size)
+        val item = repository.writes.single().second
+        assertEquals(PlaybackKind.Series, item.playbackKind)
+        assertEquals("501", item.mediaId)
+        assertEquals("mkv", item.containerExtension)
+        assertEquals("https://images.invalid/episode.jpg", item.artworkUrl)
     }
 
     @Test

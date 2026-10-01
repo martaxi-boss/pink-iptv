@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-01
-Phase: Phase 3 — Android Catalog + Player 003D
+Phase: Phase 3 — Android Catalog + Player 003E
 Public launch: NO
 
 ## Governance
@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 and Stages 003A/003B/003C are complete and merged. Stage 003D is active for bounded EPG browsing and fail-closed Catch Up on the existing Media3 core.
+- Android Shell 002 and Stages 003A/003B/003C/003D are complete and merged. Stage 003E is active for the device-local, account-isolated Favorites/History/Continue Watching library.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -106,21 +106,33 @@ Series detail uses `get_series_info` with the exact selected `series_id`, defens
 
 Real-provider Series info and episode-playback certification remain separate evidence and are not inferred from the merge.
 
-## Phase 3 / Stage 003D — ACTIVE
+## Phase 3 / Stage 003D — COMPLETE / MERGED
+
+Stage 003D approved head: `ba3cbf66c85bf30381aef809cb0169b5ce03ad86`.
+
+Stage 003D merge commit: `344166836661a7b340750fd921036e8b2ff0c671`.
 
 Stage 003D adds channel-centric Live EPG using authenticated `get_short_epg` and `get_simple_data_table`, conservative Live archive metadata, defensive Base64/plain-text programme parsing, now/next summaries and fail-closed Catch Up eligibility.
 
-Catch Up uses a credential-free typed playback reference and the canonical HLS timeshift path through the existing Media3 1.11.1 player. Credential-bearing EPG requests and timeshift URIs remain internal runtime material.
+Catch Up uses a credential-free typed playback reference and the canonical HLS timeshift path through the existing Media3 1.11.1 player. Provider-start validation is timezone-independent by using UTC only as a neutral strict calendar validator; provider textual time is not converted or shifted.
 
-Real-provider EPG/Catch Up playback proof is NOT CERTIFIED unless separately executed in an approved secure environment.
+Real-provider EPG/Catch Up playback proof remains NOT CERTIFIED unless separately executed in an approved secure environment.
 
-Favorites/history/continue-watching, VPN/WireGuard and Windows remain unimplemented and outside Stage 003D.
+## Phase 3 / Stage 003E — ACTIVE
+
+Stage 003E implements a device-local, account-isolated media library using Room 2.8.5 with KSP 2.3.12 and schema version 1.
+
+Favorites cover Live, Movies/VOD and Series. Recent history covers Live, Movies/VOD and Series Episodes. Continue Watching is limited to eligible seekable Movies/VOD and Series Episodes with controlled progress persistence and typed resume through the existing Media3 1.11.1 player.
+
+The local profile partition is derived from the exact authenticated username as a SHA-256 digest under the fixed PINK namespace; plaintext usernames, passwords, provider origins and credential-bearing media URLs are not stored in Room. Logout clears visible/in-memory library state without deleting persisted profile rows.
+
+Catch Up history persistence is NOT IMPLEMENTED. Global Search is NOT IMPLEMENTED. VPN/WireGuard and Windows remain unimplemented.
 
 ## Remaining technical gates
 
-1. Supervisor audit of Android Catalog + Player 003D.
+1. Supervisor audit of Android Catalog + Player 003E.
 2. Separate real-provider EPG/Catch Up proof when authorized and securely available.
-3. Separate favorites/history stage after 003D.
+3. Global Search remains a later Phase 3 stage.
 4. Separate VPN/WireGuard and Windows phases.
 5. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
@@ -145,7 +157,7 @@ The current OVH host remains development/staging. Public launch is not approved.
 Beyond Android Shell 002, separate orders are still required for:
 
 1. final distribution/store artwork and design assets;
-2. Android Phase 3 continuation after Stage 003D, including favorites/history;
+2. Android Phase 3 continuation after Stage 003E, including global Search;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

@@ -7,16 +7,24 @@ import androidx.navigation.compose.rememberNavController
 import com.pinkiptv.app.R
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.library.NoopPlaybackActivityRecorder
+import com.pinkiptv.app.library.PlaybackActivityRecorder
 import com.pinkiptv.app.model.CatalogUiState
 import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.FavoriteItem
+import com.pinkiptv.app.model.FavoriteKind
+import com.pinkiptv.app.model.LibraryUiState
 import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.SeriesDetailUiState
+import com.pinkiptv.app.model.continueWatchingPositionMs
+import com.pinkiptv.app.model.toPlaybackRef
 import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.ui.screens.CatalogScreen
 import com.pinkiptv.app.ui.screens.EpgScreen
 import com.pinkiptv.app.ui.screens.HomeScreen
+import com.pinkiptv.app.ui.screens.LibraryScreen
 import com.pinkiptv.app.ui.screens.PlayerScreen
 import com.pinkiptv.app.ui.screens.SeriesDetailScreen
 import com.pinkiptv.app.ui.screens.SettingsScreen
@@ -44,8 +52,11 @@ fun AuthenticatedShell(
     onLogout: () -> Unit,
     seriesDetail: SeriesDetailUiState = SeriesDetailUiState(),
     epgState: EpgUiState = EpgUiState(),
+    libraryState: LibraryUiState = LibraryUiState(),
     selectedPlayback: PlaybackRef? = null,
+    selectedPlaybackStartPositionMs: Long = 0L,
     playbackFacadeFactory: PlaybackFacadeFactory? = null,
+    playbackActivityRecorder: PlaybackActivityRecorder = NoopPlaybackActivityRecorder,
     onOpenSeries: (CatalogUiItem) -> Unit = {},
     onRetrySeriesDetail: () -> Unit = {},
     onSelectSeriesSeason: (String) -> Unit = {},
@@ -57,6 +68,11 @@ fun AuthenticatedShell(
     onSelectPlayback: (CatalogUiItem) -> Unit = {},
     onSelectEpisode: (SeriesEpisode) -> Unit = {},
     onSelectCatchUp: (CatchUpPlaybackRef) -> Unit = {},
+    onToggleFavorite: (CatalogKind, CatalogUiItem) -> Unit = { _, _ -> },
+    onRemoveFavorite: (FavoriteItem) -> Unit = {},
+    onClearHistory: () -> Unit = {},
+    onOpenSeriesFavorite: (FavoriteItem) -> Unit = {},
+    onSelectLibraryPlayback: (PlaybackRef, Long) -> Unit = { _, _ -> },
     onClearPlayback: () -> Unit = {},
 ) {
     val navController = rememberNavController()
@@ -78,6 +94,12 @@ fun AuthenticatedShell(
                     onSelectPlayback(item)
                     navController.navigate(Routes.PLAYER)
                 },
+                favoriteIds = libraryState.favorites
+                    .filter { it.kind == FavoriteKind.Live }
+                    .mapTo(mutableSetOf()) { it.providerId },
+                onToggleFavorite = { item ->
+                    onToggleFavorite(CatalogKind.Live, item)
+                },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -91,6 +113,12 @@ fun AuthenticatedShell(
                     onSelectPlayback(item)
                     navController.navigate(Routes.PLAYER)
                 },
+                favoriteIds = libraryState.favorites
+                    .filter { it.kind == FavoriteKind.Movie }
+                    .mapTo(mutableSetOf()) { it.providerId },
+                onToggleFavorite = { item ->
+                    onToggleFavorite(CatalogKind.Movies, item)
+                },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -103,6 +131,12 @@ fun AuthenticatedShell(
                 onOpenItem = { item ->
                     onOpenSeries(item)
                     navController.navigate(Routes.SERIES_DETAIL)
+                },
+                favoriteIds = libraryState.favorites
+                    .filter { it.kind == FavoriteKind.Series }
+                    .mapTo(mutableSetOf()) { it.providerId },
+                onToggleFavorite = { item ->
+                    onToggleFavorite(CatalogKind.Series, item)
                 },
                 onBack = { navController.popBackStack() },
             )
@@ -152,6 +186,8 @@ fun AuthenticatedShell(
                 PlayerScreen(
                     playbackRef = selectedPlayback,
                     facadeFactory = factory,
+                    startPositionMs = selectedPlaybackStartPositionMs,
+                    activityRecorder = playbackActivityRecorder,
                     onBack = {
                         onClearPlayback()
                         navController.popBackStack()
@@ -160,7 +196,40 @@ fun AuthenticatedShell(
             }
         }
         composable(Routes.FAVORITES) {
-            ShellScreen(R.string.favorites, onBack = { navController.popBackStack() })
+            LibraryScreen(
+                state = libraryState,
+                onOpenFavorite = { item ->
+                    if (item.kind == FavoriteKind.Series) {
+                        onOpenSeriesFavorite(item)
+                        navController.navigate(Routes.SERIES_DETAIL)
+                    } else {
+                        item.toPlaybackRef()?.let { ref ->
+                            onSelectLibraryPlayback(ref, 0L)
+                            navController.navigate(Routes.PLAYER)
+                        }
+                    }
+                },
+                onRemoveFavorite = onRemoveFavorite,
+                onOpenContinue = { item ->
+                    val ref = item.history.toPlaybackRef()
+                    val position = item.history.continueWatchingPositionMs()
+                    if (ref != null && position != null) {
+                        onSelectLibraryPlayback(ref, position)
+                        navController.navigate(Routes.PLAYER)
+                    }
+                },
+                onOpenRecent = { item ->
+                    item.toPlaybackRef()?.let { ref ->
+                        onSelectLibraryPlayback(
+                            ref,
+                            item.continueWatchingPositionMs() ?: 0L,
+                        )
+                        navController.navigate(Routes.PLAYER)
+                    }
+                },
+                onClearHistory = onClearHistory,
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.SETTINGS) {
             SettingsScreen(

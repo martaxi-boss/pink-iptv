@@ -20,6 +20,7 @@ import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlayerPhase
 import com.pinkiptv.app.model.PlayerUiState
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
+import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.network.PINK_XTREAM_USER_AGENT
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +70,8 @@ internal class Media3PlaybackFacade(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var currentRef: PlaybackRef? = null
     private var currentError: PlayerError? = null
+    private var requestedStartPositionMs = 0L
+    private var pendingResume = false
     private var released = false
 
     private val player = ExoPlayer.Builder(context)
@@ -85,6 +88,9 @@ internal class Media3PlaybackFacade(
 
     private val listener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_READY) {
+                applyPendingResume()
+            }
             syncState()
         }
 
@@ -125,12 +131,22 @@ internal class Media3PlaybackFacade(
         }
     }
 
-    override fun prepare(ref: PlaybackRef) {
+    override fun prepare(
+        ref: PlaybackRef,
+        startPositionMs: Long,
+    ) {
         requireMainThread()
         if (released) return
 
         currentRef = ref
         currentError = null
+        requestedStartPositionMs = when (ref) {
+            is VodPlaybackRef,
+            is EpisodePlaybackRef,
+            -> startPositionMs.coerceAtLeast(0L)
+            else -> 0L
+        }
+        pendingResume = requestedStartPositionMs > 0L
         when (val result = urlFactory.resolve(ref)) {
             is PlaybackSourceResult.Failure -> {
                 player.stop()
@@ -181,7 +197,7 @@ internal class Media3PlaybackFacade(
         requireMainThread()
         val ref = currentRef ?: return
         if (released) return
-        prepare(ref)
+        prepare(ref, requestedStartPositionMs)
     }
 
     override fun close() {
@@ -195,7 +211,26 @@ internal class Media3PlaybackFacade(
         scope.cancel()
         currentRef = null
         currentError = null
+        requestedStartPositionMs = 0L
+        pendingResume = false
         mutableState.value = PlayerUiState()
+    }
+
+    private fun applyPendingResume() {
+        if (!pendingResume) return
+        pendingResume = false
+
+        val duration = player.duration.takeIf { value ->
+            value != C.TIME_UNSET && value > 0L
+        }
+        val safePosition = safeResumePositionMs(
+            requestedPositionMs = requestedStartPositionMs,
+            durationMs = duration,
+            seekable = player.isCurrentMediaItemSeekable,
+        )
+        if (safePosition > 0L) {
+            player.seekTo(safePosition)
+        }
     }
 
     private fun syncState() {
@@ -284,3 +319,21 @@ internal fun mapMedia3Error(errorCode: Int): PlayerError =
 
         else -> PlayerError.PlaybackError
     }
+
+
+internal fun safeResumePositionMs(
+    requestedPositionMs: Long,
+    durationMs: Long?,
+    seekable: Boolean,
+): Long {
+    if (!seekable || requestedPositionMs <= 0L) return 0L
+    val duration = durationMs?.takeIf { it > 0L } ?: return 0L
+    if (
+        requestedPositionMs > Long.MAX_VALUE / 10L ||
+        duration > Long.MAX_VALUE / 9L ||
+        requestedPositionMs * 10L >= duration * 9L
+    ) {
+        return 0L
+    }
+    return requestedPositionMs.coerceAtMost((duration - 1L).coerceAtLeast(0L))
+}

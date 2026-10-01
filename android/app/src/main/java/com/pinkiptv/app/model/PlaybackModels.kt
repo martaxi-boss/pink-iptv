@@ -22,6 +22,7 @@ data class EpisodePlaybackRef(
     val episodeId: String,
     override val title: String,
     val containerExtension: String?,
+    val artworkUrl: String? = null,
 ) : PlaybackRef {
     override val streamId: String
         get() = episodeId

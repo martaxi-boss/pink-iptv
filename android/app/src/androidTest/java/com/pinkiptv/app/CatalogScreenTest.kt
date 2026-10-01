@@ -48,6 +48,33 @@ class CatalogScreenTest {
         }
     }
 
+
+    @Test
+    fun catalogFavoriteActionIsSeparateAndReflectsFavoriteState() {
+        var toggled: CatalogUiItem? = null
+        val state = contentState(CatalogKind.Movies)
+
+        composeRule.setContent {
+            PinkTheme {
+                CatalogScreen(
+                    titleRes = R.string.movies,
+                    state = state,
+                    onLoad = {},
+                    onSelectCategory = {},
+                    onBack = {},
+                    favoriteIds = setOf("item-1"),
+                    onToggleFavorite = { toggled = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("catalog_favorite_item-1").assertIsDisplayed()
+        composeRule.onNodeWithTag("catalog_favorite_item-1").performClick()
+        composeRule.runOnIdle {
+            assertEquals("item-1", toggled?.id)
+        }
+    }
+
     @Test
     fun moviesErrorOffersRetryAndSeriesEmptyIsStable() {
         var retries = 0
@@ -114,6 +141,42 @@ class CatalogScreenTest {
         instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_RIGHT)
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("catalog_category_news").assertIsFocused()
+    }
+
+
+    @Test
+    fun tvDpadReachesFavoriteActionAndOkToggles() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val configuration = instrumentation.targetContext.resources.configuration
+        assumeTrue(
+            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                Configuration.UI_MODE_TYPE_TELEVISION,
+        )
+        var toggled = 0
+
+        composeRule.setContent {
+            PinkTheme {
+                CatalogScreen(
+                    titleRes = R.string.live_tv,
+                    state = contentState(CatalogKind.Live),
+                    onLoad = {},
+                    onSelectCategory = {},
+                    onBack = {},
+                    onToggleFavorite = { toggled += 1 },
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("catalog_category_all").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("catalog_item_item-1").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("catalog_favorite_item-1").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER)
+        composeRule.runOnIdle { assertEquals(1, toggled) }
     }
 
     private fun contentState(kind: CatalogKind) = CatalogUiState(

@@ -1,10 +1,14 @@
 package com.pinkiptv.app
 
+import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
+import com.pinkiptv.app.library.FavoriteEntity
+import com.pinkiptv.app.library.PinkLibraryDatabase
 import com.pinkiptv.app.storage.AndroidKeystoreCredentialCipher
 import com.pinkiptv.app.storage.DataStoreCredentialPersistence
 import com.pinkiptv.app.storage.SecureCredentialStore
 import java.security.KeyStore
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -53,6 +57,56 @@ class AndroidKeystoreCredentialStoreTest {
             assertEquals(password, requireNotNull(store.load()).password)
         } finally {
             store.clear()
+        }
+    }
+
+
+    @Test
+    fun localLibraryRoomCreatesVersionOneAndFiltersProfiles() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            PinkLibraryDatabase::class.java,
+        ).allowMainThreadQueries().build()
+
+        try {
+            assertEquals(1, database.openHelper.readableDatabase.version)
+            val dao = database.favoriteDao()
+            dao.upsert(
+                FavoriteEntity(
+                    profileKey = "profile-a",
+                    contentKind = "Live",
+                    providerId = "10",
+                    title = "A",
+                    artworkUrl = null,
+                    containerExtension = null,
+                    createdAtEpochMs = 1L,
+                    updatedAtEpochMs = 1L,
+                ),
+            )
+            dao.upsert(
+                FavoriteEntity(
+                    profileKey = "profile-b",
+                    contentKind = "Live",
+                    providerId = "10",
+                    title = "B",
+                    artworkUrl = null,
+                    containerExtension = null,
+                    createdAtEpochMs = 1L,
+                    updatedAtEpochMs = 1L,
+                ),
+            )
+
+            assertEquals(
+                "A",
+                dao.observeForProfile("profile-a").first().single().title,
+            )
+            assertEquals(
+                "B",
+                dao.observeForProfile("profile-b").first().single().title,
+            )
+        } finally {
+            database.close()
         }
     }
 

@@ -8,19 +8,30 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class PlaybackSelectionController {
     private val mutableSelection = MutableStateFlow<PlaybackRef?>(null)
-    val selection: StateFlow<PlaybackRef?> = mutableSelection.asStateFlow()
+    private val mutableResumePositionMs = MutableStateFlow(0L)
 
-    fun select(item: CatalogUiItem): Boolean {
+    val selection: StateFlow<PlaybackRef?> = mutableSelection.asStateFlow()
+    val resumePositionMs: StateFlow<Long> = mutableResumePositionMs.asStateFlow()
+
+    fun select(
+        item: CatalogUiItem,
+        startPositionMs: Long = 0L,
+    ): Boolean {
         val ref = item.playbackRef ?: return false
-        return select(ref)
+        return select(ref, startPositionMs)
     }
 
-    fun select(ref: PlaybackRef): Boolean {
+    fun select(
+        ref: PlaybackRef,
+        startPositionMs: Long = 0L,
+    ): Boolean {
         mutableSelection.value = ref
+        mutableResumePositionMs.value = startPositionMs.coerceAtLeast(0L)
         return true
     }
 
     fun clear() {
         mutableSelection.value = null
+        mutableResumePositionMs.value = 0L
     }
 }

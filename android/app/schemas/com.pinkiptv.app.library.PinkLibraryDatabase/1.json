@@ -1,0 +1,55 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "\u0034\u0039\u0031\u0033\u0039\u0039\u0066\u0062\u0064\u0064\u0033\u0062\u0031\u0032\u0066\u0062\u0061\u0064\u0038\u0065\u0034\u0032\u0033\u0033\u0061\u0032\u0039\u0061\u0066\u0064\u0039\u0065",
+    "entities": [
+      {
+        "tableName": "favorites",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileKey` TEXT NOT NULL, `contentKind` TEXT NOT NULL, `providerId` TEXT NOT NULL, `title` TEXT NOT NULL, `artworkUrl` TEXT, `containerExtension` TEXT, `createdAtEpochMs` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`profileKey`, `contentKind`, `providerId`))",
+        "fields": [
+          {"fieldPath": "profileKey", "columnName": "profileKey", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "contentKind", "columnName": "contentKind", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "providerId", "columnName": "providerId", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "title", "columnName": "title", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "artworkUrl", "columnName": "artworkUrl", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "containerExtension", "columnName": "containerExtension", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "createdAtEpochMs", "columnName": "createdAtEpochMs", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "updatedAtEpochMs", "columnName": "updatedAtEpochMs", "affinity": "INTEGER", "notNull": true}
+        ],
+        "primaryKey": {"autoGenerate": false, "columnNames": ["profileKey", "contentKind", "providerId"]},
+        "indices": [
+          {"name": "index_favorites_profileKey", "unique": false, "columnNames": ["profileKey"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_favorites_profileKey` ON `${TABLE_NAME}` (`profileKey`)"}
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileKey` TEXT NOT NULL, `playbackKind` TEXT NOT NULL, `providerMediaId` TEXT NOT NULL, `title` TEXT NOT NULL, `artworkUrl` TEXT, `containerExtension` TEXT, `lastPlayedAtEpochMs` INTEGER NOT NULL, `lastPositionMs` INTEGER NOT NULL, `durationMs` INTEGER, `seekable` INTEGER NOT NULL, `completed` INTEGER NOT NULL, PRIMARY KEY(`profileKey`, `playbackKind`, `providerMediaId`))",
+        "fields": [
+          {"fieldPath": "profileKey", "columnName": "profileKey", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "playbackKind", "columnName": "playbackKind", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "providerMediaId", "columnName": "providerMediaId", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "title", "columnName": "title", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "artworkUrl", "columnName": "artworkUrl", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "containerExtension", "columnName": "containerExtension", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "lastPlayedAtEpochMs", "columnName": "lastPlayedAtEpochMs", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "lastPositionMs", "columnName": "lastPositionMs", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "durationMs", "columnName": "durationMs", "affinity": "INTEGER", "notNull": false},
+          {"fieldPath": "seekable", "columnName": "seekable", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "completed", "columnName": "completed", "affinity": "INTEGER", "notNull": true}
+        ],
+        "primaryKey": {"autoGenerate": false, "columnNames": ["profileKey", "playbackKind", "providerMediaId"]},
+        "indices": [
+          {"name": "index_history_profileKey", "unique": false, "columnNames": ["profileKey"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_history_profileKey` ON `${TABLE_NAME}` (`profileKey`)"}
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '\u0034\u0039\u0031\u0033\u0039\u0039\u0066\u0062\u0064\u0064\u0033\u0062\u0031\u0032\u0066\u0062\u0061\u0064\u0038\u0065\u0034\u0032\u0033\u0033\u0061\u0032\u0039\u0061\u0066\u0064\u0039\u0065')"
+    ]
+  }
+}

@@ -26,12 +26,17 @@ class TestPlaybackFacade(
     override val media3Player: Player? = null
 
     var preparedRef: PlaybackRef? = null
+    var preparedStartPositionMs = 0L
     var retryCount = 0
     var closeCount = 0
     var seekTotalMs = 0L
 
-    override fun prepare(ref: PlaybackRef) {
+    override fun prepare(
+        ref: PlaybackRef,
+        startPositionMs: Long,
+    ) {
         preparedRef = ref
+        preparedStartPositionMs = startPositionMs
     }
 
     override fun togglePlayPause() {

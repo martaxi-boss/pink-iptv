@@ -8,6 +8,7 @@ import com.pinkiptv.app.model.PlayerPhase
 import com.pinkiptv.app.model.PlayerUiState
 import com.pinkiptv.app.player.mapMedia3Error
 import com.pinkiptv.app.player.media3Phase
+import com.pinkiptv.app.player.safeResumePositionMs
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -41,6 +42,17 @@ class Media3PlayerStateTest {
     fun publicPlayerStateSupportsSeriesKindWithoutSecretMaterial() {
         val state = PlayerUiState(kind = PlaybackKind.Series)
         assertEquals(PlaybackKind.Series, state.kind)
+    }
+
+    @Test
+    fun resumePositionFailsClosedAndRejectsCompletedMedia() {
+        assertEquals(30_000L, safeResumePositionMs(30_000L, 120_000L, true))
+        assertEquals(0L, safeResumePositionMs(30_000L, 120_000L, false))
+        assertEquals(0L, safeResumePositionMs(30_000L, null, true))
+        assertEquals(0L, safeResumePositionMs(-1L, 120_000L, true))
+        assertEquals(0L, safeResumePositionMs(108_000L, 120_000L, true))
+        assertEquals(0L, safeResumePositionMs(200_000L, 120_000L, true))
+        assertEquals(0L, safeResumePositionMs(Long.MAX_VALUE, Long.MAX_VALUE, true))
     }
 
     @Test

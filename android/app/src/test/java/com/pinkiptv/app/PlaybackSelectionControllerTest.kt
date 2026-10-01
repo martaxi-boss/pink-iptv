@@ -22,11 +22,13 @@ class PlaybackSelectionControllerTest {
         assertTrue(controller.select(item("10", live)))
         assertSame(live, controller.selection.value)
 
-        assertTrue(controller.select(item("20", vod)))
+        assertTrue(controller.select(item("20", vod), startPositionMs = 45_000L))
         assertSame(vod, controller.selection.value)
+        org.junit.Assert.assertEquals(45_000L, controller.resumePositionMs.value)
 
         controller.clear()
         assertNull(controller.selection.value)
+        org.junit.Assert.assertEquals(0L, controller.resumePositionMs.value)
 
         assertFalse(controller.select(item("30", null)))
         assertNull(controller.selection.value)

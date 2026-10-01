@@ -11,6 +11,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
@@ -243,6 +244,7 @@ internal class Media3PlaybackFacade(
         when (ref) {
             is LivePlaybackRef -> PlaybackKind.Live
             is EpisodePlaybackRef -> PlaybackKind.Series
+            is CatchUpPlaybackRef -> PlaybackKind.CatchUp
             else -> PlaybackKind.Vod
         }
 

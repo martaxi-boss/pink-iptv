@@ -4,6 +4,9 @@ import com.pinkiptv.app.model.CatalogCategory
 import com.pinkiptv.app.model.CatalogError
 import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.CatalogResult
+import com.pinkiptv.app.model.EpgError
+import com.pinkiptv.app.model.EpgProgramme
+import com.pinkiptv.app.model.EpgResult
 import com.pinkiptv.app.model.LiveStream
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SeriesDetail
@@ -13,6 +16,8 @@ import com.pinkiptv.app.model.SeriesSeason
 import com.pinkiptv.app.model.VodItem
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.nio.ByteBuffer
+import java.nio.charset.CodingErrorAction
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,8 +25,8 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import okhttp3.OkHttpClient
@@ -79,6 +84,36 @@ class XtreamCatalogClient(
         }
     }
 
+    override suspend fun shortEpg(
+        streamId: String,
+        limit: Int,
+    ): EpgResult<List<EpgProgramme>> {
+        if (!PROVIDER_ID.matches(streamId) || limit !in 1..20) {
+            return EpgResult.Failure(EpgError.InvalidMetadata)
+        }
+        return requestEpgValue(
+            action = "get_short_epg",
+            extraQuery = mapOf(
+                "stream_id" to streamId,
+                "limit" to limit.toString(),
+            ),
+            parser = XtreamJsonParser::epgProgrammes,
+        )
+    }
+
+    override suspend fun simpleDataTable(
+        streamId: String,
+    ): EpgResult<List<EpgProgramme>> {
+        if (!PROVIDER_ID.matches(streamId)) {
+            return EpgResult.Failure(EpgError.InvalidMetadata)
+        }
+        return requestEpgValue(
+            action = "get_simple_data_table",
+            extraQuery = mapOf("stream_id" to streamId),
+            parser = XtreamJsonParser::epgProgrammes,
+        )
+    }
+
     private suspend fun <T> requestList(
         action: String,
         parser: (String) -> List<T>,
@@ -93,21 +128,8 @@ class XtreamCatalogClient(
         val session = sessionStore.current()
             ?: return@withContext CatalogResult.Failure(CatalogError.MissingSession)
 
-        val builder = session.origin.newBuilder()
-            .addPathSegment("player_api.php")
-            .addQueryParameter("username", session.username)
-            .addQueryParameter("password", session.password)
-            .addQueryParameter("action", action)
-        extraQuery.forEach { (name, value) ->
-            builder.addQueryParameter(name, value)
-        }
-
-        val request = Request.Builder()
-            .url(builder.build())
-            .get()
-            .header("Accept", "application/json")
-            .header("User-Agent", PINK_XTREAM_USER_AGENT)
-            .build()
+        val request = providerRequest(action, extraQuery, session.username, session.password)
+            ?: return@withContext CatalogResult.Failure(CatalogError.InvalidMetadata)
 
         try {
             client.newCall(request).execute().use { response ->
@@ -130,6 +152,61 @@ class XtreamCatalogClient(
         }
     }
 
+    private suspend fun <T> requestEpgValue(
+        action: String,
+        extraQuery: Map<String, String>,
+        parser: (String) -> T,
+    ): EpgResult<T> = withContext(Dispatchers.IO) {
+        val session = sessionStore.current()
+            ?: return@withContext EpgResult.Failure(EpgError.MissingSession)
+
+        val request = providerRequest(action, extraQuery, session.username, session.password)
+            ?: return@withContext EpgResult.Failure(EpgError.InvalidMetadata)
+
+        try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    return@withContext EpgResult.Failure(EpgError.HttpFailure)
+                }
+
+                try {
+                    EpgResult.Success(parser(response.body.string()))
+                } catch (_: SerializationException) {
+                    EpgResult.Failure(EpgError.InvalidResponse)
+                } catch (_: IllegalArgumentException) {
+                    EpgResult.Failure(EpgError.InvalidResponse)
+                }
+            }
+        } catch (_: SocketTimeoutException) {
+            EpgResult.Failure(EpgError.NetworkFailure)
+        } catch (_: IOException) {
+            EpgResult.Failure(EpgError.NetworkFailure)
+        }
+    }
+
+    private fun providerRequest(
+        action: String,
+        extraQuery: Map<String, String>,
+        username: String,
+        password: String,
+    ): Request? {
+        val session = sessionStore.current() ?: return null
+        val builder = session.origin.newBuilder()
+            .addPathSegment("player_api.php")
+            .addQueryParameter("username", username)
+            .addQueryParameter("password", password)
+            .addQueryParameter("action", action)
+        extraQuery.forEach { (name, value) ->
+            builder.addQueryParameter(name, value)
+        }
+        return Request.Builder()
+            .url(builder.build())
+            .get()
+            .header("Accept", "application/json")
+            .header("User-Agent", PINK_XTREAM_USER_AGENT)
+            .build()
+    }
+
     private companion object {
         val PROVIDER_ID = Regex("^[A-Za-z0-9_-]{1,64}$")
     }
@@ -137,6 +214,7 @@ class XtreamCatalogClient(
 
 internal object XtreamJsonParser {
     private val providerMediaId = Regex("^[A-Za-z0-9_-]{1,64}$")
+    private val base64Chars = Regex("^[A-Za-z0-9+/]*={0,2}$")
     private val json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
@@ -151,7 +229,7 @@ internal object XtreamJsonParser {
 
     fun liveStreams(body: String): List<LiveStream> =
         parseArray(body) { item ->
-            val id = item.text("stream_id") ?: return@parseArray null
+            val id = item.providerId("stream_id") ?: return@parseArray null
             val name = item.text("name") ?: return@parseArray null
             LiveStream(
                 streamId = id,
@@ -159,6 +237,9 @@ internal object XtreamJsonParser {
                 categoryId = item.text("category_id"),
                 artworkUrl = item.text("stream_icon"),
                 streamType = item.text("stream_type"),
+                epgChannelId = item.text("epg_channel_id"),
+                tvArchive = item.flag("tv_archive"),
+                tvArchiveDurationDays = item.positiveInt("tv_archive_duration"),
             )
         }
 
@@ -224,6 +305,38 @@ internal object XtreamJsonParser {
             rating = info?.text("rating"),
             seasons = declaredSeasons + derivedSeasons,
             episodes = episodes,
+        )
+    }
+
+    fun epgProgrammes(body: String): List<EpgProgramme> {
+        val root = json.parseToJsonElement(body) as? JsonObject
+            ?: throw SerializationException("Unexpected EPG response")
+        if (!root.containsKey("epg_listings")) {
+            throw SerializationException("Missing EPG listings")
+        }
+        val element = root["epg_listings"]
+        if (element == null || element is JsonNull) return emptyList()
+        val listings = element as? JsonArray
+            ?: throw SerializationException("Unexpected EPG listings shape")
+
+        return listings.mapNotNull { entry ->
+            val item = entry as? JsonObject ?: return@mapNotNull null
+            val title = decodeProviderText(item.rawText("title")) ?: "Programa"
+            EpgProgramme(
+                programmeId = item.rawText("id") ?: item.rawText("epg_id"),
+                title = title,
+                description = decodeProviderText(item.rawText("description")),
+                startProvider = item.text("start"),
+                endProvider = item.text("end") ?: item.text("stop"),
+                startTimestamp = item.positiveLong("start_timestamp"),
+                stopTimestamp = item.positiveLong("stop_timestamp")
+                    ?: item.positiveLong("end_timestamp"),
+                nowPlaying = item.flag("now_playing"),
+                hasArchive = item.flag("has_archive"),
+            )
+        }.sortedWith(
+            compareBy<EpgProgramme> { it.startTimestamp == null }
+                .thenBy { it.startTimestamp ?: Long.MAX_VALUE },
         )
     }
 
@@ -326,4 +439,80 @@ internal object XtreamJsonParser {
         rawText(name)
             ?.trim()
             ?.takeIf { value -> value.isNotEmpty() && value != "null" }
+
+    private fun JsonObject.flag(name: String): Boolean =
+        when (text(name)?.lowercase()) {
+            "1", "true" -> true
+            else -> false
+        }
+
+    private fun JsonObject.positiveInt(name: String): Int? =
+        text(name)?.toIntOrNull()?.takeIf { it > 0 }
+
+    private fun JsonObject.positiveLong(name: String): Long? =
+        text(name)?.toLongOrNull()?.takeIf { it > 0L }
+
+    private fun decodeProviderText(raw: String?): String? {
+        val value = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val likelyEncoded =
+            value.length >= 4 &&
+                base64Chars.matches(value) &&
+                value.length % 4 != 1 &&
+                (value.contains('=') || value.contains('+') || value.contains('/') || value.length >= 12)
+        if (!likelyEncoded) return value
+
+        val bytes = decodeBase64(value) ?: return value
+        val decoder = Charsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)
+        val decoded = try {
+            decoder.decode(ByteBuffer.wrap(bytes)).toString()
+        } catch (_: Exception) {
+            return value
+        }
+        if (decoded.isBlank()) return value
+        if (decoded.any { char -> char == '\u0000' || (char.isISOControl() && char != '\n' && char != '\r' && char != '\t') }) {
+            return value
+        }
+        return decoded
+    }
+
+    private fun decodeBase64(value: String): ByteArray? {
+        val paddingNeeded = (4 - value.length % 4) % 4
+        val padded = value + "=".repeat(paddingNeeded)
+        if (padded.length % 4 != 0 || !base64Chars.matches(padded)) return null
+
+        val output = ArrayList<Byte>(padded.length * 3 / 4)
+        var index = 0
+        while (index < padded.length) {
+            val a = base64Value(padded[index])
+            val b = base64Value(padded[index + 1])
+            val cChar = padded[index + 2]
+            val dChar = padded[index + 3]
+            val c = if (cChar == '=') 0 else base64Value(cChar)
+            val d = if (dChar == '=') 0 else base64Value(dChar)
+            if (a < 0 || b < 0 || c < 0 || d < 0) return null
+
+            output += ((a shl 2) or (b shr 4)).toByte()
+            if (cChar != '=') {
+                output += (((b and 0x0F) shl 4) or (c shr 2)).toByte()
+            }
+            if (dChar != '=') {
+                output += (((c and 0x03) shl 6) or d).toByte()
+            }
+            if (cChar == '=' && dChar != '=') return null
+            index += 4
+        }
+        return ByteArray(output.size) { output[it] }
+    }
+
+    private fun base64Value(char: Char): Int =
+        when (char) {
+            in 'A'..'Z' -> char.code - 'A'.code
+            in 'a'..'z' -> char.code - 'a'.code + 26
+            in '0'..'9' -> char.code - '0'.code + 52
+            '+' -> 62
+            '/' -> 63
+            else -> -1
+        }
 }

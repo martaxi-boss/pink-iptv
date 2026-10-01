@@ -1,5 +1,6 @@
 package com.pinkiptv.app.player
 
+import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
@@ -68,6 +69,22 @@ internal class XtreamPlaybackUrlFactory(
                     .addPathSegment(ref.episodeId + "." + extension)
                 PlaybackKind.Series
             }
+            is CatchUpPlaybackRef -> {
+                if (
+                    ref.durationMinutes !in 1..1440 ||
+                    !CATCH_UP_START.matches(ref.providerStart)
+                ) {
+                    return PlaybackSourceResult.Failure(PlayerError.InvalidStreamMetadata)
+                }
+                builder
+                    .addPathSegment("timeshift")
+                    .addPathSegment(session.username)
+                    .addPathSegment(session.password)
+                    .addPathSegment(ref.durationMinutes.toString())
+                    .addPathSegment(ref.providerStart)
+                    .addPathSegment(ref.streamId + ".m3u8")
+                PlaybackKind.CatchUp
+            }
         }
 
         return PlaybackSourceResult.Success(
@@ -82,5 +99,6 @@ internal class XtreamPlaybackUrlFactory(
     private companion object {
         val STREAM_ID = Regex("^[A-Za-z0-9_-]{1,64}$")
         val MEDIA_EXTENSION = Regex("^[A-Za-z0-9]{1,12}$")
+        val CATCH_UP_START = Regex("^\\d{4}-\\d{2}-\\d{2}:\\d{2}-\\d{2}$")
     }
 }

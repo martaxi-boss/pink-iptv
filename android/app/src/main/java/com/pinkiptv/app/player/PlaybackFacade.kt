@@ -9,7 +9,11 @@ interface PlaybackFacade {
     val uiState: StateFlow<PlayerUiState>
     val media3Player: Player?
 
-    fun prepare(ref: PlaybackRef)
+    fun prepare(
+        ref: PlaybackRef,
+        startPositionMs: Long = 0L,
+    )
+
     fun togglePlayPause()
     fun seekBy(deltaMs: Long)
     fun retry()

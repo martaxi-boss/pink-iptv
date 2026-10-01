@@ -2,6 +2,7 @@ package com.pinkiptv.app
 
 import android.content.res.Configuration
 import android.view.KeyEvent
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -28,17 +29,16 @@ class EpgScreenTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun loadingEmptyAndErrorRetryStatesAreSafe() {
-        var current = EpgUiState(phase = EpgPhase.Loading)
-        var retryCount = 0
+    fun loadingAndEmptyStatesAreObservable() {
+        val state = mutableStateOf(EpgUiState(phase = EpgPhase.Loading))
 
         composeRule.setContent {
             PinkTheme {
                 EpgScreen(
-                    state = current,
+                    state = state.value,
                     onLoad = {},
                     onSelectChannel = {},
-                    onRetry = { retryCount += 1 },
+                    onRetry = {},
                     onOpenCatchUp = {},
                     onBack = {},
                 )
@@ -47,8 +47,9 @@ class EpgScreenTest {
         composeRule.onNodeWithTag("epg_loading").assertIsDisplayed()
 
         composeRule.runOnIdle {
-            current = EpgUiState(phase = EpgPhase.Empty)
+            state.value = EpgUiState(phase = EpgPhase.Empty)
         }
+        composeRule.onNodeWithTag("epg_empty").assertIsDisplayed()
     }
 
     @Test
@@ -73,6 +74,46 @@ class EpgScreenTest {
         composeRule.onNodeWithTag("epg_error").assertIsDisplayed()
         composeRule.onNodeWithTag("epg_retry").performClick()
         composeRule.runOnIdle { assertEquals(1, retries) }
+    }
+
+
+    @Test
+    fun channelSelectionUsesExactStreamIdentity() {
+        var selected: String? = null
+        val state = contentState().copy(
+            channels = listOf(
+                EpgChannel(
+                    streamId = "10",
+                    name = "One",
+                    epgChannelId = "epg-10",
+                    tvArchive = true,
+                    tvArchiveDurationDays = 7,
+                ),
+                EpgChannel(
+                    streamId = "20",
+                    name = "Two",
+                    epgChannelId = "epg-20",
+                    tvArchive = false,
+                    tvArchiveDurationDays = null,
+                ),
+            ),
+        )
+
+        composeRule.setContent {
+            PinkTheme {
+                EpgScreen(
+                    state = state,
+                    onLoad = {},
+                    onSelectChannel = { selected = it },
+                    onRetry = {},
+                    onOpenCatchUp = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("epg_channel_20").performClick()
+        composeRule.runOnIdle { assertEquals("20", selected) }
     }
 
     @Test

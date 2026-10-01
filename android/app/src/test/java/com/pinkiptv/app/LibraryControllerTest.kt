@@ -5,12 +5,16 @@ import com.pinkiptv.app.library.LocalLibraryRepository
 import com.pinkiptv.app.library.LocalProfileKey
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.model.CatalogKind
+import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.FavoriteKind
 import com.pinkiptv.app.model.HistoryItem
 import com.pinkiptv.app.model.LibraryPhase
 import com.pinkiptv.app.model.LivePlaybackRef
+import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
+import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionResult
@@ -72,6 +76,55 @@ class LibraryControllerTest {
 
         assertEquals(listOf("A"), controller.state.value.favorites.map { it.title })
         assertEquals(listOf("A"), controller.state.value.recents.map { it.title })
+    }
+
+
+    @Test
+    fun favoritesSupportLiveMovieSeriesAndRepeatedToggleDoesNotDuplicate() = runTest {
+        val repository = FakeLibraryRepository()
+        val runtime = RuntimeProviderSessionStore()
+        val profileStore = ActiveLibraryProfileStore()
+        val profile = LocalProfileKey.derive("account-a")
+        runtime.establish("account-a", "fixture-pass", success()) // pragma: allowlist secret
+        val controller = LibraryController(
+            repository = repository,
+            providerSessionStore = runtime,
+            profileStore = profileStore,
+            scope = this,
+            clockMs = { 100L },
+        )
+        advanceUntilIdle()
+
+        controller.toggleFavorite(
+            CatalogKind.Live,
+            catalogItem("shared", "Live", LivePlaybackRef("shared", "Live")),
+        )
+        controller.toggleFavorite(
+            CatalogKind.Movies,
+            catalogItem("shared", "Movie", VodPlaybackRef("shared", "Movie", "mp4")),
+        )
+        controller.toggleFavorite(
+            CatalogKind.Series,
+            catalogItem("series", "Series", null),
+        )
+        advanceUntilIdle()
+
+        val first = repository.favoriteFlow(profile).value
+        assertEquals(3, first.size)
+        assertEquals(1, first.count { it.kind == FavoriteKind.Live && it.providerId == "shared" })
+        assertEquals(1, first.count { it.kind == FavoriteKind.Movie && it.providerId == "shared" })
+        assertEquals(1, first.count { it.kind == FavoriteKind.Series && it.providerId == "series" })
+
+        controller.toggleFavorite(
+            CatalogKind.Live,
+            catalogItem("shared", "Live", LivePlaybackRef("shared", "Live")),
+        )
+        advanceUntilIdle()
+
+        val second = repository.favoriteFlow(profile).value
+        assertEquals(2, second.size)
+        assertFalse(second.any { it.kind == FavoriteKind.Live && it.providerId == "shared" })
+        assertTrue(second.any { it.kind == FavoriteKind.Movie && it.providerId == "shared" })
     }
 
     @Test
@@ -205,6 +258,20 @@ class LibraryControllerTest {
         assertEquals(listOf("Favorite"), controller.state.value.favorites.map { it.title })
         assertTrue(controller.state.value.recents.isEmpty())
     }
+
+
+    private fun catalogItem(
+        id: String,
+        title: String,
+        playbackRef: com.pinkiptv.app.model.PlaybackRef?,
+    ) = CatalogUiItem(
+        id = id,
+        name = title,
+        categoryId = null,
+        artworkUrl = null,
+        subtitle = null,
+        playbackRef = playbackRef,
+    )
 
     private fun success() = SessionResult.Success(
         sessionToken = "fixture-session",

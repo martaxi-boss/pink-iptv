@@ -1,6 +1,13 @@
 package com.pinkiptv.app
 
 import android.content.Context
+import androidx.room.Room
+import com.pinkiptv.app.library.ActiveLibraryProfileStore
+import com.pinkiptv.app.library.LocalLibraryRepository
+import com.pinkiptv.app.library.PinkLibraryDatabase
+import com.pinkiptv.app.library.PlaybackActivityRecorder
+import com.pinkiptv.app.library.RoomLocalLibraryRepository
+import com.pinkiptv.app.library.RoomPlaybackActivityRecorder
 import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionRepository
@@ -28,6 +35,23 @@ class AppContainer(context: Context) {
     private val providerHttpClient = buildXtreamHttpClient()
 
     val providerSessionStore = RuntimeProviderSessionStore()
+
+    private val libraryDatabase = Room.databaseBuilder(
+        context.applicationContext,
+        PinkLibraryDatabase::class.java,
+        "pink_library.db",
+    ).build()
+
+    val activeLibraryProfileStore = ActiveLibraryProfileStore()
+
+    val localLibraryRepository: LocalLibraryRepository =
+        RoomLocalLibraryRepository(libraryDatabase)
+
+    val playbackActivityRecorder: PlaybackActivityRecorder =
+        RoomPlaybackActivityRecorder(
+            repository = localLibraryRepository,
+            profileStore = activeLibraryProfileStore,
+        )
 
     val sessionRepository: SessionRepository = BackendSessionClient(
         baseUrl = BuildConfig.PINK_API_BASE_URL,

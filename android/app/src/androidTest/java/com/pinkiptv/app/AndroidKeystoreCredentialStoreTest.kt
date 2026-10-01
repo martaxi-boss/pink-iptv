@@ -8,6 +8,7 @@ import com.pinkiptv.app.storage.AndroidKeystoreCredentialCipher
 import com.pinkiptv.app.storage.DataStoreCredentialPersistence
 import com.pinkiptv.app.storage.SecureCredentialStore
 import java.security.KeyStore
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -98,11 +99,11 @@ class AndroidKeystoreCredentialStoreTest {
 
             assertEquals(
                 "A",
-                kotlinx.coroutines.flow.first(dao.observeForProfile("profile-a")).single().title,
+                dao.observeForProfile("profile-a").first().single().title,
             )
             assertEquals(
                 "B",
-                kotlinx.coroutines.flow.first(dao.observeForProfile("profile-b")).single().title,
+                dao.observeForProfile("profile-b").first().single().title,
             )
         } finally {
             database.close()

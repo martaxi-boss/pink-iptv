@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-09-30
-Phase: Phase 3 — Android Catalog + Player 003C
+Date: 2026-10-01
+Phase: Phase 3 — Android Catalog + Player 003D
 Public launch: NO
 
 ## Governance
@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002, Stage 003A and Stage 003B are complete and merged. Stage 003C is active for Series detail, seasons, episodes and playback on the existing Media3 core.
+- Android Shell 002 and Stages 003A/003B/003C are complete and merged. Stage 003D is active for bounded EPG browsing and fail-closed Catch Up on the existing Media3 core.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -94,21 +94,33 @@ Stage 003B merge commit: `b98ce7a819d6c752c3ec8e5b45646c79fbe2a3d8`.
 
 Stage 003B adds AndroidX Media3 1.11.1 foreground playback for Live TV and Movies/VOD, with credential-contained Xtream source construction, lifecycle-safe ExoPlayer ownership, touch controls, Android TV/D-pad controls, safe player errors and retry.
 
-## Phase 3 / Stage 003C — ACTIVE
+## Phase 3 / Stage 003C — COMPLETE / MERGED
+
+Stage 003C approved head: `50ca487ccd7f14fd2e5b7be71b3d3d4bed38230b`.
+
+Stage 003C merge commit: `39d5b9e6d43b48c83a966b994d9ffbe66fec5ccb`.
 
 Stage 003C extends the existing authenticated Xtream and Media3 architecture with Series detail, provider-defined seasons, episodes and credential-contained episode playback through the canonical `/series/` path.
 
 Series detail uses `get_series_info` with the exact selected `series_id`, defensive response parsing and phone/TV navigation. Episode playback reuses the Stage 003B player lifecycle and transport; no second player or credential store is introduced.
 
-Real-provider Series info and episode-playback certification are not yet certified unless separately executed in an approved secure environment.
+Real-provider Series info and episode-playback certification remain separate evidence and are not inferred from the merge.
 
-Full EPG/Catch Up, favorites/history/continue-watching, VPN/WireGuard and Windows remain unimplemented and outside Stage 003C.
+## Phase 3 / Stage 003D — ACTIVE
+
+Stage 003D adds channel-centric Live EPG using authenticated `get_short_epg` and `get_simple_data_table`, conservative Live archive metadata, defensive Base64/plain-text programme parsing, now/next summaries and fail-closed Catch Up eligibility.
+
+Catch Up uses a credential-free typed playback reference and the canonical HLS timeshift path through the existing Media3 1.11.1 player. Credential-bearing EPG requests and timeshift URIs remain internal runtime material.
+
+Real-provider EPG/Catch Up playback proof is NOT CERTIFIED unless separately executed in an approved secure environment.
+
+Favorites/history/continue-watching, VPN/WireGuard and Windows remain unimplemented and outside Stage 003D.
 
 ## Remaining technical gates
 
-1. Supervisor audit of Android Catalog + Player 003C.
-2. Separate real-provider/player device proof gate when authorized and securely available.
-3. Separate EPG/Catch Up and favorites/history stages after Series 003C.
+1. Supervisor audit of Android Catalog + Player 003D.
+2. Separate real-provider EPG/Catch Up proof when authorized and securely available.
+3. Separate favorites/history stage after 003D.
 4. Separate VPN/WireGuard and Windows phases.
 5. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
 
@@ -133,7 +145,7 @@ The current OVH host remains development/staging. Public launch is not approved.
 Beyond Android Shell 002, separate orders are still required for:
 
 1. final distribution/store artwork and design assets;
-2. Android Phase 3 continuation after Stage 003C, including EPG/Catch Up and favorites/history;
+2. Android Phase 3 continuation after Stage 003D, including favorites/history;
 3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
 4. production VPN capacity/isolation and bandwidth planning;
 5. Windows implementation;

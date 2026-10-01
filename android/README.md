@@ -80,6 +80,10 @@ Stage 003D approved head: `ba3cbf66c85bf30381aef809cb0169b5ce03ad86`.
 
 Stage 003D merge commit: `344166836661a7b340750fd921036e8b2ff0c671`.
 
+Stage 003D approved head: `ba3cbf66c85bf30381aef809cb0169b5ce03ad86`.
+
+Stage 003D merge commit: `344166836661a7b340750fd921036e8b2ff0c671`.
+
 Stage 003D adds bounded channel-centric EPG for Live TV through `get_short_epg` and `get_simple_data_table`. Live archive metadata retains only credential-free `epg_channel_id`, `tv_archive` and `tv_archive_duration` semantics required for eligibility.
 
 Programme titles/descriptions are decoded defensively when the provider supplies valid Base64, while plain text remains usable. Numeric provider timestamps drive ordering and local display; provider start text is retained separately for timeshift path creation.

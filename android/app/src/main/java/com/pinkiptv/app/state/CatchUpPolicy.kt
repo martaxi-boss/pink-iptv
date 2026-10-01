@@ -6,6 +6,7 @@ import com.pinkiptv.app.model.EpgProgramme
 import java.text.ParsePosition
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 
 object CatchUpPolicy {
     private val providerId = Regex("^[A-Za-z0-9_-]{1,64}$")
@@ -53,6 +54,7 @@ object CatchUpPolicy {
 
         val parser = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).apply {
             isLenient = false
+            timeZone = TimeZone.getTimeZone("UTC")
         }
         val position = ParsePosition(0)
         if (parser.parse(input, position) == null || position.index != input.length) return null

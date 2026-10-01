@@ -3,6 +3,7 @@ package com.pinkiptv.app
 import com.pinkiptv.app.model.EpgChannel
 import com.pinkiptv.app.model.EpgProgramme
 import com.pinkiptv.app.state.CatchUpPolicy
+import java.util.TimeZone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertNotNull
@@ -103,6 +104,23 @@ class CatchUpPolicyTest {
         assertNull(CatchUpPolicy.normalizeProviderStart("2026-02-31 09:05:59"))
         assertNull(CatchUpPolicy.normalizeProviderStart("09:05"))
         assertNull(CatchUpPolicy.normalizeProviderStart(null))
+    }
+
+
+    @Test
+    fun providerStartNormalizationIsIndependentOfDefaultTimezone() {
+        val previous = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("Europe/Lisbon"))
+
+            assertEquals(
+                "2026-03-29:01-30",
+                CatchUpPolicy.normalizeProviderStart("2026-03-29 01:30:00"),
+            )
+            assertNull(CatchUpPolicy.normalizeProviderStart("2026-02-31 09:05:59"))
+        } finally {
+            TimeZone.setDefault(previous)
+        }
     }
 
     private fun channel(tvArchive: Boolean) = EpgChannel(

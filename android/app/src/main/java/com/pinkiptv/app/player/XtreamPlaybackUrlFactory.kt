@@ -11,6 +11,7 @@ import com.pinkiptv.app.model.VodPlaybackRef
 import java.text.ParsePosition
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 import okhttp3.HttpUrl
 
 internal class ResolvedPlaybackSource(
@@ -103,6 +104,7 @@ internal class XtreamPlaybackUrlFactory(
         if (!CATCH_UP_START.matches(value)) return false
         val parser = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US).apply {
             isLenient = false
+            timeZone = TimeZone.getTimeZone("UTC")
         }
         val position = ParsePosition(0)
         return parser.parse(value, position) != null && position.index == value.length

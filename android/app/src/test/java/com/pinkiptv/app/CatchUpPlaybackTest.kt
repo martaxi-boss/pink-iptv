@@ -8,6 +8,7 @@ import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionResult
 import com.pinkiptv.app.player.PlaybackSourceResult
 import com.pinkiptv.app.player.XtreamPlaybackUrlFactory
+import java.util.TimeZone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -67,6 +68,30 @@ class CatchUpPlaybackTest {
                     CatchUpPlaybackRef("1", "Past", start, 30),
                 ),
             )
+        }
+    }
+
+
+    @Test
+    fun timeshiftValidationIsIndependentOfDefaultTimezone() {
+        val previous = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("Europe/Lisbon"))
+
+            val source = factory("https://catalog.invalid/").source(
+                CatchUpPlaybackRef("303", "DST gap", "2026-03-29:01-30", 30),
+            )
+            assertEquals(
+                "/timeshift/fixture-user/fixture-pass/30/2026-03-29:01-30/303.m3u8",
+                source.url.encodedPath,
+            )
+            assertFailure(
+                factory("https://catalog.invalid/").resolve(
+                    CatchUpPlaybackRef("303", "Impossible", "2026-02-31:01-30", 30),
+                ),
+            )
+        } finally {
+            TimeZone.setDefault(previous)
         }
     }
 

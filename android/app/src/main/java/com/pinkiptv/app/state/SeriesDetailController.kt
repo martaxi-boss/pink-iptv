@@ -24,8 +24,15 @@ class SeriesDetailController(
     private var selectedSeriesTitle: String? = null
 
     fun openSeries(item: CatalogUiItem) {
-        selectedSeriesTitle = item.name
-        load(item.id, item.name)
+        openSeriesById(item.id, item.name)
+    }
+
+    fun openSeriesById(
+        seriesId: String,
+        title: String,
+    ) {
+        selectedSeriesTitle = title
+        load(seriesId, title)
     }
 
     fun retry() {

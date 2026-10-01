@@ -17,13 +17,15 @@ import com.pinkiptv.app.model.SessionResult
 import com.pinkiptv.app.state.LibraryController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class LibraryControllerTest {
     @Test
     fun profileSwitchClearsVisibleStateWithoutDeletingSavedRows() = runTest {
@@ -43,7 +45,7 @@ class LibraryControllerTest {
             profileStore = profileStore,
             scope = backgroundScope,
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(LibraryPhase.Ready, controller.state.value.phase)
         assertEquals(listOf("A"), controller.state.value.favorites.map { it.title })
@@ -51,7 +53,7 @@ class LibraryControllerTest {
         assertEquals(profileA, profileStore.current())
 
         runtime.clear()
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(LibraryPhase.Inactive, controller.state.value.phase)
         assertTrue(controller.state.value.favorites.isEmpty())
@@ -59,16 +61,16 @@ class LibraryControllerTest {
         assertEquals(listOf("A"), repository.favoriteFlow(profileA).value.map { it.title })
 
         runtime.establish("account-b", "fixture-pass", success()) // pragma: allowlist secret
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(profileB, profileStore.current())
         assertEquals(listOf("B"), controller.state.value.favorites.map { it.title })
         assertFalse(controller.state.value.favorites.any { it.title == "A" })
 
         runtime.clear()
-        advanceUntilIdle()
+        runCurrent()
         runtime.establish("account-a", "fixture-pass", success()) // pragma: allowlist secret
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(listOf("A"), controller.state.value.favorites.map { it.title })
         assertEquals(listOf("A"), controller.state.value.recents.map { it.title })
@@ -89,7 +91,7 @@ class LibraryControllerTest {
             scope = backgroundScope,
             clockMs = { 100L },
         )
-        advanceUntilIdle()
+        runCurrent()
 
         controller.toggleFavorite(
             CatalogKind.Live,
@@ -103,7 +105,7 @@ class LibraryControllerTest {
             CatalogKind.Series,
             catalogItem("series", "Series", null),
         )
-        advanceUntilIdle()
+        runCurrent()
 
         val first = repository.favoriteFlow(profile).value
         assertEquals(3, first.size)
@@ -115,7 +117,7 @@ class LibraryControllerTest {
             CatalogKind.Live,
             catalogItem("shared", "Live", LivePlaybackRef("shared", "Live")),
         )
-        advanceUntilIdle()
+        runCurrent()
 
         val second = repository.favoriteFlow(profile).value
         assertEquals(2, second.size)
@@ -160,7 +162,7 @@ class LibraryControllerTest {
             profileStore = profileStore,
             scope = backgroundScope,
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(listOf("Continue"), controller.state.value.continueWatching.map { it.history.title })
         assertEquals(25, controller.state.value.continueWatching.single().progressPercent)
@@ -180,7 +182,7 @@ class LibraryControllerTest {
             clockMs = { 10L },
         )
         runtime.establish("account-a", "fixture-pass", success()) // pragma: allowlist secret
-        advanceUntilIdle()
+        runCurrent()
 
         val live = catalogItem(
             id = "same-id",
@@ -201,7 +203,7 @@ class LibraryControllerTest {
         controller.toggleFavorite(CatalogKind.Live, live)
         controller.toggleFavorite(CatalogKind.Movies, movie)
         controller.toggleFavorite(CatalogKind.Series, series)
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(3, controller.state.value.favorites.size)
         assertEquals(
@@ -210,11 +212,11 @@ class LibraryControllerTest {
         )
 
         controller.toggleFavorite(CatalogKind.Live, live)
-        advanceUntilIdle()
+        runCurrent()
         assertFalse(controller.state.value.favorites.any { it.kind == FavoriteKind.Live })
 
         controller.toggleFavorite(CatalogKind.Live, live)
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(
             1,
             controller.state.value.favorites.count {
@@ -240,17 +242,17 @@ class LibraryControllerTest {
             profileStore = profileStore,
             scope = backgroundScope,
         )
-        advanceUntilIdle()
+        runCurrent()
 
         controller.removeFavorite(savedFavorite)
-        advanceUntilIdle()
+        runCurrent()
         assertTrue(controller.state.value.favorites.isEmpty())
         assertEquals(listOf("Recent"), controller.state.value.recents.map { it.title })
 
         repository.favoriteFlow(profile).value = listOf(savedFavorite)
-        advanceUntilIdle()
+        runCurrent()
         controller.clearHistory()
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(listOf("Favorite"), controller.state.value.favorites.map { it.title })
         assertTrue(controller.state.value.recents.isEmpty())
     }

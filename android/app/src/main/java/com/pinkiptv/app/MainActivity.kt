@@ -18,6 +18,9 @@ class MainActivity : ComponentActivity() {
             credentialStore = container.credentialStore,
             catalogRepository = container.catalogRepository,
             providerSessionStore = container.providerSessionStore,
+            localLibraryRepository = container.localLibraryRepository,
+            activeLibraryProfileStore = container.activeLibraryProfileStore,
+            playbackActivityRecorder = container.playbackActivityRecorder,
         )
     }
 
@@ -33,7 +36,10 @@ class MainActivity : ComponentActivity() {
                 val seriesCatalog by appViewModel.seriesCatalog.collectAsStateWithLifecycle()
                 val seriesDetail by appViewModel.seriesDetail.collectAsStateWithLifecycle()
                 val epgState by appViewModel.epg.collectAsStateWithLifecycle()
+                val libraryState by appViewModel.library.collectAsStateWithLifecycle()
                 val selectedPlayback by appViewModel.selectedPlayback.collectAsStateWithLifecycle()
+                val selectedPlaybackStartPositionMs by
+                    appViewModel.selectedPlaybackStartPositionMs.collectAsStateWithLifecycle()
 
                 PinkApp(
                     state = state,
@@ -42,8 +48,11 @@ class MainActivity : ComponentActivity() {
                     seriesCatalog = seriesCatalog,
                     seriesDetail = seriesDetail,
                     epgState = epgState,
+                    libraryState = libraryState,
                     selectedPlayback = selectedPlayback,
+                    selectedPlaybackStartPositionMs = selectedPlaybackStartPositionMs,
                     playbackFacadeFactory = container.playbackFacadeFactory,
+                    playbackActivityRecorder = container.playbackActivityRecorder,
                     onLogin = appViewModel::login,
                     onLogout = appViewModel::logout,
                     onLoadCatalog = appViewModel::loadCatalog,
@@ -59,6 +68,11 @@ class MainActivity : ComponentActivity() {
                     onSelectPlayback = appViewModel::selectPlayback,
                     onSelectEpisode = appViewModel::selectEpisode,
                     onSelectCatchUp = appViewModel::selectCatchUp,
+                    onToggleFavorite = appViewModel::toggleFavorite,
+                    onRemoveFavorite = appViewModel::removeFavorite,
+                    onClearHistory = appViewModel::clearHistory,
+                    onOpenSeriesFavorite = appViewModel::openSeriesFavorite,
+                    onSelectLibraryPlayback = appViewModel::selectLibraryPlayback,
                     onClearPlayback = appViewModel::clearPlayback,
                 )
             }

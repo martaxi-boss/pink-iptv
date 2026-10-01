@@ -36,6 +36,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpgChannel
@@ -81,6 +83,9 @@ fun EpgScreen(
     val selectedChannelIndex = state.channels.indexOfFirst {
         it.streamId == state.selectedChannelId
     }.let { if (it < 0) 0 else it }
+    var selectedProgrammeKey by remember(state.selectedChannelId, programmeKeys) {
+        mutableStateOf<String?>(null)
+    }
 
     LaunchedEffect(state.phase) {
         if (state.phase == EpgPhase.Idle) {
@@ -158,6 +163,8 @@ fun EpgScreen(
                 channelUp = channelRequesters.getOrNull(selectedChannelIndex),
                 rowRequesters = programmeRequesters,
                 catchUpRequesters = catchUpRequesters,
+                selectedProgrammeKey = selectedProgrammeKey,
+                onSelectProgramme = { selectedProgrammeKey = it },
                 onOpenCatchUp = onOpenCatchUp,
             )
 
@@ -330,6 +337,8 @@ private fun ColumnScope.ProgrammeList(
     channelUp: FocusRequester?,
     rowRequesters: List<FocusRequester>,
     catchUpRequesters: List<FocusRequester>,
+    selectedProgrammeKey: String?,
+    onSelectProgramme: (String) -> Unit,
     onOpenCatchUp: (CatchUpPlaybackRef) -> Unit,
 ) {
     LazyColumn(
@@ -345,8 +354,10 @@ private fun ColumnScope.ProgrammeList(
                 selectedChannelId = selectedChannelId,
                 rowFocusRequester = rowRequesters[index],
                 catchUpFocusRequester = catchUpRequesters[index],
+                selected = item.key == selectedProgrammeKey,
                 up = if (index == 0) channelUp else rowRequesters.getOrNull(index - 1),
                 down = rowRequesters.getOrNull(index + 1),
+                onSelect = { onSelectProgramme(item.key) },
                 onOpenCatchUp = onOpenCatchUp,
             )
         }
@@ -359,8 +370,10 @@ private fun ProgrammeCard(
     selectedChannelId: String?,
     rowFocusRequester: FocusRequester,
     catchUpFocusRequester: FocusRequester,
+    selected: Boolean,
     up: FocusRequester?,
     down: FocusRequester?,
+    onSelect: () -> Unit,
     onOpenCatchUp: (CatchUpPlaybackRef) -> Unit,
 ) {
     var focused by remember { mutableStateOf(false) }
@@ -368,7 +381,13 @@ private fun ProgrammeCard(
     val catchUp = item.catchUpRef
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = SurfaceRaised),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                SurfaceRaised
+            },
+        ),
         border = BorderStroke(
             width = if (focused) 4.dp else 1.dp,
             color = if (focused) PinkSoft else MaterialTheme.colorScheme.surfaceVariant,
@@ -386,7 +405,8 @@ private fun ProgrammeCard(
                 }
             }
             .onFocusChanged { focused = it.isFocused }
-            .clickable(onClick = {}),
+            .semantics { this.selected = selected }
+            .clickable(onClick = onSelect),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

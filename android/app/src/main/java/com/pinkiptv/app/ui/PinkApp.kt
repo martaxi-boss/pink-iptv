@@ -1,11 +1,14 @@
 package com.pinkiptv.app.ui
 
 import androidx.compose.runtime.Composable
+import com.pinkiptv.app.library.PlaybackActivityRecorder
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
 import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpgUiState
+import com.pinkiptv.app.model.FavoriteItem
+import com.pinkiptv.app.model.LibraryUiState
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.SeriesDetailUiState
 import com.pinkiptv.app.model.SeriesEpisode
@@ -24,8 +27,11 @@ fun PinkApp(
     seriesCatalog: CatalogUiState,
     seriesDetail: SeriesDetailUiState,
     epgState: EpgUiState,
+    libraryState: LibraryUiState,
     selectedPlayback: PlaybackRef?,
+    selectedPlaybackStartPositionMs: Long,
     playbackFacadeFactory: PlaybackFacadeFactory,
+    playbackActivityRecorder: PlaybackActivityRecorder,
     onLogin: (String, String) -> Unit,
     onLogout: () -> Unit,
     onLoadCatalog: (CatalogKind) -> Unit,
@@ -41,6 +47,11 @@ fun PinkApp(
     onSelectPlayback: (CatalogUiItem) -> Unit,
     onSelectEpisode: (SeriesEpisode) -> Unit,
     onSelectCatchUp: (CatchUpPlaybackRef) -> Unit,
+    onToggleFavorite: (CatalogKind, CatalogUiItem) -> Unit,
+    onRemoveFavorite: (FavoriteItem) -> Unit,
+    onClearHistory: () -> Unit,
+    onOpenSeriesFavorite: (FavoriteItem) -> Unit,
+    onSelectLibraryPlayback: (PlaybackRef, Long) -> Unit,
     onClearPlayback: () -> Unit,
 ) {
     when (state.screen) {
@@ -56,8 +67,11 @@ fun PinkApp(
             seriesCatalog = seriesCatalog,
             seriesDetail = seriesDetail,
             epgState = epgState,
+            libraryState = libraryState,
             selectedPlayback = selectedPlayback,
+            selectedPlaybackStartPositionMs = selectedPlaybackStartPositionMs,
             playbackFacadeFactory = playbackFacadeFactory,
+            playbackActivityRecorder = playbackActivityRecorder,
             onLoadCatalog = onLoadCatalog,
             onSelectCatalogCategory = onSelectCatalogCategory,
             onOpenSeries = onOpenSeries,
@@ -71,6 +85,11 @@ fun PinkApp(
             onSelectPlayback = onSelectPlayback,
             onSelectEpisode = onSelectEpisode,
             onSelectCatchUp = onSelectCatchUp,
+            onToggleFavorite = onToggleFavorite,
+            onRemoveFavorite = onRemoveFavorite,
+            onClearHistory = onClearHistory,
+            onOpenSeriesFavorite = onOpenSeriesFavorite,
+            onSelectLibraryPlayback = onSelectLibraryPlayback,
             onClearPlayback = onClearPlayback,
             onLogout = onLogout,
         )

@@ -353,7 +353,7 @@ class NavigationShellTest {
     }
 
     @Test
-    fun continueWatchingResumesAndRecentLiveStartsFromZeroThenBack() {
+    fun continueWatchingMovieAndEpisodeResumeAndRecentLiveStartsFromZeroThenBack() {
         val factory = TestPlaybackFacadeFactory(
             PlayerUiState(
                 phase = PlayerPhase.Paused,
@@ -370,6 +370,14 @@ class NavigationShellTest {
             "Movie Resume",
             30_000L,
             120_000L,
+            true,
+        )
+        val episode = history(
+            PlaybackKind.Series,
+            "episode-1",
+            "Episode Resume",
+            45_000L,
+            180_000L,
             true,
         )
         val live = history(
@@ -393,8 +401,9 @@ class NavigationShellTest {
                         phase = LibraryPhase.Ready,
                         continueWatching = listOf(
                             ContinueWatchingItem(movie, 25),
+                            ContinueWatchingItem(episode, 25),
                         ),
-                        recents = listOf(movie, live),
+                        recents = listOf(movie, episode, live),
                     ),
                     selectedPlayback = selected,
                     selectedPlaybackStartPositionMs = startMs,
@@ -420,6 +429,16 @@ class NavigationShellTest {
         composeRule.onNodeWithTag("player_screen").assertIsDisplayed()
         composeRule.runOnIdle {
             assertEquals(30_000L, factory.lastFacade.preparedStartPositionMs)
+        }
+        composeRule.onNodeWithTag("player_back").performClick()
+        composeRule.onNodeWithTag("library_screen").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("library_tab_continue").performClick()
+        composeRule.onNodeWithTag("library_continue_open_episode-1").performClick()
+        composeRule.onNodeWithTag("player_screen").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals("episode-1", factory.lastFacade.preparedRef?.streamId)
+            assertEquals(45_000L, factory.lastFacade.preparedStartPositionMs)
         }
         composeRule.onNodeWithTag("player_back").performClick()
         composeRule.onNodeWithTag("library_screen").assertIsDisplayed()

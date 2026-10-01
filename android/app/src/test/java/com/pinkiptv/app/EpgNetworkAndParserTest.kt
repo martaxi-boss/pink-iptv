@@ -54,6 +54,15 @@ class EpgNetworkAndParserTest {
                 "stream_id":"104",
                 "name":"Four",
                 "tv_archive":"false"
+              },
+              {
+                "stream_id":"105",
+                "name":"Five"
+              },
+              {
+                "stream_id":"106",
+                "name":"Six",
+                "tv_archive":null
               }
             ]
         """.trimIndent()
@@ -73,6 +82,8 @@ class EpgNetworkAndParserTest {
         assertNull(streams[2].tvArchiveDurationDays)
         assertFalse(streams[3].tvArchive)
         assertNull(streams[3].tvArchiveDurationDays)
+        assertFalse(streams[4].tvArchive)
+        assertFalse(streams[5].tvArchive)
 
         val fields = LiveStream::class.java.declaredFields.map { it.name.lowercase() }
         assertFalse(fields.any { it.contains("direct") })

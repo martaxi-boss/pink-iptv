@@ -8,6 +8,9 @@ import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.VodPlaybackRef
+import java.text.ParsePosition
+import java.text.SimpleDateFormat
+import java.util.Locale
 import okhttp3.HttpUrl
 
 internal class ResolvedPlaybackSource(
@@ -72,7 +75,7 @@ internal class XtreamPlaybackUrlFactory(
             is CatchUpPlaybackRef -> {
                 if (
                     ref.durationMinutes !in 1..1440 ||
-                    !CATCH_UP_START.matches(ref.providerStart)
+                    !isValidCatchUpStart(ref.providerStart)
                 ) {
                     return PlaybackSourceResult.Failure(PlayerError.InvalidStreamMetadata)
                 }

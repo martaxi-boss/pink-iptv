@@ -231,11 +231,7 @@ private fun ChannelChip(
             .focusProperties {
                 left?.let { this.left = it }
                 right?.let { this.right = it }
-                if (down == null) {
-                    this.down = FocusRequester.Cancel
-                } else {
-                    this.down = down
-                }
+                down?.let { this.down = it }
             }
             .onFocusChanged { focused = it.isFocused }
             .clickable(onClick = onClick),

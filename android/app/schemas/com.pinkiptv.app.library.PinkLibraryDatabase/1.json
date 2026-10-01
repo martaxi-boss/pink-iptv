@@ -19,7 +19,7 @@
         ],
         "primaryKey": {"autoGenerate": false, "columnNames": ["profileKey", "contentKind", "providerId"]},
         "indices": [
-          {"name": "index_favorites_profileKey", "unique": false, "columnNames": ["profileKey"], "orders": []}
+          {"name": "index_favorites_profileKey", "unique": false, "columnNames": ["profileKey"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_favorites_profileKey` ON `${TABLE_NAME}` (`profileKey`)"}
         ],
         "foreignKeys": []
       },
@@ -41,7 +41,7 @@
         ],
         "primaryKey": {"autoGenerate": false, "columnNames": ["profileKey", "playbackKind", "providerMediaId"]},
         "indices": [
-          {"name": "index_history_profileKey", "unique": false, "columnNames": ["profileKey"], "orders": []}
+          {"name": "index_history_profileKey", "unique": false, "columnNames": ["profileKey"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_history_profileKey` ON `${TABLE_NAME}` (`profileKey`)"}
         ],
         "foreignKeys": []
       }

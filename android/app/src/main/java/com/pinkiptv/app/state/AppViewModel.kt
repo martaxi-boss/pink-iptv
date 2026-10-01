@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SeriesEpisode
@@ -34,6 +35,10 @@ class AppViewModel(
         repository = catalogRepository,
         scope = viewModelScope,
     )
+    private val epgController = EpgController(
+        repository = catalogRepository,
+        scope = viewModelScope,
+    )
     private val playbackSelectionController = PlaybackSelectionController()
 
     val uiState = sessionController.state
@@ -41,6 +46,7 @@ class AppViewModel(
     val movieCatalog = catalogController.movies
     val seriesCatalog = catalogController.series
     val seriesDetail = seriesDetailController.state
+    val epg = epgController.state
     val selectedPlayback = playbackSelectionController.selection
 
     init {
@@ -49,6 +55,7 @@ class AppViewModel(
                 if (!available) {
                     playbackSelectionController.clear()
                     seriesDetailController.clear()
+                    epgController.clear()
                 }
             }
         }
@@ -61,6 +68,7 @@ class AppViewModel(
     fun logout() {
         playbackSelectionController.clear()
         seriesDetailController.clear()
+        epgController.clear()
         catalogController.clear()
         sessionController.logout()
     }
@@ -89,6 +97,22 @@ class AppViewModel(
         seriesDetailController.clear()
     }
 
+    fun openEpg() {
+        epgController.open()
+    }
+
+    fun selectEpgChannel(streamId: String) {
+        epgController.selectChannel(streamId)
+    }
+
+    fun retryEpg() {
+        epgController.retry()
+    }
+
+    fun clearEpg() {
+        epgController.clear()
+    }
+
     fun selectPlayback(item: CatalogUiItem) {
         playbackSelectionController.select(item)
     }
@@ -101,6 +125,10 @@ class AppViewModel(
                 containerExtension = episode.containerExtension,
             ),
         )
+    }
+
+    fun selectCatchUp(ref: CatchUpPlaybackRef) {
+        playbackSelectionController.select(ref)
     }
 
     fun clearPlayback() {

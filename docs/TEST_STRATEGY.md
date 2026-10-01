@@ -151,6 +151,8 @@ Real-provider Series info/episode playback remains a separate sanitized proof an
 
 ## Android Catalog + Player 003D automated proof
 
+Status: ACTIVE.
+
 Stage 003D adds deterministic coverage for:
 
 - Live `epg_channel_id`, numeric/string/null `tv_archive` and `tv_archive_duration` normalization without exposing `direct_source`;

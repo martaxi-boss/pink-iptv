@@ -48,6 +48,33 @@ class CatalogScreenTest {
         }
     }
 
+
+    @Test
+    fun catalogFavoriteActionIsSeparateAndReflectsFavoriteState() {
+        var toggled: CatalogUiItem? = null
+        val state = contentState(CatalogKind.Movies)
+
+        composeRule.setContent {
+            PinkTheme {
+                CatalogScreen(
+                    titleRes = R.string.movies,
+                    state = state,
+                    onLoad = {},
+                    onSelectCategory = {},
+                    onBack = {},
+                    favoriteIds = setOf("item-1"),
+                    onToggleFavorite = { toggled = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("catalog_favorite_item-1").assertIsDisplayed()
+        composeRule.onNodeWithTag("catalog_favorite_item-1").performClick()
+        composeRule.runOnIdle {
+            assertEquals("item-1", toggled?.id)
+        }
+    }
+
     @Test
     fun moviesErrorOffersRetryAndSeriesEmptyIsStable() {
         var retries = 0

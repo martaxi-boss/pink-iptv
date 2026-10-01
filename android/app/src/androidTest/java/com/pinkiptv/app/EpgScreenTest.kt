@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -172,6 +173,11 @@ class EpgScreenTest {
         instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("epg_programme_archived-0").assertIsFocused()
+
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("epg_programme_archived-0").assertIsSelected()
+        composeRule.runOnIdle { assertEquals(null, opened) }
 
         instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_RIGHT)
         composeRule.waitForIdle()

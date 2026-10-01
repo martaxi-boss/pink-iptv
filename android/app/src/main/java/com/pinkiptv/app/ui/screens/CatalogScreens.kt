@@ -58,6 +58,8 @@ fun CatalogScreen(
     onSelectCategory: (String?) -> Unit,
     onBack: () -> Unit,
     onOpenItem: (CatalogUiItem) -> Unit = {},
+    favoriteIds: Set<String> = emptySet(),
+    onToggleFavorite: (CatalogUiItem) -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
@@ -113,6 +115,8 @@ fun CatalogScreen(
                 firstCategoryFocus = firstCategoryFocus,
                 onSelectCategory = onSelectCategory,
                 onSelectItem = onOpenItem,
+                favoriteIds = favoriteIds,
+                onToggleFavorite = onToggleFavorite,
             )
         }
     }
@@ -172,6 +176,8 @@ private fun ColumnScope.CatalogContent(
     firstCategoryFocus: FocusRequester,
     onSelectCategory: (String?) -> Unit,
     onSelectItem: (CatalogUiItem) -> Unit,
+    favoriteIds: Set<String>,
+    onToggleFavorite: (CatalogUiItem) -> Unit,
 ) {
     Text(
         text = "Categorias",
@@ -217,7 +223,9 @@ private fun ColumnScope.CatalogContent(
             gridItems(state.items, key = { it.id }) { item ->
                 CatalogItemCard(
                     item = item,
+                    favorite = item.id in favoriteIds,
                     onClick = { onSelectItem(item) },
+                    onToggleFavorite = { onToggleFavorite(item) },
                 )
             }
         }
@@ -264,7 +272,9 @@ private fun CategoryChip(
 @Composable
 private fun CatalogItemCard(
     item: CatalogUiItem,
+    favorite: Boolean,
     onClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
 ) {
     var focused by remember { mutableStateOf(false) }
 
@@ -296,6 +306,11 @@ private fun CatalogItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            CatalogActionButton(
+                label = if (favorite) "♥ FAVORITO" else "♡ FAVORITO",
+                testTag = "catalog_favorite_" + item.id,
+                onClick = onToggleFavorite,
+            )
         }
     }
 }

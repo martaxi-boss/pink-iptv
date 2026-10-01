@@ -41,7 +41,6 @@ import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.ui.navigation.AuthenticatedShell
 import com.pinkiptv.app.ui.theme.PinkTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 

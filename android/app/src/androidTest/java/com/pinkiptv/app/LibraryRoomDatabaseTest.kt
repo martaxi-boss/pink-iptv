@@ -81,6 +81,21 @@ class LibraryRoomDatabaseTest {
         assertEquals(1, dao.observeForProfile("profile-b").first().size)
     }
 
+
+    @Test
+    fun replayUpdatesTimestampAndMovesExistingIdentityToTopWithoutDuplicate() = runBlocking {
+        val dao = database.historyDao()
+        dao.upsertAndPrune(history("profile-a", "same", 1L))
+        dao.upsertAndPrune(history("profile-a", "other", 2L))
+        dao.upsertAndPrune(history("profile-a", "same", 3L))
+
+        val rows = dao.observeForProfile("profile-a").first()
+        assertEquals(2, rows.size)
+        assertEquals("same", rows.first().providerMediaId)
+        assertEquals(3L, rows.first().lastPlayedAtEpochMs)
+        assertEquals(1, rows.count { it.providerMediaId == "same" })
+    }
+
     @Test
     fun favoriteFlowInvalidatesAndHistoryClearDoesNotDeleteFavorites() = runBlocking {
         val favoriteDao = database.favoriteDao()

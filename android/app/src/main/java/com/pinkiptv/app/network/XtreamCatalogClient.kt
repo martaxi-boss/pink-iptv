@@ -459,7 +459,7 @@ internal object XtreamJsonParser {
             value.length >= 4 &&
                 base64Chars.matches(value) &&
                 value.length % 4 != 1 &&
-                (value.contains('=') || value.contains('+') || value.contains('/') || value.length >= 12)
+                (value.contains('=') || value.contains('+') || value.contains('/'))
         if (!likelyEncoded) return value
 
         val bytes = decodeBase64(value) ?: return value

@@ -41,7 +41,7 @@ class LibraryControllerTest {
             repository = repository,
             providerSessionStore = runtime,
             profileStore = profileStore,
-            scope = this,
+            scope = backgroundScope,
         )
         advanceUntilIdle()
 
@@ -86,7 +86,7 @@ class LibraryControllerTest {
             repository = repository,
             providerSessionStore = runtime,
             profileStore = profileStore,
-            scope = this,
+            scope = backgroundScope,
             clockMs = { 100L },
         )
         advanceUntilIdle()
@@ -158,7 +158,7 @@ class LibraryControllerTest {
             repository = repository,
             providerSessionStore = runtime,
             profileStore = profileStore,
-            scope = this,
+            scope = backgroundScope,
         )
         advanceUntilIdle()
 
@@ -176,7 +176,7 @@ class LibraryControllerTest {
             repository = repository,
             providerSessionStore = runtime,
             profileStore = profileStore,
-            scope = this,
+            scope = backgroundScope,
             clockMs = { 10L },
         )
         runtime.establish("account-a", "fixture-pass", success()) // pragma: allowlist secret
@@ -238,7 +238,7 @@ class LibraryControllerTest {
             repository = repository,
             providerSessionStore = runtime,
             profileStore = profileStore,
-            scope = this,
+            scope = backgroundScope,
         )
         advanceUntilIdle()
 

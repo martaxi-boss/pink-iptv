@@ -328,6 +328,12 @@ internal fun safeResumePositionMs(
 ): Long {
     if (!seekable || requestedPositionMs <= 0L) return 0L
     val duration = durationMs?.takeIf { it > 0L } ?: return 0L
-    if (requestedPositionMs * 10L >= duration * 9L) return 0L
+    if (
+        requestedPositionMs > Long.MAX_VALUE / 10L ||
+        duration > Long.MAX_VALUE / 9L ||
+        requestedPositionMs * 10L >= duration * 9L
+    ) {
+        return 0L
+    }
     return requestedPositionMs.coerceAtMost((duration - 1L).coerceAtLeast(0L))
 }

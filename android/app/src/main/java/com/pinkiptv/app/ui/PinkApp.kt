@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.SeriesDetailUiState
 import com.pinkiptv.app.model.SeriesEpisode
@@ -21,6 +23,7 @@ fun PinkApp(
     movieCatalog: CatalogUiState,
     seriesCatalog: CatalogUiState,
     seriesDetail: SeriesDetailUiState,
+    epgState: EpgUiState,
     selectedPlayback: PlaybackRef?,
     playbackFacadeFactory: PlaybackFacadeFactory,
     onLogin: (String, String) -> Unit,
@@ -31,8 +34,13 @@ fun PinkApp(
     onRetrySeriesDetail: () -> Unit,
     onSelectSeriesSeason: (String) -> Unit,
     onClearSeriesDetail: () -> Unit,
+    onOpenEpg: () -> Unit,
+    onSelectEpgChannel: (String) -> Unit,
+    onRetryEpg: () -> Unit,
+    onClearEpg: () -> Unit,
     onSelectPlayback: (CatalogUiItem) -> Unit,
     onSelectEpisode: (SeriesEpisode) -> Unit,
+    onSelectCatchUp: (CatchUpPlaybackRef) -> Unit,
     onClearPlayback: () -> Unit,
 ) {
     when (state.screen) {
@@ -47,6 +55,7 @@ fun PinkApp(
             movieCatalog = movieCatalog,
             seriesCatalog = seriesCatalog,
             seriesDetail = seriesDetail,
+            epgState = epgState,
             selectedPlayback = selectedPlayback,
             playbackFacadeFactory = playbackFacadeFactory,
             onLoadCatalog = onLoadCatalog,
@@ -55,8 +64,13 @@ fun PinkApp(
             onRetrySeriesDetail = onRetrySeriesDetail,
             onSelectSeriesSeason = onSelectSeriesSeason,
             onClearSeriesDetail = onClearSeriesDetail,
+            onOpenEpg = onOpenEpg,
+            onSelectEpgChannel = onSelectEpgChannel,
+            onRetryEpg = onRetryEpg,
+            onClearEpg = onClearEpg,
             onSelectPlayback = onSelectPlayback,
             onSelectEpisode = onSelectEpisode,
+            onSelectCatchUp = onSelectCatchUp,
             onClearPlayback = onClearPlayback,
             onLogout = onLogout,
         )

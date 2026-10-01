@@ -27,10 +27,18 @@ data class EpisodePlaybackRef(
         get() = episodeId
 }
 
+data class CatchUpPlaybackRef(
+    override val streamId: String,
+    override val title: String,
+    val providerStart: String,
+    val durationMinutes: Int,
+) : PlaybackRef
+
 enum class PlaybackKind {
     Live,
     Vod,
     Series,
+    CatchUp,
 }
 
 enum class PlayerPhase {

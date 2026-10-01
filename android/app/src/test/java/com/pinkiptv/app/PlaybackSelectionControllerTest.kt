@@ -1,6 +1,7 @@
 package com.pinkiptv.app
 
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.VodPlaybackRef
@@ -38,6 +39,23 @@ class PlaybackSelectionControllerTest {
 
         assertTrue(controller.select(episode))
         assertSame(episode, controller.selection.value)
+        controller.clear()
+        assertNull(controller.selection.value)
+    }
+
+
+    @Test
+    fun catchUpReferenceCanBeSelectedAndClearedAsOpaqueMetadata() {
+        val controller = PlaybackSelectionController()
+        val catchUp = CatchUpPlaybackRef(
+            streamId = "77",
+            title = "Archived",
+            providerStart = "2026-09-30:12-34",
+            durationMinutes = 30,
+        )
+
+        assertTrue(controller.select(catchUp))
+        assertSame(catchUp, controller.selection.value)
         controller.clear()
         assertNull(controller.selection.value)
     }

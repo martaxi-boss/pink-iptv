@@ -123,6 +123,12 @@ Real-provider playback proof, when separately authorized and securely available,
 
 ## Android Catalog + Player 003C automated proof
 
+Stage 003C is complete and merged.
+
+Approved head: `50ca487ccd7f14fd2e5b7be71b3d3d4bed38230b`.
+
+Merge commit: `39d5b9e6d43b48c83a966b994d9ffbe66fec5ccb`.
+
 Stage 003C adds deterministic coverage for:
 
 - exact `get_series_info` requests using the selected `series_id`;
@@ -142,6 +148,29 @@ Stage 003C adds deterministic coverage for:
 The existing pull-request phone-device-proof remains unchanged. `NavigationShellTest` now retains Live/Movie coverage and additionally proves Series -> detail -> Episode Player -> Back without live provider access.
 
 Real-provider Series info/episode playback remains a separate sanitized proof and is not required in CI.
+
+## Android Catalog + Player 003D automated proof
+
+Status: ACTIVE.
+
+Stage 003D adds deterministic coverage for:
+
+- Live `epg_channel_id`, numeric/string/null `tv_archive` and `tv_archive_duration` normalization without exposing `direct_source`;
+- exact bounded `get_short_epg` and `get_simple_data_table` requests using selected Live `stream_id`;
+- authoritative HTTP/HTTPS origin and explicit-port preservation with redirects disabled;
+- invalid stream IDs and unbounded short-EPG limits rejected before network;
+- EPG HTTP, timeout/network and missing-session safe outcomes;
+- `epg_listings` parsing with numeric/string ids, timestamps, flags, Base64 text, plain-text fallback, nullable metadata and deterministic timestamp ordering;
+- channel-centric loading/content/empty/error/retry state with selected-channel now/next;
+- fail-closed Catch Up eligibility, future/current rejection, strict provider-start formatting and bounded rounded duration;
+- credential-free `CatchUpPlaybackRef`, `PlaybackKind.CatchUp` and canonical HLS `/timeshift/` source construction;
+- HTTP/HTTPS/explicit-port preservation for Catch Up and redacted resolved-source output;
+- Home -> EPG -> archived programme -> Catch Up Player -> Back using deterministic fake state;
+- deterministic Android TV focus from channel to programme to Catch Up action.
+
+The pull-request phone-device proof continues to execute the genuine Order 002 classes. `NavigationShellTest` retains Live/Movie/Series coverage and adds deterministic EPG -> Catch Up Player -> Back without provider credentials.
+
+Real-provider EPG/Catch Up fetch/playback is a separate sanitized proof and is NOT CERTIFIED by CI.
 
 ## Future client/platform matrices retained
 

@@ -1,5 +1,6 @@
 package com.pinkiptv.app.player
 
+import com.pinkiptv.app.model.CatchUpPlaybackRef
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
@@ -7,6 +8,10 @@ import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.VodPlaybackRef
+import java.text.ParsePosition
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 import okhttp3.HttpUrl
 
 internal class ResolvedPlaybackSource(
@@ -68,6 +73,22 @@ internal class XtreamPlaybackUrlFactory(
                     .addPathSegment(ref.episodeId + "." + extension)
                 PlaybackKind.Series
             }
+            is CatchUpPlaybackRef -> {
+                if (
+                    ref.durationMinutes !in 1..1440 ||
+                    !isValidCatchUpStart(ref.providerStart)
+                ) {
+                    return PlaybackSourceResult.Failure(PlayerError.InvalidStreamMetadata)
+                }
+                builder
+                    .addPathSegment("timeshift")
+                    .addPathSegment(session.username)
+                    .addPathSegment(session.password)
+                    .addPathSegment(ref.durationMinutes.toString())
+                    .addPathSegment(ref.providerStart)
+                    .addPathSegment(ref.streamId + ".m3u8")
+                PlaybackKind.CatchUp
+            }
         }
 
         return PlaybackSourceResult.Success(
@@ -79,8 +100,19 @@ internal class XtreamPlaybackUrlFactory(
         )
     }
 
+    private fun isValidCatchUpStart(value: String): Boolean {
+        if (!CATCH_UP_START.matches(value)) return false
+        val parser = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US).apply {
+            isLenient = false
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+        val position = ParsePosition(0)
+        return parser.parse(value, position) != null && position.index == value.length
+    }
+
     private companion object {
         val STREAM_ID = Regex("^[A-Za-z0-9_-]{1,64}$")
         val MEDIA_EXTENSION = Regex("^[A-Za-z0-9]{1,12}$")
+        val CATCH_UP_START = Regex("^\\d{4}-\\d{2}-\\d{2}:\\d{2}-\\d{2}$")
     }
 }

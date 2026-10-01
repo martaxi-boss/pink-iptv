@@ -11,6 +11,9 @@ data class LiveStream(
     val categoryId: String?,
     val artworkUrl: String?,
     val streamType: String?,
+    val epgChannelId: String? = null,
+    val tvArchive: Boolean = false,
+    val tvArchiveDurationDays: Int? = null,
 )
 
 data class VodItem(
@@ -144,4 +147,15 @@ interface CatalogRepository {
     suspend fun seriesCategories(): CatalogResult<List<CatalogCategory>>
     suspend fun series(): CatalogResult<List<SeriesItem>>
     suspend fun seriesInfo(seriesId: String): CatalogResult<SeriesDetail>
+
+    suspend fun shortEpg(
+        streamId: String,
+        limit: Int = 2,
+    ): EpgResult<List<EpgProgramme>> =
+        EpgResult.Failure(EpgError.InvalidResponse)
+
+    suspend fun simpleDataTable(
+        streamId: String,
+    ): EpgResult<List<EpgProgramme>> =
+        EpgResult.Failure(EpgError.InvalidResponse)
 }

@@ -8,11 +8,14 @@ import com.pinkiptv.app.R
 import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.SeriesDetailUiState
 import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.ui.screens.CatalogScreen
+import com.pinkiptv.app.ui.screens.EpgScreen
 import com.pinkiptv.app.ui.screens.HomeScreen
 import com.pinkiptv.app.ui.screens.PlayerScreen
 import com.pinkiptv.app.ui.screens.SeriesDetailScreen
@@ -40,14 +43,20 @@ fun AuthenticatedShell(
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
     onLogout: () -> Unit,
     seriesDetail: SeriesDetailUiState = SeriesDetailUiState(),
+    epgState: EpgUiState = EpgUiState(),
     selectedPlayback: PlaybackRef? = null,
     playbackFacadeFactory: PlaybackFacadeFactory? = null,
     onOpenSeries: (CatalogUiItem) -> Unit = {},
     onRetrySeriesDetail: () -> Unit = {},
     onSelectSeriesSeason: (String) -> Unit = {},
     onClearSeriesDetail: () -> Unit = {},
+    onOpenEpg: () -> Unit = {},
+    onSelectEpgChannel: (String) -> Unit = {},
+    onRetryEpg: () -> Unit = {},
+    onClearEpg: () -> Unit = {},
     onSelectPlayback: (CatalogUiItem) -> Unit = {},
     onSelectEpisode: (SeriesEpisode) -> Unit = {},
+    onSelectCatchUp: (CatchUpPlaybackRef) -> Unit = {},
     onClearPlayback: () -> Unit = {},
 ) {
     val navController = rememberNavController()
@@ -113,6 +122,22 @@ fun AuthenticatedShell(
                 },
             )
         }
+        composable(Routes.EPG) {
+            EpgScreen(
+                state = epgState,
+                onLoad = onOpenEpg,
+                onSelectChannel = onSelectEpgChannel,
+                onRetry = onRetryEpg,
+                onOpenCatchUp = { ref ->
+                    onSelectCatchUp(ref)
+                    navController.navigate(Routes.PLAYER)
+                },
+                onBack = {
+                    onClearEpg()
+                    navController.popBackStack()
+                },
+            )
+        }
         composable(Routes.PLAYER) {
             val factory = playbackFacadeFactory
             if (factory == null) {
@@ -133,9 +158,6 @@ fun AuthenticatedShell(
                     },
                 )
             }
-        }
-        composable(Routes.EPG) {
-            ShellScreen(R.string.epg, onBack = { navController.popBackStack() })
         }
         composable(Routes.FAVORITES) {
             ShellScreen(R.string.favorites, onBack = { navController.popBackStack() })

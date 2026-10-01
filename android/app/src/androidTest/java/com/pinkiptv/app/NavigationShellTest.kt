@@ -15,6 +15,12 @@ import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogPhase
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
+import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.EpgChannel
+import com.pinkiptv.app.model.EpgPhase
+import com.pinkiptv.app.model.EpgProgramme
+import com.pinkiptv.app.model.EpgProgrammeUi
+import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
@@ -181,6 +187,88 @@ class NavigationShellTest {
         composeRule.onNodeWithTag("player_back").performClick()
         composeRule.onNodeWithTag("series_detail_screen").assertIsDisplayed()
         composeRule.onNodeWithTag("series_episode_episode-1").assertIsDisplayed()
+    }
+
+
+    @Test
+    fun epgCatchUpUsesExistingPlayerAndBackReturnsToEpg() {
+        val factory = TestPlaybackFacadeFactory(
+            PlayerUiState(
+                phase = PlayerPhase.Playing,
+                title = "Archived",
+                kind = PlaybackKind.CatchUp,
+                isPlaying = true,
+                seekable = true,
+            ),
+        )
+        val catchUp = CatchUpPlaybackRef(
+            streamId = "10",
+            title = "Archived",
+            providerStart = "2026-09-30:12-34",
+            durationMinutes = 30,
+        )
+        val epg = EpgUiState(
+            phase = EpgPhase.Content,
+            channels = listOf(
+                EpgChannel(
+                    streamId = "10",
+                    name = "Channel",
+                    epgChannelId = "epg-10",
+                    tvArchive = true,
+                    tvArchiveDurationDays = 7,
+                ),
+            ),
+            selectedChannelId = "10",
+            programmes = listOf(
+                EpgProgrammeUi(
+                    key = "archived-0",
+                    programme = EpgProgramme(
+                        programmeId = "archived",
+                        title = "Archived",
+                        description = null,
+                        startProvider = "2026-09-30 12:34:56",
+                        endProvider = "2026-09-30 13:04:56",
+                        startTimestamp = 1000L,
+                        stopTimestamp = 2800L,
+                        nowPlaying = false,
+                        hasArchive = true,
+                    ),
+                    isCurrent = false,
+                    catchUpRef = catchUp,
+                ),
+            ),
+        )
+
+        composeRule.setContent {
+            var selected by remember { mutableStateOf<PlaybackRef?>(null) }
+            PinkTheme {
+                AuthenticatedShell(
+                    liveCatalog = CatalogUiState(CatalogKind.Live),
+                    movieCatalog = CatalogUiState(CatalogKind.Movies),
+                    seriesCatalog = CatalogUiState(CatalogKind.Series),
+                    epgState = epg,
+                    selectedPlayback = selected,
+                    playbackFacadeFactory = factory,
+                    onLoadCatalog = {},
+                    onSelectCatalogCategory = { _, _ -> },
+                    onOpenEpg = {},
+                    onSelectEpgChannel = {},
+                    onRetryEpg = {},
+                    onClearEpg = {},
+                    onSelectCatchUp = { selected = it },
+                    onClearPlayback = { selected = null },
+                    onLogout = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("home_epg").performClick()
+        composeRule.onNodeWithTag("epg_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("epg_catchup_archived-0").performClick()
+        composeRule.onNodeWithTag("player_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("player_back").performClick()
+        composeRule.onNodeWithTag("epg_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("epg_catchup_archived-0").assertIsDisplayed()
     }
 
     private fun contentState(

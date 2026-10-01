@@ -61,7 +61,11 @@ Live uses the canonical Xtream live path. Movies/VOD use the catalog-provided co
 
 Catalog surfaces are touch-scrollable and D-pad focusable. Focused catalog categories, items and actions use the PINK focus treatment. The Stage 003B player adds touch play/pause/retry/Back, seek controls only when media is seekable, and focusable TV/D-pad player controls. Home/Login behavior from Order 002 remains intact.
 
-## Phase 3 / Stage 003C — ACTIVE
+## Phase 3 / Stage 003C — COMPLETE / MERGED
+
+Stage 003C approved head: `50ca487ccd7f14fd2e5b7be71b3d3d4bed38230b`.
+
+Stage 003C merge commit: `39d5b9e6d43b48c83a966b994d9ffbe66fec5ccb`.
 
 Stage 003C adds Series detail through `player_api.php?action=get_series_info&series_id=...`, defensive seasons/episodes parsing, a phone/TV Series-detail screen, and Episode playback through the existing Media3 player.
 
@@ -69,8 +73,18 @@ Episode playback references contain only non-secret episode identity/display met
 
 Real-provider Series info and episode playback are not yet certified unless a separate secure proof is executed.
 
-## Explicitly not implemented after Stage 003C
+## Phase 3 / Stage 003D — ACTIVE
 
-Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain outside Stage 003C.
+Stage 003D adds bounded channel-centric EPG for Live TV through `get_short_epg` and `get_simple_data_table`. Live archive metadata retains only credential-free `epg_channel_id`, `tv_archive` and `tv_archive_duration` semantics required for eligibility.
+
+Programme titles/descriptions are decoded defensively when the provider supplies valid Base64, while plain text remains usable. Numeric provider timestamps drive ordering and local display; provider start text is retained separately for timeshift path creation.
+
+Catch Up is fail-closed and appears only when both channel and programme explicitly advertise archive support, provider timing is valid, the programme is past, and a bounded positive duration can be derived. Playback reuses the existing Media3 1.11.1 player through the canonical `/timeshift/{username}/{password}/{duration}/{start}/{stream_id}.m3u8` runtime path. The credential-bearing URI never enters public models or navigation.
+
+Real-provider EPG/Catch Up proof is NOT CERTIFIED unless separately performed securely.
+
+## Explicitly not implemented after Stage 003D
+
+Favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain outside Stage 003D. Bulk XMLTV ingestion/synchronization is also not part of 003D.
 
 Public launch remains NO.

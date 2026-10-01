@@ -161,7 +161,7 @@ class XtreamCatalogClient(
         val session = sessionStore.current()
             ?: return@withContext EpgResult.Failure(EpgError.MissingSession)
 
-        val request = providerRequest(action, extraQuery, session.username, session.password)
+        val request = providerRequest(session.origin, action, extraQuery, session.username, session.password)
             ?: return@withContext EpgResult.Failure(EpgError.InvalidMetadata)
 
         try {

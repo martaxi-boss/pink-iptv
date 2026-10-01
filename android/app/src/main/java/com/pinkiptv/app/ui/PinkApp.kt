@@ -10,6 +10,9 @@ import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.LibraryUiState
 import com.pinkiptv.app.model.PlaybackRef
+import com.pinkiptv.app.model.SearchItem
+import com.pinkiptv.app.model.SearchKind
+import com.pinkiptv.app.model.SearchUiState
 import com.pinkiptv.app.model.SeriesDetailUiState
 import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.player.PlaybackFacadeFactory
@@ -25,6 +28,7 @@ fun PinkApp(
     liveCatalog: CatalogUiState,
     movieCatalog: CatalogUiState,
     seriesCatalog: CatalogUiState,
+    searchState: SearchUiState,
     seriesDetail: SeriesDetailUiState,
     epgState: EpgUiState,
     libraryState: LibraryUiState,
@@ -36,6 +40,13 @@ fun PinkApp(
     onLogout: () -> Unit,
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
+    onLoadSearch: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onSelectSearchKind: (SearchKind) -> Unit,
+    onRetrySearch: () -> Unit,
+    onSelectSearchPlayback: (SearchItem) -> Unit,
+    onOpenSearchSeries: (SearchItem) -> Unit,
+    onToggleSearchFavorite: (SearchItem) -> Unit,
     onOpenSeries: (CatalogUiItem) -> Unit,
     onRetrySeriesDetail: () -> Unit,
     onSelectSeriesSeason: (String) -> Unit,
@@ -65,6 +76,7 @@ fun PinkApp(
             liveCatalog = liveCatalog,
             movieCatalog = movieCatalog,
             seriesCatalog = seriesCatalog,
+            searchState = searchState,
             seriesDetail = seriesDetail,
             epgState = epgState,
             libraryState = libraryState,
@@ -74,6 +86,13 @@ fun PinkApp(
             playbackActivityRecorder = playbackActivityRecorder,
             onLoadCatalog = onLoadCatalog,
             onSelectCatalogCategory = onSelectCatalogCategory,
+            onLoadSearch = onLoadSearch,
+            onSearchQueryChange = onSearchQueryChange,
+            onSelectSearchKind = onSelectSearchKind,
+            onRetrySearch = onRetrySearch,
+            onSelectSearchPlayback = onSelectSearchPlayback,
+            onOpenSearchSeries = onOpenSearchSeries,
+            onToggleSearchFavorite = onToggleSearchFavorite,
             onOpenSeries = onOpenSeries,
             onRetrySeriesDetail = onRetrySeriesDetail,
             onSelectSeriesSeason = onSelectSeriesSeason,

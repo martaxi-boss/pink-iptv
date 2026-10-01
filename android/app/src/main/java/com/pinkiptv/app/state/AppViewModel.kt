@@ -10,15 +10,19 @@ import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.HistoryItem
 import com.pinkiptv.app.model.PlaybackRef
-import com.pinkiptv.app.model.continueWatchingPositionMs
-import com.pinkiptv.app.model.toPlaybackRef
-import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
+import com.pinkiptv.app.model.SearchItem
+import com.pinkiptv.app.model.SearchKind
 import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.model.SessionRepository
+import com.pinkiptv.app.model.continueWatchingPositionMs
+import com.pinkiptv.app.model.toCatalogKindOrNull
+import com.pinkiptv.app.model.toCatalogUiItem
+import com.pinkiptv.app.model.toPlaybackRef
 import com.pinkiptv.app.storage.CredentialStore
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -42,6 +46,11 @@ class AppViewModel(
         repository = catalogRepository,
         scope = viewModelScope,
     )
+    private val searchController = SearchController(
+        repository = catalogRepository,
+        providerSessionStore = providerSessionStore,
+        scope = viewModelScope,
+    )
     private val seriesDetailController = SeriesDetailController(
         repository = catalogRepository,
         scope = viewModelScope,
@@ -62,6 +71,7 @@ class AppViewModel(
     val liveCatalog = catalogController.live
     val movieCatalog = catalogController.movies
     val seriesCatalog = catalogController.series
+    val search = searchController.state
     val seriesDetail = seriesDetailController.state
     val epg = epgController.state
     val selectedPlayback = playbackSelectionController.selection
@@ -76,6 +86,7 @@ class AppViewModel(
                     playbackSelectionController.clear()
                     seriesDetailController.clear()
                     epgController.clear()
+                    searchController.clear()
                     libraryController.clearVisible()
                 }
             }
@@ -91,6 +102,7 @@ class AppViewModel(
         seriesDetailController.clear()
         epgController.clear()
         catalogController.clear()
+        searchController.clear()
         libraryController.clearVisible()
         playbackActivityRecorder.clearSession()
         sessionController.logout()
@@ -102,6 +114,36 @@ class AppViewModel(
 
     fun selectCatalogCategory(kind: CatalogKind, categoryId: String?) {
         catalogController.selectCategory(kind, categoryId)
+    }
+
+    fun loadSearch() {
+        searchController.load()
+    }
+
+    fun updateSearchQuery(query: String) {
+        searchController.updateQuery(query)
+    }
+
+    fun selectSearchKind(kind: SearchKind) {
+        searchController.selectKind(kind)
+    }
+
+    fun retrySearch() {
+        searchController.retry()
+    }
+
+    fun selectSearchPlayback(item: SearchItem) {
+        item.playbackRef?.let(playbackSelectionController::select)
+    }
+
+    fun openSearchSeries(item: SearchItem) {
+        if (item.kind != SearchKind.Series) return
+        seriesDetailController.openSeriesById(item.providerId, item.title)
+    }
+
+    fun toggleSearchFavorite(item: SearchItem) {
+        val kind = item.kind.toCatalogKindOrNull() ?: return
+        libraryController.toggleFavorite(kind, item.toCatalogUiItem())
     }
 
     fun openSeries(item: CatalogUiItem) {

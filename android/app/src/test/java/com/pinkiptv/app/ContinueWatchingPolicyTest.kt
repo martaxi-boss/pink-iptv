@@ -1,9 +1,11 @@
 package com.pinkiptv.app
 
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.HistoryItem
 import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.continueWatchingPositionMs
 import com.pinkiptv.app.model.isContinueWatchingEligible
+import com.pinkiptv.app.model.toPlaybackRef
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -97,6 +99,36 @@ class ContinueWatchingPolicyTest {
                 true,
             ).continueWatchingPositionMs(),
         )
+    }
+
+
+    @Test
+    fun seriesResumeReconstructsTypedCredentialFreeReference() {
+        val item = history(
+            kind = PlaybackKind.Series,
+            position = 45_000L,
+            duration = 180_000L,
+            seekable = true,
+        )
+        val ref = item.toPlaybackRef()
+        assertTrue(ref is EpisodePlaybackRef)
+        assertEquals(45_000L, item.continueWatchingPositionMs())
+        val names = requireNotNull(ref).javaClass.declaredFields.map { it.name.lowercase() }
+        for (forbidden in listOf("username", "password", "origin", "hostname", "uri")) {
+            assertFalse(names.any { it.contains(forbidden) })
+        }
+    }
+
+    @Test
+    fun oversizedProgressFailsClosedWithoutArithmeticOverflow() {
+        val item = history(
+            kind = PlaybackKind.Vod,
+            position = Long.MAX_VALUE,
+            duration = Long.MAX_VALUE,
+            seekable = true,
+        )
+        assertFalse(item.isContinueWatchingEligible())
+        assertNull(item.continueWatchingPositionMs())
     }
 
     private fun history(

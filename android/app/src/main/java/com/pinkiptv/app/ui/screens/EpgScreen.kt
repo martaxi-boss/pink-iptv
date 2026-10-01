@@ -258,9 +258,10 @@ private fun NowNextSummary(programmes: List<EpgProgramme>) {
             .testTag("epg_now_next"),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        programmes.take(2).forEachIndexed { index, programme ->
+        programmes.take(2).forEach { programme ->
+            val prefix = if (programme.nowPlaying) "AGORA · " else "A SEGUIR · "
             Text(
-                text = (if (index == 0) "AGORA · " else "A SEGUIR · ") + programme.title,
+                text = prefix + programme.title,
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

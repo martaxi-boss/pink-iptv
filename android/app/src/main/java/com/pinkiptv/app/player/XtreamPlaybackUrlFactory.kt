@@ -99,6 +99,15 @@ internal class XtreamPlaybackUrlFactory(
         )
     }
 
+    private fun isValidCatchUpStart(value: String): Boolean {
+        if (!CATCH_UP_START.matches(value)) return false
+        val parser = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US).apply {
+            isLenient = false
+        }
+        val position = ParsePosition(0)
+        return parser.parse(value, position) != null && position.index == value.length
+    }
+
     private companion object {
         val STREAM_ID = Regex("^[A-Za-z0-9_-]{1,64}$")
         val MEDIA_EXTENSION = Regex("^[A-Za-z0-9]{1,12}$")

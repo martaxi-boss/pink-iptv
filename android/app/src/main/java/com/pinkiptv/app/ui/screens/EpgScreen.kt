@@ -354,7 +354,7 @@ private fun ColumnScope.ProgrammeList(
                 selectedChannelId = selectedChannelId,
                 rowFocusRequester = rowRequesters[index],
                 catchUpFocusRequester = catchUpRequesters[index],
-                selected = item.key == selectedProgrammeKey,
+                isSelected = item.key == selectedProgrammeKey,
                 up = if (index == 0) channelUp else rowRequesters.getOrNull(index - 1),
                 down = rowRequesters.getOrNull(index + 1),
                 onSelect = { onSelectProgramme(item.key) },
@@ -370,7 +370,7 @@ private fun ProgrammeCard(
     selectedChannelId: String?,
     rowFocusRequester: FocusRequester,
     catchUpFocusRequester: FocusRequester,
-    selected: Boolean,
+    isSelected: Boolean,
     up: FocusRequester?,
     down: FocusRequester?,
     onSelect: () -> Unit,
@@ -382,7 +382,7 @@ private fun ProgrammeCard(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) {
+            containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.secondaryContainer
             } else {
                 SurfaceRaised
@@ -405,7 +405,7 @@ private fun ProgrammeCard(
                 }
             }
             .onFocusChanged { focused = it.isFocused }
-            .semantics { this.selected = selected }
+            .semantics { selected = isSelected }
             .clickable(onClick = onSelect),
     ) {
         Column(

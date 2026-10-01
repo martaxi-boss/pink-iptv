@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -38,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.PlayerSurface
+import com.pinkiptv.app.library.NoopPlaybackActivityRecorder
+import com.pinkiptv.app.library.PlaybackActivityRecorder
 import com.pinkiptv.app.model.PlaybackRef
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlayerPhase
@@ -51,6 +54,8 @@ fun PlayerScreen(
     playbackRef: PlaybackRef?,
     facadeFactory: PlaybackFacadeFactory,
     onBack: () -> Unit,
+    startPositionMs: Long = 0L,
+    activityRecorder: PlaybackActivityRecorder = NoopPlaybackActivityRecorder,
 ) {
     val facade = remember(facadeFactory) { facadeFactory.create() }
     val state by facade.uiState.collectAsStateWithLifecycle()
@@ -60,19 +65,42 @@ fun PlayerScreen(
         Configuration.UI_MODE_TYPE_TELEVISION
     val playFocus = remember { FocusRequester() }
     val retryFocus = remember { FocusRequester() }
+    val latestState by rememberUpdatedState(state)
+    val latestRef by rememberUpdatedState(playbackRef)
+    val exitFlushed = remember { java.util.concurrent.atomic.AtomicBoolean(false) }
+
+    fun flushRecorderOnce() {
+        if (exitFlushed.compareAndSet(false, true)) {
+            latestRef?.let { ref -> activityRecorder.onExit(ref, latestState) }
+        }
+    }
 
     DisposableEffect(facade) {
         val previousKeepScreenOn = view.keepScreenOn
         view.keepScreenOn = true
         onDispose {
+            flushRecorderOnce()
             view.keepScreenOn = previousKeepScreenOn
             facade.close()
         }
     }
 
-    LaunchedEffect(playbackRef) {
+    LaunchedEffect(playbackRef, startPositionMs) {
         if (playbackRef != null) {
-            facade.prepare(playbackRef)
+            facade.prepare(playbackRef, startPositionMs)
+        }
+    }
+
+    LaunchedEffect(
+        playbackRef,
+        state.phase,
+        state.positionMs,
+        state.durationMs,
+        state.seekable,
+        state.isPlaying,
+    ) {
+        playbackRef?.let { ref ->
+            activityRecorder.onState(ref, state)
         }
     }
 
@@ -89,6 +117,7 @@ fun PlayerScreen(
     }
 
     BackHandler {
+        flushRecorderOnce()
         facade.close()
         onBack()
     }
@@ -127,6 +156,7 @@ fun PlayerScreen(
                     label = "Voltar",
                     testTag = "player_back",
                     onClick = {
+                        flushRecorderOnce()
                         facade.close()
                         onBack()
                     },

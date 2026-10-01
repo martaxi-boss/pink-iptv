@@ -471,6 +471,7 @@ class NavigationShellTest {
                 isPlaying = true,
             ),
         )
+        var selectedSearchKind = SearchKind.All
         val searchItems = listOf(
             SearchItem(
                 kind = SearchKind.Live,
@@ -532,6 +533,7 @@ class NavigationShellTest {
                         searchState = searchState.copy(query = value)
                     },
                     onSelectSearchKind = { kind ->
+                        selectedSearchKind = kind
                         searchState = searchState.copy(selectedKind = kind)
                     },
                     onRetrySearch = {},
@@ -570,7 +572,7 @@ class NavigationShellTest {
         composeRule.onNodeWithTag("search_query").assertTextContains("one")
 
         composeRule.runOnIdle {
-            assertEquals(SearchKind.Movies, searchState.selectedKind)
+            assertEquals(SearchKind.Movies, selectedSearchKind)
         }
     }
 

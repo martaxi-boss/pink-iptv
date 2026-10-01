@@ -5,11 +5,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -62,8 +64,24 @@ fun EpgScreen(
     val configuration = LocalConfiguration.current
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
         Configuration.UI_MODE_TYPE_TELEVISION
+
     val backFocus = remember { FocusRequester() }
     val retryFocus = remember { FocusRequester() }
+
+    val channelIds = state.channels.map { it.streamId }
+    val programmeKeys = state.programmes.map { it.key }
+    val channelRequesters = remember(channelIds) {
+        List(channelIds.size) { FocusRequester() }
+    }
+    val programmeRequesters = remember(programmeKeys) {
+        List(programmeKeys.size) { FocusRequester() }
+    }
+    val catchUpRequesters = remember(programmeKeys) {
+        List(programmeKeys.size) { FocusRequester() }
+    }
+    val selectedChannelIndex = state.channels.indexOfFirst {
+        it.streamId == state.selectedChannelId
+    }.let { if (it < 0) 0 else it }
 
     LaunchedEffect(state.phase) {
         if (state.phase == EpgPhase.Idle) {
@@ -71,17 +89,23 @@ fun EpgScreen(
         }
     }
 
-    LaunchedEffect(isTv, state.phase, state.channels.size) {
+    LaunchedEffect(
+        isTv,
+        state.phase,
+        channelIds,
+        programmeKeys,
+        selectedChannelIndex,
+    ) {
         if (!isTv) return@LaunchedEffect
+        withFrameNanos { }
         when {
-            state.phase == EpgPhase.Error -> {
-                withFrameNanos { }
-                retryFocus.requestFocus()
+            state.phase == EpgPhase.Error -> retryFocus.requestFocus()
+            channelRequesters.isNotEmpty() -> {
+                channelRequesters[
+                    selectedChannelIndex.coerceAtMost(channelRequesters.lastIndex)
+                ].requestFocus()
             }
-            state.channels.isEmpty() -> {
-                withFrameNanos { }
-                backFocus.requestFocus()
-            }
+            else -> backFocus.requestFocus()
         }
     }
 
@@ -114,8 +138,8 @@ fun EpgScreen(
             ChannelSelector(
                 channels = state.channels,
                 selectedChannelId = state.selectedChannelId,
-                requestInitialFocus = isTv,
-                programmeDownTargetAvailable = state.programmes.isNotEmpty(),
+                requesters = channelRequesters,
+                down = programmeRequesters.firstOrNull(),
                 onSelectChannel = onSelectChannel,
             )
         }
@@ -128,11 +152,16 @@ fun EpgScreen(
             EpgPhase.Idle,
             EpgPhase.Loading,
             -> LoadingEpg()
+
             EpgPhase.Content -> ProgrammeList(
                 programmes = state.programmes,
                 selectedChannelId = state.selectedChannelId,
+                channelUp = channelRequesters.getOrNull(selectedChannelIndex),
+                rowRequesters = programmeRequesters,
+                catchUpRequesters = catchUpRequesters,
                 onOpenCatchUp = onOpenCatchUp,
             )
+
             EpgPhase.Empty -> EmptyEpg(hasChannels = state.channels.isNotEmpty())
             EpgPhase.Error -> ErrorEpg(
                 error = state.error,
@@ -147,22 +176,10 @@ fun EpgScreen(
 private fun ChannelSelector(
     channels: List<EpgChannel>,
     selectedChannelId: String?,
-    requestInitialFocus: Boolean,
-    programmeDownTargetAvailable: Boolean,
+    requesters: List<FocusRequester>,
+    down: FocusRequester?,
     onSelectChannel: (String) -> Unit,
 ) {
-    val ids = channels.map { it.streamId }
-    val requesters = remember(ids) { List(ids.size) { FocusRequester() } }
-    val selectedIndex = channels.indexOfFirst { it.streamId == selectedChannelId }
-        .let { if (it < 0) 0 else it }
-
-    LaunchedEffect(requestInitialFocus, selectedIndex, ids) {
-        if (requestInitialFocus && requesters.isNotEmpty()) {
-            withFrameNanos { }
-            requesters[selectedIndex.coerceAtMost(requesters.lastIndex)].requestFocus()
-        }
-    }
-
     Text("Canais", style = MaterialTheme.typography.titleMedium)
     LazyRow(
         modifier = Modifier
@@ -177,8 +194,8 @@ private fun ChannelSelector(
                 focusRequester = requesters[index],
                 left = requesters.getOrNull(index - 1),
                 right = requesters.getOrNull(index + 1),
+                down = down,
                 onClick = { onSelectChannel(channel.streamId) },
-                programmeDownTargetAvailable = programmeDownTargetAvailable,
             )
         }
     }
@@ -191,8 +208,8 @@ private fun ChannelChip(
     focusRequester: FocusRequester,
     left: FocusRequester?,
     right: FocusRequester?,
+    down: FocusRequester?,
     onClick: () -> Unit,
-    programmeDownTargetAvailable: Boolean,
 ) {
     var focused by remember { mutableStateOf(false) }
 
@@ -214,8 +231,10 @@ private fun ChannelChip(
             .focusProperties {
                 left?.let { this.left = it }
                 right?.let { this.right = it }
-                if (!programmeDownTargetAvailable) {
-                    down = FocusRequester.Cancel
+                if (down == null) {
+                    this.down = FocusRequester.Cancel
+                } else {
+                    this.down = down
                 }
             }
             .onFocusChanged { focused = it.isFocused }
@@ -309,21 +328,18 @@ private fun ErrorEpg(
 }
 
 @Composable
-private fun ProgrammeList(
+private fun ColumnScope.ProgrammeList(
     programmes: List<EpgProgrammeUi>,
     selectedChannelId: String?,
+    channelUp: FocusRequester?,
+    rowRequesters: List<FocusRequester>,
+    catchUpRequesters: List<FocusRequester>,
     onOpenCatchUp: (CatchUpPlaybackRef) -> Unit,
 ) {
-    val rowRequesters = remember(programmes.map { it.key }) {
-        List(programmes.size) { FocusRequester() }
-    }
-    val catchUpRequesters = remember(programmes.map { it.key }) {
-        List(programmes.size) { FocusRequester() }
-    }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
+            .weight(1f)
             .testTag("epg_programmes"),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -333,7 +349,7 @@ private fun ProgrammeList(
                 selectedChannelId = selectedChannelId,
                 rowFocusRequester = rowRequesters[index],
                 catchUpFocusRequester = catchUpRequesters[index],
-                up = rowRequesters.getOrNull(index - 1),
+                up = if (index == 0) channelUp else rowRequesters.getOrNull(index - 1),
                 down = rowRequesters.getOrNull(index + 1),
                 onOpenCatchUp = onOpenCatchUp,
             )

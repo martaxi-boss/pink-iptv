@@ -29,6 +29,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -128,7 +129,7 @@ class XtreamCatalogClient(
         val session = sessionStore.current()
             ?: return@withContext CatalogResult.Failure(CatalogError.MissingSession)
 
-        val request = providerRequest(action, extraQuery, session.username, session.password)
+        val request = providerRequest(session.origin, action, extraQuery, session.username, session.password)
             ?: return@withContext CatalogResult.Failure(CatalogError.InvalidMetadata)
 
         try {
@@ -185,13 +186,13 @@ class XtreamCatalogClient(
     }
 
     private fun providerRequest(
+        origin: HttpUrl,
         action: String,
         extraQuery: Map<String, String>,
         username: String,
         password: String,
     ): Request? {
-        val session = sessionStore.current() ?: return null
-        val builder = session.origin.newBuilder()
+        val builder = origin.newBuilder()
             .addPathSegment("player_api.php")
             .addQueryParameter("username", username)
             .addQueryParameter("password", password)

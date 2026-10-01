@@ -3,11 +3,12 @@ package com.pinkiptv.app
 import android.content.res.Configuration
 import android.view.KeyEvent
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
@@ -133,10 +134,10 @@ class EpgScreenTest {
             }
         }
 
-        composeRule.onNodeWithTag("epg_now_archived-0").assertDoesNotExist()
+        composeRule.onAllNodesWithTag("epg_now_archived-0").assertCountEquals(0)
         composeRule.onNodeWithTag("epg_now_current-1").assertIsDisplayed()
         composeRule.onNodeWithTag("epg_catchup_archived-0").assertIsDisplayed()
-        composeRule.onNodeWithTag("epg_catchup_current-1").assertDoesNotExist()
+        composeRule.onAllNodesWithTag("epg_catchup_current-1").assertCountEquals(0)
         composeRule.onNodeWithTag("epg_catchup_archived-0").performClick()
         composeRule.runOnIdle {
             assertEquals("10", opened?.streamId)

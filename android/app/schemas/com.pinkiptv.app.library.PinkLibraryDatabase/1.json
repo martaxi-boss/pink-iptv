@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "491399fbdd3b12fbad8e4233a29afd9e",
+    "identityHash": "491399fbdd3b12fbad8e4233a29afd9e", "_detectSecrets": "pragma: allowlist secret",
     "entities": [
       {
         "tableName": "favorites",
-        "createSql": "CREATE TABLE IF NOT EXISTS \`\${TABLE_NAME}\` (\`profileKey\` TEXT NOT NULL, \`contentKind\` TEXT NOT NULL, \`providerId\` TEXT NOT NULL, \`title\` TEXT NOT NULL, \`artworkUrl\` TEXT, \`containerExtension\` TEXT, \`createdAtEpochMs\` INTEGER NOT NULL, \`updatedAtEpochMs\` INTEGER NOT NULL, PRIMARY KEY(\`profileKey\`, \`contentKind\`, \`providerId\`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileKey` TEXT NOT NULL, `contentKind` TEXT NOT NULL, `providerId` TEXT NOT NULL, `title` TEXT NOT NULL, `artworkUrl` TEXT, `containerExtension` TEXT, `createdAtEpochMs` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`profileKey`, `contentKind`, `providerId`))",
         "fields": [
           {"fieldPath": "profileKey", "columnName": "profileKey", "affinity": "TEXT", "notNull": true},
           {"fieldPath": "contentKind", "columnName": "contentKind", "affinity": "TEXT", "notNull": true},
@@ -25,7 +25,7 @@
       },
       {
         "tableName": "history",
-        "createSql": "CREATE TABLE IF NOT EXISTS \`\${TABLE_NAME}\` (\`profileKey\` TEXT NOT NULL, \`playbackKind\` TEXT NOT NULL, \`providerMediaId\` TEXT NOT NULL, \`title\` TEXT NOT NULL, \`artworkUrl\` TEXT, \`containerExtension\` TEXT, \`lastPlayedAtEpochMs\` INTEGER NOT NULL, \`lastPositionMs\` INTEGER NOT NULL, \`durationMs\` INTEGER, \`seekable\` INTEGER NOT NULL, \`completed\` INTEGER NOT NULL, PRIMARY KEY(\`profileKey\`, \`playbackKind\`, \`providerMediaId\`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileKey` TEXT NOT NULL, `playbackKind` TEXT NOT NULL, `providerMediaId` TEXT NOT NULL, `title` TEXT NOT NULL, `artworkUrl` TEXT, `containerExtension` TEXT, `lastPlayedAtEpochMs` INTEGER NOT NULL, `lastPositionMs` INTEGER NOT NULL, `durationMs` INTEGER, `seekable` INTEGER NOT NULL, `completed` INTEGER NOT NULL, PRIMARY KEY(`profileKey`, `playbackKind`, `providerMediaId`))",
         "fields": [
           {"fieldPath": "profileKey", "columnName": "profileKey", "affinity": "TEXT", "notNull": true},
           {"fieldPath": "playbackKind", "columnName": "playbackKind", "affinity": "TEXT", "notNull": true},

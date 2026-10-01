@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -30,7 +31,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -134,7 +134,6 @@ fun SearchScreen(
             )
         }
 
-        var queryFocused by rememberSaveable { mutableStateOf(false) }
         OutlinedTextField(
             value = state.query,
             onValueChange = onQueryChange,
@@ -163,8 +162,7 @@ fun SearchScreen(
                 .focusRequester(queryFocus)
                 .focusProperties {
                     filterRequesters.firstOrNull()?.let { down = it }
-                }
-                .onFocusChanged { queryFocused = it.isFocused },
+                },
         )
 
         Row(

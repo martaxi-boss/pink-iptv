@@ -1,5 +1,6 @@
 package com.pinkiptv.app.player
 
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlaybackRef
@@ -45,7 +46,7 @@ internal class XtreamPlaybackUrlFactory(
             }
             is VodPlaybackRef -> {
                 val extension = ref.containerExtension
-                if (extension == null || !VOD_EXTENSION.matches(extension)) {
+                if (extension == null || !MEDIA_EXTENSION.matches(extension)) {
                     return PlaybackSourceResult.Failure(PlayerError.InvalidStreamMetadata)
                 }
                 builder
@@ -54,6 +55,18 @@ internal class XtreamPlaybackUrlFactory(
                     .addPathSegment(session.password)
                     .addPathSegment(ref.streamId + "." + extension)
                 PlaybackKind.Vod
+            }
+            is EpisodePlaybackRef -> {
+                val extension = ref.containerExtension
+                if (extension == null || !MEDIA_EXTENSION.matches(extension)) {
+                    return PlaybackSourceResult.Failure(PlayerError.InvalidStreamMetadata)
+                }
+                builder
+                    .addPathSegment("series")
+                    .addPathSegment(session.username)
+                    .addPathSegment(session.password)
+                    .addPathSegment(ref.episodeId + "." + extension)
+                PlaybackKind.Series
             }
         }
 
@@ -68,6 +81,6 @@ internal class XtreamPlaybackUrlFactory(
 
     private companion object {
         val STREAM_ID = Regex("^[A-Za-z0-9_-]{1,64}$")
-        val VOD_EXTENSION = Regex("^[A-Za-z0-9]{1,12}$")
+        val MEDIA_EXTENSION = Regex("^[A-Za-z0-9]{1,12}$")
     }
 }

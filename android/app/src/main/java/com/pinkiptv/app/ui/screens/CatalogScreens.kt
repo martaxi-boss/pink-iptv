@@ -29,7 +29,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -64,8 +63,6 @@ fun CatalogScreen(
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
         Configuration.UI_MODE_TYPE_TELEVISION
     val firstCategoryFocus = remember { FocusRequester() }
-    var selectedItemName by rememberSaveable(state.kind) { mutableStateOf<String?>(null) }
-
     LaunchedEffect(state.phase) {
         if (state.phase == CatalogPhase.Idle) {
             onLoad()
@@ -77,10 +74,6 @@ fun CatalogScreen(
             withFrameNanos { }
             firstCategoryFocus.requestFocus()
         }
-    }
-
-    LaunchedEffect(state.selectedCategoryId) {
-        selectedItemName = null
     }
 
     Column(
@@ -118,15 +111,8 @@ fun CatalogScreen(
             CatalogPhase.Content -> CatalogContent(
                 state = state,
                 firstCategoryFocus = firstCategoryFocus,
-                selectedItemName = selectedItemName,
                 onSelectCategory = onSelectCategory,
-                onSelectItem = { item ->
-                    if (state.kind == CatalogKind.Series) {
-                        selectedItemName = item.name
-                    } else {
-                        onOpenItem(item)
-                    }
-                },
+                onSelectItem = onOpenItem,
             )
         }
     }
@@ -184,7 +170,6 @@ private fun ErrorCatalog(
 private fun ColumnScope.CatalogContent(
     state: CatalogUiState,
     firstCategoryFocus: FocusRequester,
-    selectedItemName: String?,
     onSelectCategory: (String?) -> Unit,
     onSelectItem: (CatalogUiItem) -> Unit,
 ) {
@@ -212,20 +197,6 @@ private fun ColumnScope.CatalogContent(
                 onClick = { onSelectCategory(category.id) },
             )
         }
-    }
-
-    if (state.kind == CatalogKind.Series && selectedItemName != null) {
-        Text(
-            text = "Selecionado: " + selectedItemName,
-            modifier = Modifier.testTag("catalog_selection"),
-            color = PinkSoft,
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text(
-            text = "Disponível numa fase seguinte.",
-            modifier = Modifier.testTag("series_future_playback"),
-            style = MaterialTheme.typography.bodyMedium,
-        )
     }
 
     if (state.items.isEmpty()) {

@@ -11,6 +11,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlaybackRef
@@ -239,7 +240,11 @@ internal class Media3PlaybackFacade(
     }
 
     private fun kindOf(ref: PlaybackRef): PlaybackKind =
-        if (ref is LivePlaybackRef) PlaybackKind.Live else PlaybackKind.Vod
+        when (ref) {
+            is LivePlaybackRef -> PlaybackKind.Live
+            is EpisodePlaybackRef -> PlaybackKind.Series
+            else -> PlaybackKind.Vod
+        }
 
     private fun requireMainThread() {
         check(Looper.myLooper() == Looper.getMainLooper()) {

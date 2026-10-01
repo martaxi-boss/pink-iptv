@@ -1,6 +1,7 @@
 package com.pinkiptv.app
 
 import com.pinkiptv.app.model.CatalogUiItem
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
 import com.pinkiptv.app.model.VodPlaybackRef
 import com.pinkiptv.app.state.PlaybackSelectionController
@@ -31,14 +32,24 @@ class PlaybackSelectionControllerTest {
     }
 
     @Test
+    fun episodeReferenceCanBeSelectedAndClearedWithoutCredentials() {
+        val controller = PlaybackSelectionController()
+        val episode = EpisodePlaybackRef("501", "Episode", "mkv")
+
+        assertTrue(controller.select(episode))
+        assertSame(episode, controller.selection.value)
+        controller.clear()
+        assertNull(controller.selection.value)
+    }
+
+    @Test
     fun retryIdentityCanRemainTheSameOpaqueReference() {
         val controller = PlaybackSelectionController()
-        val vod = VodPlaybackRef("44", "Movie", "mkv")
-        val item = item("44", vod)
+        val episode = EpisodePlaybackRef("44", "Episode", "mkv")
 
-        controller.select(item)
+        controller.select(episode)
         val first = controller.selection.value
-        controller.select(item)
+        controller.select(episode)
         assertSame(first, controller.selection.value)
     }
 

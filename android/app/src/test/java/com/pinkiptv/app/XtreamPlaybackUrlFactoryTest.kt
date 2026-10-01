@@ -1,6 +1,8 @@
 package com.pinkiptv.app
 
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
+import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
 import com.pinkiptv.app.model.SessionResult
@@ -77,6 +79,48 @@ class XtreamPlaybackUrlFactoryTest {
         for (extension in listOf(null, "../mp4", "mp/4", "mp\\4", "mp4?x", "mp4#x", "m p4")) {
             val result = factory.resolve(
                 VodPlaybackRef("404", "Movie", extension),
+            )
+            assertTrue(result is PlaybackSourceResult.Failure)
+        }
+    }
+
+    @Test
+    fun episodeUsesSeriesPathAndPreservesAuthoritativeOrigins() {
+        val http = factory("http://catalog.invalid:8080/")
+            .source(EpisodePlaybackRef("501", "Episode", "mkv"))
+        assertEquals("http", http.url.scheme)
+        assertEquals("catalog.invalid", http.url.host)
+        assertEquals(8080, http.url.port)
+        assertEquals(PlaybackKind.Series, http.kind)
+        assertEquals(
+            "/series/fixture-user/fixture-pass/501.mkv",
+            http.url.encodedPath,
+        )
+
+        val https = factory("https://catalog.invalid:8443/")
+            .source(EpisodePlaybackRef("502", "Episode", "mp4"))
+        assertEquals("https", https.url.scheme)
+        assertEquals(8443, https.url.port)
+        assertEquals(
+            "/series/fixture-user/fixture-pass/502.mp4",
+            https.url.encodedPath,
+        )
+    }
+
+    @Test
+    fun episodeRejectsUnsafeIdentityAndContainerExtension() {
+        val factory = factory("https://catalog.invalid/")
+
+        for (episodeId in listOf("../501", "50/1", "50\\1", "50?1", "50#1", "50 1")) {
+            val result = factory.resolve(
+                EpisodePlaybackRef(episodeId, "Episode", "mp4"),
+            )
+            assertTrue(result is PlaybackSourceResult.Failure)
+        }
+
+        for (extension in listOf(null, "../mp4", "mp/4", "mp\\4", "mp4?x", "mp4#x", "m p4")) {
+            val result = factory.resolve(
+                EpisodePlaybackRef("501", "Episode", extension),
             )
             assertTrue(result is PlaybackSourceResult.Failure)
         }

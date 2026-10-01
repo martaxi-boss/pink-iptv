@@ -9,10 +9,13 @@ import com.pinkiptv.app.model.CatalogKind
 import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
 import com.pinkiptv.app.model.PlaybackRef
+import com.pinkiptv.app.model.SeriesDetailUiState
+import com.pinkiptv.app.model.SeriesEpisode
 import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.ui.screens.CatalogScreen
 import com.pinkiptv.app.ui.screens.HomeScreen
 import com.pinkiptv.app.ui.screens.PlayerScreen
+import com.pinkiptv.app.ui.screens.SeriesDetailScreen
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.screens.ShellScreen
 
@@ -21,6 +24,7 @@ private object Routes {
     const val LIVE = "live"
     const val MOVIES = "movies"
     const val SERIES = "series"
+    const val SERIES_DETAIL = "series-detail"
     const val EPG = "epg"
     const val FAVORITES = "favorites"
     const val SETTINGS = "settings"
@@ -35,9 +39,15 @@ fun AuthenticatedShell(
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
     onLogout: () -> Unit,
+    seriesDetail: SeriesDetailUiState = SeriesDetailUiState(),
     selectedPlayback: PlaybackRef? = null,
     playbackFacadeFactory: PlaybackFacadeFactory? = null,
+    onOpenSeries: (CatalogUiItem) -> Unit = {},
+    onRetrySeriesDetail: () -> Unit = {},
+    onSelectSeriesSeason: (String) -> Unit = {},
+    onClearSeriesDetail: () -> Unit = {},
     onSelectPlayback: (CatalogUiItem) -> Unit = {},
+    onSelectEpisode: (SeriesEpisode) -> Unit = {},
     onClearPlayback: () -> Unit = {},
 ) {
     val navController = rememberNavController()
@@ -81,7 +91,26 @@ fun AuthenticatedShell(
                 state = seriesCatalog,
                 onLoad = { onLoadCatalog(CatalogKind.Series) },
                 onSelectCategory = { onSelectCatalogCategory(CatalogKind.Series, it) },
+                onOpenItem = { item ->
+                    onOpenSeries(item)
+                    navController.navigate(Routes.SERIES_DETAIL)
+                },
                 onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.SERIES_DETAIL) {
+            SeriesDetailScreen(
+                state = seriesDetail,
+                onRetry = onRetrySeriesDetail,
+                onSelectSeason = onSelectSeriesSeason,
+                onOpenEpisode = { episode ->
+                    onSelectEpisode(episode)
+                    navController.navigate(Routes.PLAYER)
+                },
+                onBack = {
+                    onClearSeriesDetail()
+                    navController.popBackStack()
+                },
             )
         }
         composable(Routes.PLAYER) {

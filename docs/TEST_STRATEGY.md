@@ -96,6 +96,12 @@ Order 002 phone-device proof remains enabled on pull requests. Its `NavigationSh
 
 ## Android Catalog + Player 003B automated proof
 
+Stage 003B is complete and merged.
+
+Approved head: `484b51007ee55ca9fbc5c921bb9bc1b5199a63c4`.
+
+Merge commit: `b98ce7a819d6c752c3ec8e5b45646c79fbe2a3d8`.
+
 Stage 003B adds deterministic coverage for:
 
 - credential-free typed Live and VOD playback references;
@@ -114,6 +120,28 @@ Stage 003B adds deterministic coverage for:
 No Android CI test requires live provider media or production/provider credentials. The existing pull-request phone-device-proof remains unchanged and continues to execute `NavigationShellTest`, which now covers deterministic Live/Movie player navigation and Back without real media.
 
 Real-provider playback proof, when separately authorized and securely available, remains sanitized and outside CI.
+
+## Android Catalog + Player 003C automated proof
+
+Stage 003C adds deterministic coverage for:
+
+- exact `get_series_info` requests using the selected `series_id`;
+- authoritative origin, redirect-off provider transport and internal credential query handling;
+- grouped and array-style episode response parsing with numeric/string identity variants;
+- missing optional metadata, empty seasons/episode groups and malformed-response failure;
+- HTTP, timeout/network and missing-session safe outcomes;
+- Series-detail loading/content/empty/error/retry states;
+- deterministic provider-defined season selection and episode filtering;
+- credential-free `EpisodePlaybackRef` and public Series models;
+- canonical `/series/` playback URL generation with HTTP/HTTPS/explicit-port preservation;
+- episode-id and container-extension rejection rules;
+- `PlaybackKind.Series` through the existing Media3 player;
+- Series catalog -> detail -> episode -> player -> Back navigation;
+- phone touch actions and deterministic TV/D-pad Series-detail focus/navigation.
+
+The existing pull-request phone-device-proof remains unchanged. `NavigationShellTest` now retains Live/Movie coverage and additionally proves Series -> detail -> Episode Player -> Back without live provider access.
+
+Real-provider Series info/episode playback remains a separate sanitized proof and is not required in CI.
 
 ## Future client/platform matrices retained
 

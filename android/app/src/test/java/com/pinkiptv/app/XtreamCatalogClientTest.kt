@@ -5,6 +5,7 @@ import com.pinkiptv.app.model.CatalogError
 import com.pinkiptv.app.model.CatalogResult
 import com.pinkiptv.app.model.LiveStream
 import com.pinkiptv.app.model.RuntimeProviderSessionStore
+import com.pinkiptv.app.model.SeriesDetail
 import com.pinkiptv.app.model.SeriesItem
 import com.pinkiptv.app.model.SessionResult
 import com.pinkiptv.app.model.VodItem
@@ -188,6 +189,270 @@ class XtreamCatalogClientTest {
         ).liveCategories()
         assertEquals(CatalogError.MissingSession, failureValue(result))
         assertEquals(null, interceptor.request)
+    }
+
+
+    @Test
+    fun seriesInfoUsesExactSelectedIdAndStructuredAuthoritativeOrigin() = runTest {
+        val store = RuntimeProviderSessionStore().apply {
+            check(
+                establish(
+                    "fixture-user",
+                    "fixture-pass", // pragma: allowlist secret
+                    success("http://catalog.invalid:8080/"),
+                ),
+            )
+        }
+        val interceptor = RecordingInterceptor(
+            """{"info":{"name":"Show"},"seasons":[],"episodes":{}}""",
+        )
+        val catalog = XtreamCatalogClient(store, testClient(interceptor))
+
+        val result = catalog.seriesInfo("789")
+
+        assertEquals("789", successValue<SeriesDetail>(result).seriesId)
+        val request = requireNotNull(interceptor.request)
+        assertEquals("http", request.url.scheme)
+        assertEquals("catalog.invalid", request.url.host)
+        assertEquals(8080, request.url.port)
+        assertEquals("/player_api.php", request.url.encodedPath)
+        assertEquals("get_series_info", request.url.queryParameter("action"))
+        assertEquals("789", request.url.queryParameter("series_id"))
+        assertEquals("fixture-user", request.url.queryParameter("username"))
+        assertEquals("fixture-pass", request.url.queryParameter("password")) // pragma: allowlist secret
+    }
+
+    @Test
+    fun parsesSeriesSeasonsGroupedEpisodesAndPracticalTypeVariants() = runTest {
+        val body = """
+            {
+              "info":{
+                "name":"Series Title",
+                "plot":"Series plot",
+                "cover":"https://art.invalid/cover.jpg",
+                "genre":"Drama",
+                "rating":9
+              },
+              "seasons":[
+                {"season_number":1,"name":"Season One","episode_count":"2"},
+                {"season_number":"2","name":"Season Two","episode_count":1}
+              ],
+              "episodes":{
+                "1":[
+                  {
+                    "id":"1001",
+                    "episode_num":1,
+                    "title":"Pilot",
+                    "container_extension":"mkv",
+                    "info":{
+                      "movie_image":"https://art.invalid/e1.jpg",
+                      "duration":"00:45:00",
+                      "plot":"First"
+                    }
+                  },
+                  {
+                    "id":1002,
+                    "episode_num":"2",
+                    "title":"Second",
+                    "container_extension":"mp4",
+                    "info":{}
+                  }
+                ],
+                "2":[
+                  {
+                    "episode_id":"2001",
+                    "episode_number":1,
+                    "name":"Third",
+                    "container_extension":"mkv"
+                  }
+                ]
+              }
+            }
+        """.trimIndent()
+        val result = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor(body)),
+        ).seriesInfo("789")
+        val detail = successValue<SeriesDetail>(result)
+
+        assertEquals("Series Title", detail.name)
+        assertEquals(listOf("1", "2"), detail.seasons.map { it.seasonId })
+        assertEquals(listOf("1001", "1002", "2001"), detail.episodes.map { it.episodeId })
+        assertEquals(listOf("1", "2", "1"), detail.episodes.map { it.episodeNumber })
+        assertEquals("00:45:00", detail.episodes.first().duration)
+        assertEquals("mkv", detail.episodes.last().containerExtension)
+    }
+
+    @Test
+    fun parsesArrayStyleEpisodesAndDerivesProviderSeasonKeysWithoutInventingSeasonOne() = runTest {
+        val body = """
+            {
+              "info":{},
+              "seasons":[],
+              "episodes":[
+                {
+                  "id":3001,
+                  "episode_num":4,
+                  "title":"Episode",
+                  "season":"7",
+                  "container_extension":"mp4"
+                }
+              ]
+            }
+        """.trimIndent()
+        val result = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor(body)),
+        ).seriesInfo("789")
+        val detail = successValue<SeriesDetail>(result)
+
+        assertEquals(listOf("7"), detail.seasons.map { it.seasonId })
+        assertEquals("7", detail.episodes.single().seasonId)
+        assertEquals("3001", detail.episodes.single().episodeId)
+    }
+
+    @Test
+    fun seriesInfoSkipsUnusableEpisodeIdentityWithoutCrashing() = runTest {
+        val body = """
+            {
+              "info":{"name":"Show"},
+              "seasons":[{"season_number":"1"}],
+              "episodes":{
+                "1":[
+                  {"id":"../bad","episode_num":"1","container_extension":"mp4"},
+                  {"id":" 1000 ","episode_num":"2","container_extension":"mp4"},
+                  {"id":"1001","episode_num":"3","container_extension":"mp4"}
+                ]
+              }
+            }
+        """.trimIndent()
+        val result = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor(body)),
+        ).seriesInfo("789")
+        val detail = successValue<SeriesDetail>(result)
+
+        assertEquals(listOf("1001"), detail.episodes.map { it.episodeId })
+    }
+
+    @Test
+    fun seriesInfoToleratesMissingOptionalMetadataAndEmptyEpisodeGroups() = runTest {
+        val body = """
+            {
+              "info":{"name":"Sparse"},
+              "seasons":[{"season_number":"4"}],
+              "episodes":{"4":[]}
+            }
+        """.trimIndent()
+        val result = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor(body)),
+        ).seriesInfo("44")
+        val detail = successValue<SeriesDetail>(result)
+
+        assertEquals("Sparse", detail.name)
+        assertEquals(listOf("4"), detail.seasons.map { it.seasonId })
+        assertTrue(detail.episodes.isEmpty())
+    }
+
+
+    @Test
+    fun seriesInfoTreatsNullSeasonsAndEpisodesAsEmptyOptionalData() = runTest {
+        val detail = successValue<SeriesDetail>(
+            XtreamCatalogClient(
+                activeStore(),
+                testClient(
+                    RecordingInterceptor(
+                        """{"info":{"name":"Sparse"},"seasons":null,"episodes":null}""",
+                    ),
+                ),
+            ).seriesInfo("44"),
+        )
+
+        assertEquals("Sparse", detail.name)
+        assertTrue(detail.seasons.isEmpty())
+        assertTrue(detail.episodes.isEmpty())
+    }
+
+    @Test
+    fun seriesInfoRejectsMalformedTopLevelAndInvalidSeriesIdentity() = runTest {
+        val malformed = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor("[]")),
+        ).seriesInfo("789")
+        assertEquals(CatalogError.InvalidResponse, failureValue(malformed))
+
+        val interceptor = RecordingInterceptor("""{"info":{},"seasons":[],"episodes":{}}""")
+        val catalog = XtreamCatalogClient(
+            activeStore(),
+            testClient(interceptor),
+        )
+        for (seriesId in listOf("../789", " 789", "789 ", "78/9", "78?9", "78#9", "78\t9")) {
+            val invalid = catalog.seriesInfo(seriesId)
+            assertEquals(CatalogError.InvalidMetadata, failureValue(invalid))
+        }
+        assertEquals(null, interceptor.request)
+    }
+
+
+    @Test
+    fun seriesInfoDoesNotNormalizeUnsafeEpisodeExtension() = runTest {
+        val body = """
+            {
+              "info":{"name":"Show"},
+              "seasons":[{"season_number":"1"}],
+              "episodes":{
+                "1":[
+                  {
+                    "id":"1001",
+                    "episode_num":"1",
+                    "container_extension":" mp4 "
+                  }
+                ]
+              }
+            }
+        """.trimIndent()
+        val detail = successValue<SeriesDetail>(
+            XtreamCatalogClient(
+                activeStore(),
+                testClient(RecordingInterceptor(body)),
+            ).seriesInfo("789"),
+        )
+
+        assertEquals(" mp4 ", detail.episodes.single().containerExtension)
+    }
+
+    @Test
+    fun seriesInfoHttpNetworkAndMissingSessionFailuresStayCredentialFree() = runTest {
+        val http = XtreamCatalogClient(
+            activeStore(),
+            testClient(RecordingInterceptor("{}", code = 503)),
+        ).seriesInfo("789")
+        assertEquals(CatalogError.HttpFailure, failureValue(http))
+
+        val timeout = XtreamCatalogClient(
+            activeStore(),
+            testClient(
+                RecordingInterceptor(
+                    "{}",
+                    failure = SocketTimeoutException("fixture timeout"),
+                ),
+            ),
+        ).seriesInfo("789")
+        assertEquals(CatalogError.NetworkFailure, failureValue(timeout))
+
+        val interceptor = RecordingInterceptor("{}")
+        val missing = XtreamCatalogClient(
+            RuntimeProviderSessionStore(),
+            testClient(interceptor),
+        ).seriesInfo("789")
+        assertEquals(CatalogError.MissingSession, failureValue(missing))
+        assertEquals(null, interceptor.request)
+
+        val text = http.toString() + timeout.toString() + missing.toString()
+        assertFalse(text.contains("fixture-user"))
+        assertFalse(text.contains("fixture-pass")) // pragma: allowlist secret
+        assertFalse(text.contains("catalog.invalid"))
     }
 
     private fun activeStore(): RuntimeProviderSessionStore =

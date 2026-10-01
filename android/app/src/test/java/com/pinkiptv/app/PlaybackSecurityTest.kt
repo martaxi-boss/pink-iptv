@@ -1,8 +1,13 @@
 package com.pinkiptv.app
 
+import com.pinkiptv.app.model.EpisodePlaybackRef
 import com.pinkiptv.app.model.LivePlaybackRef
+import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlayerUiState
+import com.pinkiptv.app.model.SeriesDetail
+import com.pinkiptv.app.model.SeriesEpisode
+import com.pinkiptv.app.model.SeriesSeason
 import com.pinkiptv.app.model.VodPlaybackRef
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -14,6 +19,10 @@ class PlaybackSecurityTest {
         val publicTypes = listOf(
             LivePlaybackRef::class.java,
             VodPlaybackRef::class.java,
+            EpisodePlaybackRef::class.java,
+            SeriesDetail::class.java,
+            SeriesSeason::class.java,
+            SeriesEpisode::class.java,
             PlayerUiState::class.java,
         )
         val forbidden = setOf(
@@ -31,6 +40,13 @@ class PlaybackSecurityTest {
                 assertFalse(type.simpleName + " leaked " + word, names.any { it == word })
             }
         }
+    }
+
+    @Test
+    fun seriesPlaybackKindIsPublicAndSecretFree() {
+        val state = PlayerUiState(kind = PlaybackKind.Series)
+        assertTrue(state.toString().contains("Series"))
+        assertFalse(state.toString().contains("fixture-pass"))
     }
 
     @Test

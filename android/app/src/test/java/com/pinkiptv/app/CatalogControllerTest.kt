@@ -8,6 +8,7 @@ import com.pinkiptv.app.model.CatalogRepository
 import com.pinkiptv.app.model.CatalogResult
 import com.pinkiptv.app.model.CatalogUiError
 import com.pinkiptv.app.model.LiveStream
+import com.pinkiptv.app.model.SeriesDetail
 import com.pinkiptv.app.model.SeriesItem
 import com.pinkiptv.app.model.VodItem
 import com.pinkiptv.app.state.CatalogController
@@ -86,5 +87,18 @@ class CatalogControllerTest {
         override suspend fun vodStreams() = vodStreamsResult
         override suspend fun seriesCategories() = seriesCategoriesResult
         override suspend fun series() = seriesResult
+        override suspend fun seriesInfo(seriesId: String) =
+            CatalogResult.Success(
+                SeriesDetail(
+                    seriesId = seriesId,
+                    name = null,
+                    plot = null,
+                    artworkUrl = null,
+                    genre = null,
+                    rating = null,
+                    seasons = emptyList(),
+                    episodes = emptyList(),
+                ),
+            )
     }
 }

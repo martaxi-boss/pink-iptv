@@ -12,6 +12,10 @@ class PlaybackSelectionController {
 
     fun select(item: CatalogUiItem): Boolean {
         val ref = item.playbackRef ?: return false
+        return select(ref)
+    }
+
+    fun select(ref: PlaybackRef): Boolean {
         mutableSelection.value = ref
         return true
     }

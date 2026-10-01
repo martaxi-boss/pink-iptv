@@ -2,6 +2,7 @@ package com.pinkiptv.app
 
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import com.pinkiptv.app.model.PlaybackKind
 import com.pinkiptv.app.model.PlayerError
 import com.pinkiptv.app.model.PlayerPhase
 import com.pinkiptv.app.model.PlayerUiState
@@ -34,6 +35,12 @@ class Media3PlayerStateTest {
             PlayerPhase.Ended,
             media3Phase(Player.STATE_ENDED, isPlaying = false),
         )
+    }
+
+    @Test
+    fun publicPlayerStateSupportsSeriesKindWithoutSecretMaterial() {
+        val state = PlayerUiState(kind = PlaybackKind.Series)
+        assertEquals(PlaybackKind.Series, state.kind)
     }
 
     @Test

@@ -45,7 +45,11 @@ Android platform cleartext policy permits provider HTTP because the backend-auth
 
 The password remains absent from navigation arguments, Compose saved state and public `AppUiState`. Existing Android Keystore/DataStore encrypted credential persistence is unchanged.
 
-## Phase 3 / Stage 003B — ACTIVE
+## Phase 3 / Stage 003B — COMPLETE / MERGED
+
+Stage 003B approved head: `484b51007ee55ca9fbc5c921bb9bc1b5199a63c4`.
+
+Stage 003B merge commit: `b98ce7a819d6c752c3ec8e5b45646c79fbe2a3d8`.
 
 Stage 003B adds AndroidX Media3 1.11.1 foreground playback for Live TV and Movies/VOD. The player reuses the redirect-disabled provider OkHttp transport through Media3 OkHttpDataSource with `PINK-IPTV/0.1`.
 
@@ -57,8 +61,16 @@ Live uses the canonical Xtream live path. Movies/VOD use the catalog-provided co
 
 Catalog surfaces are touch-scrollable and D-pad focusable. Focused catalog categories, items and actions use the PINK focus treatment. The Stage 003B player adds touch play/pause/retry/Back, seek controls only when media is seekable, and focusable TV/D-pad player controls. Home/Login behavior from Order 002 remains intact.
 
-## Explicitly not implemented after Stage 003B
+## Phase 3 / Stage 003C — ACTIVE
 
-Series episodes/playback, Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain outside Stage 003B.
+Stage 003C adds Series detail through `player_api.php?action=get_series_info&series_id=...`, defensive seasons/episodes parsing, a phone/TV Series-detail screen, and Episode playback through the existing Media3 player.
+
+Episode playback references contain only non-secret episode identity/display metadata. Credential-bearing episode URLs remain private to the player layer and use the exact authenticated origin plus the canonical `/series/{username}/{password}/{episode_id}.{container_extension}` path.
+
+Real-provider Series info and episode playback are not yet certified unless a separate secure proof is executed.
+
+## Explicitly not implemented after Stage 003C
+
+Catch Up, full EPG browsing, favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain outside Stage 003C.
 
 Public launch remains NO.

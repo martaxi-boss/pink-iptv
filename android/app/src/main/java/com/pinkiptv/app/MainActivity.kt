@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
                 val liveCatalog by appViewModel.liveCatalog.collectAsStateWithLifecycle()
                 val movieCatalog by appViewModel.movieCatalog.collectAsStateWithLifecycle()
                 val seriesCatalog by appViewModel.seriesCatalog.collectAsStateWithLifecycle()
+                val seriesDetail by appViewModel.seriesDetail.collectAsStateWithLifecycle()
                 val selectedPlayback by appViewModel.selectedPlayback.collectAsStateWithLifecycle()
 
                 PinkApp(
@@ -38,13 +39,19 @@ class MainActivity : ComponentActivity() {
                     liveCatalog = liveCatalog,
                     movieCatalog = movieCatalog,
                     seriesCatalog = seriesCatalog,
+                    seriesDetail = seriesDetail,
                     selectedPlayback = selectedPlayback,
                     playbackFacadeFactory = container.playbackFacadeFactory,
                     onLogin = appViewModel::login,
                     onLogout = appViewModel::logout,
                     onLoadCatalog = appViewModel::loadCatalog,
                     onSelectCatalogCategory = appViewModel::selectCatalogCategory,
+                    onOpenSeries = appViewModel::openSeries,
+                    onRetrySeriesDetail = appViewModel::retrySeriesDetail,
+                    onSelectSeriesSeason = appViewModel::selectSeriesSeason,
+                    onClearSeriesDetail = appViewModel::clearSeriesDetail,
                     onSelectPlayback = appViewModel::selectPlayback,
+                    onSelectEpisode = appViewModel::selectEpisode,
                     onClearPlayback = appViewModel::clearPlayback,
                 )
             }

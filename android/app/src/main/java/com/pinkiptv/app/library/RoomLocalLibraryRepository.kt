@@ -15,12 +15,12 @@ class RoomLocalLibraryRepository(
 
     override fun observeFavorites(profileKey: String): Flow<List<FavoriteItem>> =
         favorites.observeForProfile(profileKey).map { rows ->
-            rows.mapNotNull(FavoriteEntity::toDomain)
+            rows.mapNotNull { it.toDomain() }
         }
 
     override fun observeHistory(profileKey: String): Flow<List<HistoryItem>> =
         history.observeForProfile(profileKey).map { rows ->
-            rows.mapNotNull(HistoryEntity::toDomain)
+            rows.mapNotNull { it.toDomain() }
         }
 
     override suspend fun toggleFavorite(

@@ -54,7 +54,14 @@ class CatchUpPlaybackTest {
                 ),
             )
         }
-        for (start in listOf("bad", "2026-09-30 12:34", "../2026-09-30:12-34")) {
+        for (
+            start in listOf(
+                "bad",
+                "2026-09-30 12:34",
+                "../2026-09-30:12-34",
+                "2026-99-99:99-99",
+            )
+        ) {
             assertFailure(
                 factory.resolve(
                     CatchUpPlaybackRef("1", "Past", start, 30),

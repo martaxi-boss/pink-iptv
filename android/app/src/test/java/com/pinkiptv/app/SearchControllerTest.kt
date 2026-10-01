@@ -25,7 +25,6 @@ import com.pinkiptv.app.model.toCatalogUiItem
 import com.pinkiptv.app.state.SearchController
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -109,7 +108,7 @@ class SearchControllerTest {
         runCurrent()
 
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(1, repository.liveCalls)
         assertEquals(1, repository.vodCalls)
@@ -120,7 +119,7 @@ class SearchControllerTest {
         controller.selectKind(SearchKind.Movies)
         controller.selectKind(SearchKind.All)
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(1, repository.liveCalls)
         assertEquals(1, repository.vodCalls)
@@ -134,7 +133,7 @@ class SearchControllerTest {
         val controller = SearchController(repository, runtime, backgroundScope)
         runCurrent()
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
 
         controller.updateQuery(" ")
         assertEquals(SearchPhase.Inactive, controller.state.value.phase)
@@ -159,7 +158,7 @@ class SearchControllerTest {
         runCurrent()
 
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
         controller.updateQuery("one")
 
         assertEquals(SearchPhase.PartialError, controller.state.value.phase)
@@ -173,7 +172,7 @@ class SearchControllerTest {
             CatalogResult.Success(listOf(live("101", "Live One")))
         }
         controller.retry()
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(2, repository.liveCalls)
         assertEquals(1, repository.vodCalls)
@@ -192,7 +191,7 @@ class SearchControllerTest {
         val controller = SearchController(failedRepository, runtime, backgroundScope)
         runCurrent()
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(SearchPhase.FullError, controller.state.value.phase)
         assertTrue(controller.state.value.results.isEmpty())
@@ -218,7 +217,7 @@ class SearchControllerTest {
         val controller = SearchController(repository, runtime, backgroundScope)
         runCurrent()
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
         controller.updateQuery("one")
         controller.selectKind(SearchKind.Movies)
 
@@ -267,14 +266,14 @@ class SearchControllerTest {
         }
 
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
         controller.updateQuery("beta")
         assertEquals(setOf("B1", "B2", "B3"), controller.state.value.results.map { it.providerId }.toSet())
 
         oldLive.complete(CatalogResult.Success(listOf(live("A1", "Alpha Live"))))
         oldVod.complete(CatalogResult.Success(listOf(vod("A2", "Alpha Movie"))))
         oldSeries.complete(CatalogResult.Success(listOf(series("A3", "Alpha Series"))))
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(setOf("B1", "B2", "B3"), controller.state.value.results.map { it.providerId }.toSet())
         assertFalse(controller.state.value.results.any { it.providerId.startsWith("A") })
@@ -289,7 +288,7 @@ class SearchControllerTest {
         val controller = SearchController(repository, runtime, backgroundScope)
         runCurrent()
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
 
         val retryLive = CompletableDeferred<CatalogResult<List<LiveStream>>>()
         repository.liveHandler = { retryLive.await() }
@@ -313,11 +312,11 @@ class SearchControllerTest {
             CatalogResult.Success(listOf(series("B3", "Beta Series")))
         }
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
         controller.updateQuery("beta")
 
         retryLive.complete(CatalogResult.Success(listOf(live("A1", "Alpha Retry"))))
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(setOf("B1", "B2", "B3"), controller.state.value.results.map { it.providerId }.toSet())
     }
@@ -343,7 +342,7 @@ class SearchControllerTest {
         val controller = SearchController(repository, runtime, backgroundScope)
         runCurrent()
         controller.load()
-        advanceUntilIdle()
+        runCurrent()
         controller.updateQuery("one")
 
         val live = controller.state.value.results.single { it.kind == SearchKind.Live }

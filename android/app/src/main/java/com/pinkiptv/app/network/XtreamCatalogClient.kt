@@ -289,7 +289,7 @@ internal object XtreamJsonParser {
             episodeNumber = episodeNumber,
             title = title,
             seasonId = seasonId,
-            containerExtension = item.text("container_extension"),
+            containerExtension = item.rawText("container_extension"),
             artworkUrl = metadata?.text("movie_image")
                 ?: item.text("movie_image"),
             duration = metadata?.text("duration")

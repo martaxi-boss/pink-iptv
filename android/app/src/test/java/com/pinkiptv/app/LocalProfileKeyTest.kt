@@ -15,7 +15,7 @@ class LocalProfileKeyTest {
 
         assertEquals(first, second)
         assertEquals(
-            "b69ae7150206d216acf894eccf36887b1cfd3d4f7605ef573bb08489d1ea3af4", // pragma: allowlist secret
+            "b69ae7150206d216acf894eccf36887b1cfd3d4f7605ef573bb08489d1ea3af4", // pragma: allowlist secret // pragma: allowlist secret
             first,
         )
         assertEquals(64, first.length)

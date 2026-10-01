@@ -151,7 +151,11 @@ Real-provider Series info/episode playback remains a separate sanitized proof an
 
 ## Android Catalog + Player 003D automated proof
 
-Status: ACTIVE.
+Status: COMPLETE / MERGED.
+
+Approved head: `ba3cbf66c85bf30381aef809cb0169b5ce03ad86`.
+
+Merge commit: `344166836661a7b340750fd921036e8b2ff0c671`.
 
 Stage 003D adds deterministic coverage for:
 
@@ -171,6 +175,25 @@ Stage 003D adds deterministic coverage for:
 The pull-request phone-device proof continues to execute the genuine Order 002 classes. `NavigationShellTest` retains Live/Movie/Series coverage and adds deterministic EPG -> Catch Up Player -> Back without provider credentials.
 
 Real-provider EPG/Catch Up fetch/playback is a separate sanitized proof and is NOT CERTIFIED by CI.
+
+## Android Catalog + Player 003E automated proof
+
+Status: ACTIVE.
+
+Stage 003E adds deterministic coverage for:
+
+- SHA-256 local profile-key derivation, same-account stability, account isolation and absence of plaintext username in persisted entities;
+- Room schema version 1 creation, Favorite composite identity, profile filtering, Flow invalidation, History newest-first ordering, 100-row retention/pruning and current-profile clearing;
+- Live, Movie/VOD and Series Favorites, duplicate-safe toggling, per-kind identity, removal and typed reopen behavior;
+- Live, Movie/VOD and Series Episode recent-history metadata with Catch Up excluded;
+- history creation only after usable player state, approximately 10-second progress-write throttling, pause/exit/ended flush behavior and session-clear protection;
+- Continue Watching eligibility for seekable Movies/VOD and Series Episodes only, including 30-second minimum progress, 60-second minimum duration, 90% completion exclusion and completed-media exclusion;
+- overflow-safe resume/progress calculations and typed credential-free resume reconstruction;
+- Favorites screen FAVORITOS / CONTINUAR / RECENTES sections, Portuguese empty states, remove Favorite and clear-history actions;
+- deterministic phone navigation for Favorite Live/Movie/Series, Continue Watching and Recent playback through existing Player/Series Detail surfaces;
+- deterministic Android TV/D-pad section focus and action controls without live provider credentials.
+
+Room remains device-local and no Favorites/history data is uploaded to the PINK Backend. Catch Up history persistence and global Search are explicitly outside Stage 003E.
 
 ## Future client/platform matrices retained
 

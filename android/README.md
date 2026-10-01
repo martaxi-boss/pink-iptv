@@ -14,6 +14,7 @@ PINK IPTV uses one Android `:app` module for phone/tablet, Android TV and TV Box
 - Android Keystore AES/GCM
 - OkHttp 5.4.0
 - Kotlin serialization / coroutines
+- Room 2.8.5 / KSP 2.3.12 for non-secret local library metadata
 
 SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17.
 
@@ -73,7 +74,11 @@ Episode playback references contain only non-secret episode identity/display met
 
 Real-provider Series info and episode playback are not yet certified unless a separate secure proof is executed.
 
-## Phase 3 / Stage 003D — ACTIVE
+## Phase 3 / Stage 003D — COMPLETE / MERGED
+
+Stage 003D approved head: `ba3cbf66c85bf30381aef809cb0169b5ce03ad86`.
+
+Stage 003D merge commit: `344166836661a7b340750fd921036e8b2ff0c671`.
 
 Stage 003D adds bounded channel-centric EPG for Live TV through `get_short_epg` and `get_simple_data_table`. Live archive metadata retains only credential-free `epg_channel_id`, `tv_archive` and `tv_archive_duration` semantics required for eligibility.
 
@@ -83,8 +88,20 @@ Catch Up is fail-closed and appears only when both channel and programme explici
 
 Real-provider EPG/Catch Up proof is NOT CERTIFIED unless separately performed securely.
 
-## Explicitly not implemented after Stage 003D
+## Phase 3 / Stage 003E — ACTIVE
 
-Favorites persistence, history/continue-watching, VPN/WireGuard and Windows remain outside Stage 003D. Bulk XMLTV ingestion/synchronization is also not part of 003D.
+Stage 003E adds the app-private `pink_library.db` using Room 2.8.5, KSP 2.3.12 and exported schema version 1. The database stores only non-secret Favorites/history metadata and does not replace Android Keystore/DataStore credential persistence.
+
+The library is partitioned by a deterministic SHA-256 profile key derived from the exact authenticated username under a fixed PINK namespace. Plaintext username, password, provider origin/hostname, session tokens and credential-bearing playback URLs are not Room fields.
+
+Favorites support Live, Movies/VOD and Series. History supports Live, Movies/VOD and Series Episodes, is newest-first and bounded to 100 rows per profile. Catch Up is deliberately excluded from long-term history.
+
+Continue Watching is limited to seekable Movies/VOD and Series Episodes with known duration, at least 30 seconds watched, media duration of at least 60 seconds, and progress below the 90% completion threshold. Resume uses the existing typed playback references and Media3 1.11.1 player.
+
+The Favoritos Home route now exposes FAVORITOS, CONTINUAR and RECENTES sections for phone and TV/D-pad. Logout clears the active in-memory view while persisted rows remain available when the same account authenticates again.
+
+## Explicitly not implemented after Stage 003E
+
+Global Search, Catch Up history persistence, VPN/WireGuard and Windows remain outside Stage 003E. Bulk XMLTV ingestion/synchronization remains outside the client library.
 
 Public launch remains NO.

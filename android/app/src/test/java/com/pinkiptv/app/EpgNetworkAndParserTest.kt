@@ -229,6 +229,23 @@ class EpgNetworkAndParserTest {
     }
 
     @Test
+    fun parserDoesNotCorruptOrdinaryBase64LookingPlainText() = runTest {
+        val programmes = successEpg(
+            XtreamCatalogClient(
+                activeStore(),
+                testClient(
+                    RecordingInterceptor(
+                        """{"epg_listings":[{"id":"1","title":"LocalNewsLiveTV","description":"MorningShow2026"}]}""",
+                    ),
+                ),
+            ).simpleDataTable("1"),
+        )
+
+        assertEquals("LocalNewsLiveTV", programmes.single().title)
+        assertEquals("MorningShow2026", programmes.single().description)
+    }
+
+    @Test
     fun parserKeepsInvalidBase64AsPlainText() = runTest {
         val programmes = successEpg(
             XtreamCatalogClient(

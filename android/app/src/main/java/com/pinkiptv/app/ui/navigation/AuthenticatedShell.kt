@@ -5,27 +5,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pinkiptv.app.R
-import com.pinkiptv.app.model.CatalogKind
-import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.library.NoopPlaybackActivityRecorder
 import com.pinkiptv.app.library.PlaybackActivityRecorder
+import com.pinkiptv.app.model.CatalogKind
+import com.pinkiptv.app.model.CatalogUiItem
 import com.pinkiptv.app.model.CatalogUiState
 import com.pinkiptv.app.model.CatchUpPlaybackRef
+import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.FavoriteItem
 import com.pinkiptv.app.model.FavoriteKind
 import com.pinkiptv.app.model.LibraryUiState
-import com.pinkiptv.app.model.EpgUiState
 import com.pinkiptv.app.model.PlaybackRef
+import com.pinkiptv.app.model.SearchItem
+import com.pinkiptv.app.model.SearchKind
+import com.pinkiptv.app.model.SearchUiState
 import com.pinkiptv.app.model.SeriesDetailUiState
-import com.pinkiptv.app.model.continueWatchingPositionMs
-import com.pinkiptv.app.model.toPlaybackRef
 import com.pinkiptv.app.model.SeriesEpisode
+import com.pinkiptv.app.model.continueWatchingPositionMs
+import com.pinkiptv.app.model.searchFavoriteKey
+import com.pinkiptv.app.model.toPlaybackRef
 import com.pinkiptv.app.player.PlaybackFacadeFactory
 import com.pinkiptv.app.ui.screens.CatalogScreen
 import com.pinkiptv.app.ui.screens.EpgScreen
 import com.pinkiptv.app.ui.screens.HomeScreen
 import com.pinkiptv.app.ui.screens.LibraryScreen
 import com.pinkiptv.app.ui.screens.PlayerScreen
+import com.pinkiptv.app.ui.screens.SearchScreen
 import com.pinkiptv.app.ui.screens.SeriesDetailScreen
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.screens.ShellScreen
@@ -38,6 +43,7 @@ private object Routes {
     const val SERIES_DETAIL = "series-detail"
     const val EPG = "epg"
     const val FAVORITES = "favorites"
+    const val SEARCH = "search"
     const val SETTINGS = "settings"
     const val PLAYER = "player"
 }
@@ -50,6 +56,7 @@ fun AuthenticatedShell(
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
     onLogout: () -> Unit,
+    searchState: SearchUiState = SearchUiState(),
     seriesDetail: SeriesDetailUiState = SeriesDetailUiState(),
     epgState: EpgUiState = EpgUiState(),
     libraryState: LibraryUiState = LibraryUiState(),
@@ -57,6 +64,13 @@ fun AuthenticatedShell(
     selectedPlaybackStartPositionMs: Long = 0L,
     playbackFacadeFactory: PlaybackFacadeFactory? = null,
     playbackActivityRecorder: PlaybackActivityRecorder = NoopPlaybackActivityRecorder,
+    onLoadSearch: () -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
+    onSelectSearchKind: (SearchKind) -> Unit = {},
+    onRetrySearch: () -> Unit = {},
+    onSelectSearchPlayback: (SearchItem) -> Unit = {},
+    onOpenSearchSeries: (SearchItem) -> Unit = {},
+    onToggleSearchFavorite: (SearchItem) -> Unit = {},
     onOpenSeries: (CatalogUiItem) -> Unit = {},
     onRetrySeriesDetail: () -> Unit = {},
     onSelectSeriesSeason: (String) -> Unit = {},
@@ -138,6 +152,34 @@ fun AuthenticatedShell(
                 onToggleFavorite = { item ->
                     onToggleFavorite(CatalogKind.Series, item)
                 },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Routes.SEARCH) {
+            SearchScreen(
+                state = searchState,
+                favoriteKeys = libraryState.favorites
+                    .mapTo(mutableSetOf()) { it.searchFavoriteKey() },
+                onLoad = onLoadSearch,
+                onQueryChange = onSearchQueryChange,
+                onSelectKind = onSelectSearchKind,
+                onRetry = onRetrySearch,
+                onOpenItem = { item ->
+                    when (item.kind) {
+                        SearchKind.Live,
+                        SearchKind.Movies,
+                        -> {
+                            onSelectSearchPlayback(item)
+                            navController.navigate(Routes.PLAYER)
+                        }
+                        SearchKind.Series -> {
+                            onOpenSearchSeries(item)
+                            navController.navigate(Routes.SERIES_DETAIL)
+                        }
+                        SearchKind.All -> Unit
+                    }
+                },
+                onToggleFavorite = onToggleSearchFavorite,
                 onBack = { navController.popBackStack() },
             )
         }

@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
                 val liveCatalog by appViewModel.liveCatalog.collectAsStateWithLifecycle()
                 val movieCatalog by appViewModel.movieCatalog.collectAsStateWithLifecycle()
                 val seriesCatalog by appViewModel.seriesCatalog.collectAsStateWithLifecycle()
+                val searchState by appViewModel.search.collectAsStateWithLifecycle()
                 val seriesDetail by appViewModel.seriesDetail.collectAsStateWithLifecycle()
                 val epgState by appViewModel.epg.collectAsStateWithLifecycle()
                 val libraryState by appViewModel.library.collectAsStateWithLifecycle()
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
                     liveCatalog = liveCatalog,
                     movieCatalog = movieCatalog,
                     seriesCatalog = seriesCatalog,
+                    searchState = searchState,
                     seriesDetail = seriesDetail,
                     epgState = epgState,
                     libraryState = libraryState,
@@ -57,6 +59,13 @@ class MainActivity : ComponentActivity() {
                     onLogout = appViewModel::logout,
                     onLoadCatalog = appViewModel::loadCatalog,
                     onSelectCatalogCategory = appViewModel::selectCatalogCategory,
+                    onLoadSearch = appViewModel::loadSearch,
+                    onSearchQueryChange = appViewModel::updateSearchQuery,
+                    onSelectSearchKind = appViewModel::selectSearchKind,
+                    onRetrySearch = appViewModel::retrySearch,
+                    onSelectSearchPlayback = appViewModel::selectSearchPlayback,
+                    onOpenSearchSeries = appViewModel::openSearchSeries,
+                    onToggleSearchFavorite = appViewModel::toggleSearchFavorite,
                     onOpenSeries = appViewModel::openSeries,
                     onRetrySeriesDetail = appViewModel::retrySeriesDetail,
                     onSelectSeriesSeason = appViewModel::selectSeriesSeason,

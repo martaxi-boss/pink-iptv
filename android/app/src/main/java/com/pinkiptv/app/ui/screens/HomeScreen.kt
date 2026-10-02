@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Card
@@ -64,6 +65,7 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             HomeItem("series", R.string.series, Icons.Filled.VideoLibrary, "home_series"),
             HomeItem("epg", R.string.epg, Icons.Filled.CalendarMonth, "home_epg"),
             HomeItem("favorites", R.string.favorites, Icons.Filled.Favorite, "home_favorites"),
+            HomeItem("search", R.string.search, Icons.Filled.Search, "home_search"),
             HomeItem("settings", R.string.settings, Icons.Filled.Settings, "home_settings"),
         )
     }

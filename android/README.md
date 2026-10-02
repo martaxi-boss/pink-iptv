@@ -92,7 +92,11 @@ Catch Up is fail-closed and appears only when both channel and programme explici
 
 Real-provider EPG/Catch Up proof is NOT CERTIFIED unless separately performed securely.
 
-## Phase 3 / Stage 003E — ACTIVE
+## Phase 3 / Stage 003E — COMPLETE / MERGED
+
+Stage 003E approved head: `0c5fcecc713a7936d748ff5cd4d73c2743edb98c`.
+
+Stage 003E merge commit: `da8164045280f05cb3467ac0da025128a65de9dd`.
 
 Stage 003E adds the app-private `pink_library.db` using Room 2.8.5, KSP 2.3.12 and exported schema version 1. The database stores only non-secret Favorites/history metadata and does not replace Android Keystore/DataStore credential persistence.
 
@@ -102,10 +106,22 @@ Favorites support Live, Movies/VOD and Series. History supports Live, Movies/VOD
 
 Continue Watching is limited to seekable Movies/VOD and Series Episodes with known duration, at least 30 seconds watched, media duration of at least 60 seconds, and progress below the 90% completion threshold. Resume uses the existing typed playback references and Media3 1.11.1 player.
 
-The Favoritos Home route now exposes FAVORITOS, CONTINUAR and RECENTES sections for phone and TV/D-pad. Logout clears the active in-memory view while persisted rows remain available when the same account authenticates again.
+The Favoritos Home route exposes FAVORITOS, CONTINUAR and RECENTES sections for phone and TV/D-pad. Logout clears the active in-memory view while persisted rows remain available when the same account authenticates again.
 
-## Explicitly not implemented after Stage 003E
+## Phase 3 / Stage 003F — ACTIVE
 
-Global Search, Catch Up history persistence, VPN/WireGuard and Windows remain outside Stage 003E. Bulk XMLTV ingestion/synchronization remains outside the client library.
+Stage 003F adds the Home `Pesquisa` route and client-side Global Search across Live TV, Movies/VOD and Series.
+
+Search loads the three existing catalog list operations concurrently where practical: `get_live_streams`, `get_vod_streams` and `get_series`. Query and content-filter changes perform local filtering only; no undocumented provider search endpoint and no request-per-keystroke behavior is introduced.
+
+Search source data, normalized matching index/state, query and filter remain runtime/in-memory only for the authenticated provider session. Logout/session invalidation clears Search state so catalog data cannot leak between accounts. No Room migration is introduced and `pink_library.db` remains schema version 1.
+
+Matching is case-insensitive and accent/diacritic-insensitive with deterministic exact-title, title-prefix, title-contains, alphabetical and provider-identity ordering. Rendered results are bounded per content type.
+
+Live and Movie results reuse the existing Media3 1.11.1 player through typed credential-free playback references. Series results retain the exact `seriesId` and load Series Detail only when opened. Search favorites reuse the existing Room-backed library controller.
+
+## Explicitly not implemented after Stage 003F
+
+Catch Up history persistence, VPN/WireGuard and Windows remain outside Stage 003F. Bulk XMLTV ingestion/synchronization remains outside the client library.
 
 Public launch remains NO.

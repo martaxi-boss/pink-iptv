@@ -37,7 +37,7 @@
     {
       "name": "Secret scanning retains non-metadata findings",
       "status": "PASS",
-      "evidence": "CI scan passed; local positive/negative metadata probes passed"
+      "evidence": "CI scan passed; local positive/negative metadata probes passed; metadata-only final head a18234f also passed Backend CI 37079090616"
     }
   ],
   "ci": [
@@ -56,5 +56,7 @@
   ],
   "residual_blockers": [
     "Merge requires Owner approval; production remains unauthorized"
-  ]
+  ],
+  "recorded_at": "2026-10-02T23:58:54.470411+00:00",
+  "state_observed_at": "2026-10-02T23:58:54.470411+00:00"
 }

@@ -3,7 +3,7 @@
   "task_id": "PINK-IPTV-BACKEND-VALIDATION-PRIVACY-001",
   "project": "PINK IPTV",
   "repository": "martaxi-boss/pink-iptv",
-  "created_at": "2026-10-02T23:45:00Z",
+  "created_at": "2026-10-02T23:36:23Z",
   "authority": {
     "kind": "TRANSACTIONAL_GRANT",
     "summary": "Remediate the reproduced request-validation response privacy leak in the existing backend, add regression tests and preserve strict secret scanning for durable task records. Independent project-local security task under the Owner audit/remediation instruction.",

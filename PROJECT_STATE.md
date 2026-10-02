@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-02
-Phase: Phase 4 — WireGuard Stage 004A — DEPENDENCY + COMPLIANCE FOUNDATION ACTIVE
+Phase: Phase 4 — WireGuard Stage 004B — IDENTITY + PERMISSION + ADAPTER ACTIVE
 Public launch: NO
 
 ## Governance
@@ -21,8 +21,8 @@ BUILDER: implements only approved orders and reports evidence.
 - Mega response password and customer Xtream password are never persisted.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
-- WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 and Stages 003A/003B/003C/003D/003E/003F are complete and merged. Phase 3 Android implementation is COMPLETE / MERGED; Phase 4 WireGuard is the next separately supervised phase. Implementation completion does not imply production or public-launch approval.
+- WireGuard Phase 4 is active under staged supervision. Stage 004A dependency/compliance foundation is COMPLETE / MERGED; Stage 004B is limited to device-install identity, Android VPN permission and a read-only GoBackend adapter. No real tunnel is authorized in 004B.
+- Android Shell 002 and Stages 003A/003B/003C/003D/003E/003F are complete and merged. Phase 3 Android implementation is COMPLETE / MERGED. Phase 4 WireGuard is active in separately supervised stages; implementation completion does not imply production or public-launch approval.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -241,3 +241,22 @@ Beyond Android Shell 002, separate orders are still required for:
 5. future production/provider/device validation for evidence that remains not separately certified.
 
 Public launch remains: NO.
+
+
+## Phase 4 / Stage 004A — COMPLETE / MERGED
+
+Stage 004A approved head: `6d6611d8fd0cc784770fb9ec56d025bd87963b0a`.
+
+Stage 004A merge commit: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
+
+Stage 004A pins `com.wireguard.android:tunnel:1.0.20260102`, raises Android minimum support to API 24, enables core-library desugaring, preserves only `libwg-go.so` in the PINK APK and proves official GoBackend native loadability without requesting VPN permission or establishing a tunnel.
+
+## Phase 4 / Stage 004B — ACTIVE
+
+Stage 004B adds device-install-scoped WireGuard identity, a dedicated Android Keystore AES-256-GCM wrapping key (`pink_iptv_wireguard_identity_v1`), dedicated `pink_wireguard_identity` DataStore persistence, explicit Android `VpnService.prepare()` permission handling, a PINK-owned preparation state machine and a thin read-only GoBackend adapter using tunnel name `pink`.
+
+Identity is independent from Xtream accounts and survives IPTV logout. Corrupt encrypted identity fails closed and is never silently rotated. Public UI state contains no private key, PSK, provider URL or IPTV credential.
+
+The merged official GoBackend VpnService is explicitly marked `SUPPORTS_ALWAYS_ON=false` for this stage. 004B does not execute `Backend.setState(... UP ...)`, build a real WireGuard Config, create a peer, contact OVH, modify routing/firewall/NAT or establish a real VPN tunnel.
+
+Public launch: NO.

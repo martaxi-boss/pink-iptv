@@ -80,7 +80,8 @@ class PinkWireGuardBackendTest {
             return Tunnel.State.DOWN
         }
 
-        override fun getStatistics(tunnel: Tunnel): Statistics = Statistics()
+        override fun getStatistics(tunnel: Tunnel): Statistics =
+            throw UnsupportedOperationException("Statistics are not used by this adapter test")
 
         override fun getVersion(): String {
             if (throwQueries) error("synthetic backend failure")

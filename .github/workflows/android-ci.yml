@@ -272,12 +272,10 @@ jobs:
           run_phone_test "com.pinkiptv.app.WireGuardNativeSmokeTest"
           run_phone_test "com.pinkiptv.app.WireGuardIdentityStoreTest"
           run_phone_test "com.pinkiptv.app.WireGuardManifestPolicyTest"
-          run_phone_test "com.pinkiptv.app.VpnSettingsDpadTest"
           echo "WG_GO_LOAD=PASS"
           echo "WG_GO_VERSION_NONEMPTY=PASS"
           echo "WG_IDENTITY_KEYSTORE=PASS"
           echo "WG_MANIFEST_POLICY=PASS"
-          echo "WG_SETTINGS_DPAD=PASS"
 
           cat \
             "$RUNNER_TEMP/phone-MainActivityStartupTest.txt" \
@@ -287,10 +285,9 @@ jobs:
             "$RUNNER_TEMP/phone-WireGuardNativeSmokeTest.txt" \
             "$RUNNER_TEMP/phone-WireGuardIdentityStoreTest.txt" \
             "$RUNNER_TEMP/phone-WireGuardManifestPolicyTest.txt" \
-            "$RUNNER_TEMP/phone-VpnSettingsDpadTest.txt" \
             > "$RUNNER_TEMP/phone-instrumentation-all.txt"
 
-          if grep -Eq 'TvLoginDpadTest|HomeScreenTest' "$RUNNER_TEMP/phone-instrumentation-all.txt"; then
+          if grep -Eq 'TvLoginDpadTest|HomeScreenTest|VpnSettingsDpadTest' "$RUNNER_TEMP/phone-instrumentation-all.txt"; then
             echo "PHONE_TV_TESTS_NOT_EXCLUDED"
             exit 1
           fi

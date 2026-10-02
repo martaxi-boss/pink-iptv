@@ -97,24 +97,34 @@ jobs:
         working-directory: android
         run: ./gradlew --no-daemon assembleDebugAndroidTest
 
-      - name: Secret scan
+      - name: Credential leak scan
         run: |
           detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.gradle|build|\.pytest_cache|\.ruff_cache)/' > /tmp/detect-secrets.json
           python - <<'PY'
           import json
-          import re
           from pathlib import Path
 
-          control_record = re.compile(
-              r"^(?:\\./)?\\.project-leader/(tasks|results|checkpoints|recovery-events)/.*\\.json$"
+          CONTROL_RECORD_PREFIXES = (
+              ".project-leader/tasks/",
+              ".project-leader/results/",
+              ".project-leader/checkpoints/",
+              ".project-leader/recovery-events/",
           )
-          control_sha_line = re.compile(
-              r'^\\s*"(base_sha|implementation_head_sha|sha256|previous_event_sha256)"'
-              r'\\s*:\\s*"([0-9a-f]{40}|[0-9a-f]{64})"\\s*,?\\s*$'
-          )
+          SHA_KEYS = {
+              "base_sha",
+              "implementation_head_sha",
+              "sha256",
+              "previous_event_sha256",
+          }
+          HEX_CHARS = frozenset("0123456789abcdef")
 
           def is_control_sha_metadata(path, line_number, kind):
-              if kind != "Hex High Entropy String" or not control_record.match(path):
+              if kind != "Hex High Entropy String":
+                  return False
+              normalized = path.removeprefix("./")
+              if not normalized.endswith(".json"):
+                  return False
+              if not any(normalized.startswith(prefix) for prefix in CONTROL_RECORD_PREFIXES):
                   return False
               if not isinstance(line_number, int) or line_number < 1:
                   return False
@@ -124,26 +134,43 @@ jobs:
                   return False
               if line_number > len(source_lines):
                   return False
-              return control_sha_line.fullmatch(source_lines[line_number - 1]) is not None
+
+              source_line = source_lines[line_number - 1].strip()
+              if source_line.endswith(","):
+                  source_line = source_line[:-1]
+              if ":" not in source_line:
+                  return False
+              raw_key, raw_value = source_line.split(":", 1)
+              try:
+                  key = json.loads(raw_key.strip())
+                  value = json.loads(raw_value.strip())
+              except (json.JSONDecodeError, TypeError):
+                  return False
+              return (
+                  key in SHA_KEYS
+                  and isinstance(value, str)
+                  and len(value) in {40, 64}
+                  and all(char in HEX_CHARS for char in value)
+              )
 
           report = json.loads(Path("/tmp/detect-secrets.json").read_text())
           findings = []
           ignored_control_sha = []
-          for path, items in report.get("results", {}).items():
+          for finding_path, items in report.get("results", {}).items():
               for item in items:
                   line = item.get("line_number")
                   kind = item.get("type")
-                  finding = (path, line, kind)
-                  if is_control_sha_metadata(path, line, kind):
+                  finding = (finding_path, line, kind)
+                  if is_control_sha_metadata(finding_path, line, kind):
                       ignored_control_sha.append(finding)
                   else:
                       findings.append(finding)
 
-          for path, line, kind in ignored_control_sha:
-              print(f"allowed control metadata: {path}:{line} ({kind})")
+          for finding_path, line, kind in ignored_control_sha:
+              print(f"allowed control metadata: {finding_path}:{line} ({kind})")
           if findings:
-              for path, line, kind in findings:
-                  print(f"potential secret: {path}:{line} ({kind})")
+              for finding_path, line, kind in findings:
+                  print(f"potential secret: {finding_path}:{line} ({kind})")
               raise SystemExit(1)
           print("detect-secrets: no non-metadata findings")
           PY

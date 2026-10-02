@@ -1,6 +1,8 @@
 package com.pinkiptv.app
 
+import android.app.Activity
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -9,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pinkiptv.app.state.AppViewModel
 import com.pinkiptv.app.ui.PinkApp
 import com.pinkiptv.app.ui.theme.PinkTheme
+import com.pinkiptv.app.vpn.VpnPrepareAction
 
 class MainActivity : ComponentActivity() {
     private val appViewModel: AppViewModel by viewModels {
@@ -21,8 +24,15 @@ class MainActivity : ComponentActivity() {
             localLibraryRepository = container.localLibraryRepository,
             activeLibraryProfileStore = container.activeLibraryProfileStore,
             playbackActivityRecorder = container.playbackActivityRecorder,
+            vpnIdentityStore = container.vpnIdentityStore,
+            vpnPermissionGateway = container.vpnPermissionGateway,
         )
     }
+
+    private val vpnPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            appViewModel.onVpnPermissionResult(result.resultCode == Activity.RESULT_OK)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +48,7 @@ class MainActivity : ComponentActivity() {
                 val seriesDetail by appViewModel.seriesDetail.collectAsStateWithLifecycle()
                 val epgState by appViewModel.epg.collectAsStateWithLifecycle()
                 val libraryState by appViewModel.library.collectAsStateWithLifecycle()
+                val vpnPreparationState by appViewModel.vpnPreparation.collectAsStateWithLifecycle()
                 val selectedPlayback by appViewModel.selectedPlayback.collectAsStateWithLifecycle()
                 val selectedPlaybackStartPositionMs by
                     appViewModel.selectedPlaybackStartPositionMs.collectAsStateWithLifecycle()
@@ -51,12 +62,26 @@ class MainActivity : ComponentActivity() {
                     seriesDetail = seriesDetail,
                     epgState = epgState,
                     libraryState = libraryState,
+                    vpnPreparationState = vpnPreparationState,
                     selectedPlayback = selectedPlayback,
                     selectedPlaybackStartPositionMs = selectedPlaybackStartPositionMs,
                     playbackFacadeFactory = container.playbackFacadeFactory,
                     playbackActivityRecorder = container.playbackActivityRecorder,
                     onLogin = appViewModel::login,
                     onLogout = appViewModel::logout,
+                    onPrepareVpn = {
+                        when (appViewModel.prepareVpn()) {
+                            VpnPrepareAction.None -> Unit
+                            VpnPrepareAction.LaunchSystemPermission -> {
+                                val intent = container.vpnPermissionGateway.takePendingIntent()
+                                if (intent == null) {
+                                    appViewModel.onVpnPermissionLaunchFailed()
+                                } else {
+                                    vpnPermissionLauncher.launch(intent)
+                                }
+                            }
+                        }
+                    },
                     onLoadCatalog = appViewModel::loadCatalog,
                     onSelectCatalogCategory = appViewModel::selectCatalogCategory,
                     onLoadSearch = appViewModel::loadSearch,

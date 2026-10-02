@@ -34,7 +34,7 @@ class VpnIdentityStoreTest {
     @Test
     fun storedPrivateKeyDerivesSamePublicIdentity() = runTest {
         val pair = KeyPair()
-        val cipher = FakeCipher(decrypted = pair.privateKey.toBase64())
+        val cipher = FakeCipher(decryptedOverride = pair.privateKey.toBase64())
         val persistence = FakePersistence(
             record = EncryptedVpnIdentityRecord(
                 version = SecureVpnIdentityStore.FORMAT_VERSION,
@@ -66,7 +66,7 @@ class VpnIdentityStoreTest {
 
         val parsePersistence = FakePersistence(validRecord())
         val parseStore = SecureVpnIdentityStore(
-            cipher = FakeCipher(decrypted = "not-a-wireguard-key"),
+            cipher = FakeCipher(decryptedOverride = "not-a-wireguard-key"),
             persistence = parsePersistence,
         )
 
@@ -116,18 +116,25 @@ class VpnIdentityStoreTest {
     )
 
     private class FakeCipher(
-        private val decrypted: String = KeyPair().privateKey.toBase64(),
+        private val decryptedOverride: String? = null,
         private val throwOnDecrypt: Boolean = false,
     ) : VpnIdentityCipher {
-        override fun encrypt(privateKeyBase64: String): VpnEncryptedPayload =
-            VpnEncryptedPayload(
+        private var lastEncryptedPlaintext: String? = null
+
+        override fun encrypt(privateKeyBase64: String): VpnEncryptedPayload {
+            lastEncryptedPlaintext = privateKeyBase64
+            return VpnEncryptedPayload(
                 ivHex = "iv",
                 ciphertextHex = "encrypted",
             )
+        }
 
         override fun decrypt(payload: VpnEncryptedPayload): String {
             if (throwOnDecrypt) error("synthetic decrypt failure")
-            return decrypted
+            return decryptedOverride
+                ?: requireNotNull(lastEncryptedPlaintext) {
+                    "Fake cipher has no encrypted fixture to decrypt"
+                }
         }
     }
 

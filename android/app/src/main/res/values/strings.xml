@@ -22,5 +22,13 @@
     <string name="back">Voltar</string>
     <string name="logout">Terminar sessão</string>
     <string name="settings_local_session">Sessão local segura desta instalação.</string>
+    <string name="wireguard_vpn">WireGuard VPN</string>
+    <string name="vpn_prepare">PREPARAR VPN</string>
+    <string name="vpn_status_not_prepared">VPN ainda não preparada.</string>
+    <string name="vpn_status_permission_needed">Autorização VPN necessária.</string>
+    <string name="vpn_status_awaiting_permission">A aguardar autorização do Android…</string>
+    <string name="vpn_status_ready">VPN preparada — ainda desligada.</string>
+    <string name="vpn_status_permission_denied">Autorização VPN recusada.</string>
+    <string name="vpn_status_error">Não foi possível preparar a VPN.</string>
     <string name="logo_content_description">Logótipo PINK IPTV</string>
 </resources>

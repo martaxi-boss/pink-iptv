@@ -3,7 +3,7 @@
   "task_id": "PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004",
   "project": "PINK IPTV",
   "repository": "martaxi-boss/pink-iptv",
-  "created_at": "2026-10-02T23:40:00Z",
+  "created_at": "2026-10-02T23:35:26Z",
   "authority": {
     "kind": "TRANSACTIONAL_GRANT",
     "summary": "Complete the existing WireGuard 004B Settings proof by running explicit simulated-TV D-pad and touch tests on the API36 phone emulator; document audited scope and remaining human gates. No real VPN or infrastructure action.",
@@ -22,7 +22,8 @@
     ".github/workflows/android-ci.yml",
     "docs/AUDIT_2026-10-03.md",
     ".project-leader/tasks/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json",
-    ".project-leader/results/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json"
+    ".project-leader/results/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json",
+    ".project-leader/checkpoints/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json"
   ],
   "allowed_actions": [
     "edit_settings_tests",

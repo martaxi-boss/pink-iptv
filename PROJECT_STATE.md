@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-10-01
-Phase: Phase 3 — Android Catalog + Player 003F — Global Search
+Date: 2026-10-02
+Phase: Phase 3 — Android Xtream + Player — IMPLEMENTATION COMPLETE / MERGED
 Public launch: NO
 
 ## Governance
@@ -22,7 +22,7 @@ BUILDER: implements only approved orders and reports evidence.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
 - WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 and Stages 003A/003B/003C/003D/003E are complete and merged. Stage 003F is active for credential-free, runtime-only Global Search over the authenticated provider catalogs.
+- Android Shell 002 and Stages 003A/003B/003C/003D/003E/003F are complete and merged. Phase 3 Android implementation is COMPLETE / MERGED; Phase 4 WireGuard is the next separately supervised phase. Implementation completion does not imply production or public-launch approval.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -132,7 +132,20 @@ The local profile partition is derived from the exact authenticated username as 
 
 Catch Up history persistence remains NOT IMPLEMENTED.
 
-## Phase 3 / Stage 003F — ACTIVE
+## Phase 3 / Stage 003F — COMPLETE / MERGED
+
+Stage 003F approved head: `b2e1fa406c55514b43d19fb98ffe332da9563ed8`.
+
+Stage 003F merge commit: `edf93ce866404c16ddc51659608643e2c3aa1e73`.
+
+Certified automated/device evidence for the approved 003F head:
+
+- Android CI `36925014754`: SUCCESS;
+- backend CI `36925014938`: SUCCESS;
+- phone-device-proof: SUCCESS;
+- JVM tests, lint, instrumentation-source assembly, startup/login/navigation regression, Keystore proof, Room runtime smoke and secret scanning: PASS where applicable.
+
+No post-merge CI is inferred.
 
 Stage 003F adds Global Search for Live TV, Movies/VOD and Series by reusing the existing authenticated `get_live_streams`, `get_vod_streams` and `get_series` catalog operations.
 
@@ -140,15 +153,46 @@ Search does not introduce a provider search endpoint. The catalog index, query, 
 
 Matching is local, case-insensitive and accent/diacritic-insensitive with deterministic exact/prefix/contains ranking and bounded rendered results. Search reuses the existing Live/VOD Player, Series Detail and local Favorites architecture.
 
-Room remains schema version 1. Media3 remains 1.11.1. VPN/WireGuard and Windows remain unimplemented. Public launch remains NO.
+Room remains schema version 1. Media3 remains 1.11.1.
+
+## Phase 3 Android implementation closure
+
+Phase 3 — Android Xtream + Player — IMPLEMENTATION STATUS: COMPLETE / MERGED.
+
+Implemented Phase 3 scope includes:
+
+- authenticated provider runtime;
+- Live TV, Movies/VOD and Series catalogs;
+- Series detail, seasons and episodes;
+- Live, VOD and Series episode playback through Media3;
+- EPG and Catch Up;
+- Favorites, Recent history, Continue Watching and resume position;
+- Global Search;
+- phone UX;
+- Android TV/D-pad implementation with deterministic test coverage.
+
+Evidence distinction is preserved:
+
+- Foundation / Mega/Xtream authentication proof: CERTIFIED;
+- later Phase 3 real-provider proof for Live playback, VOD playback, Series info/episode playback, EPG retrieval, Catch Up playback and Global Search catalog sources: NOT CERTIFIED / NOT EXECUTED WITH SECURE CREDENTIALS where applicable;
+- Android Shell 002 physical TV proof: CERTIFIED / PASS;
+- physical-TV proof for later Phase 3 feature surfaces (Live/VOD player, Series detail/episode player, EPG/Catch Up, Favorites/History/Continue Watching and Global Search): NOT SEPARATELY CERTIFIED.
+
+Deterministic Android TV/D-pad source tests and CI compilation do not equal physical-TV certification. The outstanding provider/device items are residual validation gates, not known code blockers.
+
+PUBLIC LAUNCH = NO.
+DEPLOY = NO.
+RELEASE = NO.
+
+Phase 4 — WireGuard is next and remains a separate supervised phase. It retains its own gates for snapshot/rollback, existing-service audit, one test peer, Android tunnel integration, networking safety, measured bandwidth and no production onboarding.
 
 ## Remaining technical gates
 
-1. Builder completion and Supervisor audit of Android Catalog + Player 003F Global Search.
-2. Separate real-provider EPG/Catch Up proof when authorized and securely available.
-3. Optional sanitized real-provider catalog-source proof for Search when secure credentials are available.
-4. Separate VPN/WireGuard and Windows phases.
-5. Production capacity/bandwidth, distribution and explicit public-launch approvals remain future gates.
+1. Secure, separately authorized real-provider validation for later Phase 3 surfaces: Live playback, VOD playback, Series info/episode playback, EPG retrieval, Catch Up playback and Global Search catalog-source proof.
+2. Separate physical-TV validation for post-Shell Phase 3 feature surfaces where required.
+3. Phase 4 — WireGuard, under a separate Supervisor order and its own rollback/network/capacity gates.
+4. Phase 5 — Windows.
+5. Phase 6 — hardening/distribution, final store/distribution assets, production/provider/device validation and explicit public-launch approval.
 
 ## Current development/staging infrastructure
 
@@ -170,11 +214,10 @@ The current OVH host remains development/staging. Public launch is not approved.
 
 Beyond Android Shell 002, separate orders are still required for:
 
-1. final distribution/store artwork and design assets;
-2. Android Phase 3 continuation after Stage 003F;
-3. WireGuard proof with rollback/snapshot, service audit, reconnect and throughput evidence;
-4. production VPN capacity/isolation and bandwidth planning;
-5. Windows implementation;
-6. hardening/distribution and explicit public-launch approval.
+1. Phase 4 — WireGuard proof with rollback/snapshot, existing-service audit, one test peer, Android tunnel integration, networking safety and measured throughput;
+2. production VPN capacity/isolation and bandwidth planning before production onboarding;
+3. Phase 5 — Windows implementation;
+4. Phase 6 — hardening/distribution, final store/distribution assets and explicit public-launch approval;
+5. future production/provider/device validation for evidence that remains not separately certified.
 
 Public launch remains: NO.

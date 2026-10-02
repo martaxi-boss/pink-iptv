@@ -8,7 +8,9 @@ import com.pinkiptv.app.vpn.VpnIdentityError
 import com.pinkiptv.app.vpn.VpnIdentityPersistence
 import com.pinkiptv.app.vpn.VpnIdentityResult
 import com.wireguard.crypto.KeyPair
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -29,6 +31,21 @@ class VpnIdentityStoreTest {
         assertEquals(created.identity.publicKey, reloaded.identity.publicKey)
         assertEquals(1, persistence.writeCount)
         assertNotEquals(created.identity.publicKey, persistence.record?.ciphertextHex)
+    }
+
+    @Test
+    fun concurrentEnsureIdentityCreatesExactlyOneStableIdentity() = runTest {
+        val persistence = FakePersistence(yieldAfterSnapshotRead = true)
+        val store = SecureVpnIdentityStore(FakeCipher(), persistence)
+
+        val first = async { store.ensureIdentity() as VpnIdentityResult.Available }
+        val second = async { store.ensureIdentity() as VpnIdentityResult.Available }
+
+        val firstIdentity = first.await().identity
+        val secondIdentity = second.await().identity
+
+        assertEquals(firstIdentity.publicKey, secondIdentity.publicKey)
+        assertEquals(1, persistence.writeCount)
     }
 
     @Test
@@ -142,12 +159,15 @@ class VpnIdentityStoreTest {
         var record: EncryptedVpnIdentityRecord? = null,
         private val throwOnRead: Boolean = false,
         private val throwOnWrite: Boolean = false,
+        private val yieldAfterSnapshotRead: Boolean = false,
     ) : VpnIdentityPersistence {
         var writeCount = 0
 
         override suspend fun read(): EncryptedVpnIdentityRecord? {
             if (throwOnRead) error("synthetic read failure")
-            return record
+            val snapshot = record
+            if (yieldAfterSnapshotRead) yield()
+            return snapshot
         }
 
         override suspend fun write(record: EncryptedVpnIdentityRecord) {

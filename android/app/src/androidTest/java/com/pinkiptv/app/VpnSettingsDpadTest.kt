@@ -1,91 +1,80 @@
 package com.pinkiptv.app
 
 import android.content.res.Configuration
-import androidx.activity.ComponentActivity
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.input.InputMode
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalInputModeManager
+import android.view.KeyEvent
 import androidx.compose.ui.test.assertIsFocused
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.pressKey
+import androidx.test.platform.app.InstrumentationRegistry
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.theme.PinkTheme
 import com.pinkiptv.app.vpn.VpnPreparationPhase
 import com.pinkiptv.app.vpn.VpnPreparationState
 import org.junit.Assert.assertEquals
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
 class VpnSettingsDpadTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+    val composeRule = createComposeRule()
 
     @Test
     fun preparationLogoutAndBackHaveDeterministicDpadOrder() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val configuration = instrumentation.targetContext.resources.configuration
+        assumeTrue(
+            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+                Configuration.UI_MODE_TYPE_TELEVISION,
+        )
+
         var prepareClicks = 0
+        var logoutClicks = 0
+        var backClicks = 0
 
         composeRule.setContent {
-            val phoneConfiguration = LocalConfiguration.current
-            val inputModeManager = LocalInputModeManager.current
-            val tvConfiguration = Configuration(phoneConfiguration).apply {
-                uiMode = (uiMode and Configuration.UI_MODE_TYPE_MASK.inv()) or
-                    Configuration.UI_MODE_TYPE_TELEVISION
-            }
-            var keyboardModeReady by remember { mutableStateOf(false) }
-
-            LaunchedEffect(Unit) {
-                keyboardModeReady = inputModeManager.requestInputMode(InputMode.Keyboard)
-            }
-
-            if (keyboardModeReady) {
-                CompositionLocalProvider(LocalConfiguration provides tvConfiguration) {
-                    PinkTheme {
-                        SettingsScreen(
-                            vpnState = VpnPreparationState(
-                                phase = VpnPreparationPhase.NOT_PREPARED,
-                            ),
-                            onPrepareVpn = { prepareClicks += 1 },
-                            onLogout = {},
-                            onBack = {},
-                        )
-                    }
-                }
+            PinkTheme {
+                SettingsScreen(
+                    vpnState = VpnPreparationState(
+                        phase = VpnPreparationPhase.NOT_PREPARED,
+                    ),
+                    onPrepareVpn = { prepareClicks += 1 },
+                    onLogout = { logoutClicks += 1 },
+                    onBack = { backClicks += 1 },
+                )
             }
         }
-
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule
-                .onAllNodesWithTag("settings_vpn_prepare")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeRule.waitForIdle()
 
         val prepare = composeRule.onNodeWithTag("settings_vpn_prepare")
+        val logout = composeRule.onNodeWithTag("settings_logout")
+        val back = composeRule.onNodeWithTag("settings_back")
+
+        composeRule.waitForIdle()
         prepare.assertIsFocused()
 
-        prepare.performKeyInput { pressKey(Key.Enter) }
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
         composeRule.runOnIdle { assertEquals(1, prepareClicks) }
 
-        prepare.performKeyInput { pressKey(Key.DirectionDown) }
-        composeRule.onNodeWithTag("settings_logout").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
+        composeRule.waitForIdle()
+        logout.assertIsFocused()
 
-        composeRule.onNodeWithTag("settings_logout")
-            .performKeyInput { pressKey(Key.DirectionDown) }
-        composeRule.onNodeWithTag("settings_back").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
+        composeRule.waitForIdle()
+        back.assertIsFocused()
 
-        composeRule.onNodeWithTag("settings_back")
-            .performKeyInput { pressKey(Key.DirectionUp) }
-        composeRule.onNodeWithTag("settings_logout").assertIsFocused()
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_UP)
+        composeRule.waitForIdle()
+        logout.assertIsFocused()
+
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
+        composeRule.runOnIdle { assertEquals(1, logoutClicks) }
+
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
+        composeRule.waitForIdle()
+        back.assertIsFocused()
+
+        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
+        composeRule.runOnIdle { assertEquals(1, backClicks) }
     }
 }

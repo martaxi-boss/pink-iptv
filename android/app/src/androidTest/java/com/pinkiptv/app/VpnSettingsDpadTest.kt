@@ -2,8 +2,15 @@ package com.pinkiptv.app
 
 import android.content.res.Configuration
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -27,25 +34,39 @@ class VpnSettingsDpadTest {
 
         composeRule.setContent {
             val phoneConfiguration = LocalConfiguration.current
+            val inputModeManager = LocalInputModeManager.current
             val tvConfiguration = Configuration(phoneConfiguration).apply {
                 uiMode = (uiMode and Configuration.UI_MODE_TYPE_MASK.inv()) or
                     Configuration.UI_MODE_TYPE_TELEVISION
             }
+            var keyboardModeReady by remember { mutableStateOf(false) }
 
-            CompositionLocalProvider(LocalConfiguration provides tvConfiguration) {
-                PinkTheme {
-                    SettingsScreen(
-                        vpnState = VpnPreparationState(
-                            phase = VpnPreparationPhase.NOT_PREPARED,
-                        ),
-                        onPrepareVpn = { prepareClicks += 1 },
-                        onLogout = {},
-                        onBack = {},
-                    )
+            LaunchedEffect(Unit) {
+                keyboardModeReady = inputModeManager.requestInputMode(InputMode.Keyboard)
+            }
+
+            if (keyboardModeReady) {
+                CompositionLocalProvider(LocalConfiguration provides tvConfiguration) {
+                    PinkTheme {
+                        SettingsScreen(
+                            vpnState = VpnPreparationState(
+                                phase = VpnPreparationPhase.NOT_PREPARED,
+                            ),
+                            onPrepareVpn = { prepareClicks += 1 },
+                            onLogout = {},
+                            onBack = {},
+                        )
+                    }
                 }
             }
         }
 
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule
+                .onAllNodesWithTag("settings_vpn_prepare")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeRule.waitForIdle()
 
         val prepare = composeRule.onNodeWithTag("settings_vpn_prepare")

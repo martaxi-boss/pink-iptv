@@ -108,7 +108,18 @@ Continue Watching is limited to seekable Movies/VOD and Series Episodes with kno
 
 The Favoritos Home route exposes FAVORITOS, CONTINUAR and RECENTES sections for phone and TV/D-pad. Logout clears the active in-memory view while persisted rows remain available when the same account authenticates again.
 
-## Phase 3 / Stage 003F — ACTIVE
+## Phase 3 / Stage 003F — COMPLETE / MERGED
+
+Stage 003F approved head: `b2e1fa406c55514b43d19fb98ffe332da9563ed8`.
+
+Stage 003F merge commit: `edf93ce866404c16ddc51659608643e2c3aa1e73`.
+
+Certified Stage 003F evidence:
+
+- Android CI `36925014754`: SUCCESS;
+- backend CI `36925014938`: SUCCESS;
+- phone-device-proof: SUCCESS;
+- no post-merge CI is inferred.
 
 Stage 003F adds the Home `Pesquisa` route and client-side Global Search across Live TV, Movies/VOD and Series.
 
@@ -120,8 +131,27 @@ Matching is case-insensitive and accent/diacritic-insensitive with deterministic
 
 Live and Movie results reuse the existing Media3 1.11.1 player through typed credential-free playback references. Series results retain the exact `seriesId` and load Series Detail only when opened. Search favorites reuse the existing Room-backed library controller.
 
-## Explicitly not implemented after Stage 003F
+## Phase 3 implementation closure
 
-Catch Up history persistence, VPN/WireGuard and Windows remain outside Stage 003F. Bulk XMLTV ingestion/synchronization remains outside the client library.
+Phase 3 — Android Xtream + Player — IMPLEMENTATION STATUS: COMPLETE / MERGED.
 
-Public launch remains NO.
+The merged implementation includes authenticated provider runtime, Live TV, Movies/VOD, Series, Series detail/seasons/episodes, Live/VOD/Series episode playback, Media3, EPG, Catch Up, Favorites, Recent history, Continue Watching, resume position, Global Search, phone UX and Android TV/D-pad implementation.
+
+Phase 3 evidence includes exact-head Android CI coverage, JVM tests, Compose/instrumentation compilation, phone emulator device proof, startup/login regression, navigation regression, Keystore proof, Room runtime smoke and secret scanning.
+
+Evidence not to overstate:
+
+- Foundation / Mega/Xtream authentication proof: CERTIFIED;
+- later real-provider Phase 3 proof for Live playback, VOD playback, Series info/episode playback, EPG retrieval, Catch Up playback and Global Search catalog sources: NOT CERTIFIED / NOT EXECUTED WITH SECURE CREDENTIALS where applicable;
+- Android Shell 002 physical TV proof: CERTIFIED / PASS;
+- later Phase 3 feature-surface physical TV proof: NOT SEPARATELY CERTIFIED.
+
+Deterministic Android TV/D-pad tests and successful compilation/CI do not equal a physical-TV PASS.
+
+## Residual and future work after Phase 3 closure
+
+Catch Up history persistence and bulk XMLTV ingestion/synchronization remain outside the implemented client library scope.
+
+Phase 4 — WireGuard is next and has not started. It remains separately supervised with rollback/snapshot, service-audit, one-test-peer, Android tunnel integration, networking-safety and measured-bandwidth gates. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work.
+
+DEPLOY = NO. RELEASE = NO. PUBLIC LAUNCH = NO. Phase 3 implementation completion does not constitute production-launch approval.

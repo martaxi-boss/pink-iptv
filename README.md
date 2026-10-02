@@ -2,7 +2,7 @@
 
 Private project for an original IPTV player for Android/Android TV and Windows.
 
-Status: Phase 2 — Android Shell 002 implementation/in review. Foundation / Mega Proof 001 is COMPLETE / MERGED.
+Status: Phase 3 Android Xtream + Player implementation COMPLETE / MERGED. Phase 4 WireGuard has not started. Windows has not started.
 Public launch: NO.
 Repository must never contain production credentials, Mega OTT tokens, Xtream passwords, WireGuard private keys, or server private keys.
 
@@ -29,9 +29,13 @@ Important terminology: Mega OTT calls username/password subscriptions type M3U i
 
 ## High-level architecture
 
-Current Android Shell 002: Client -> PINK Backend -> `POST /v1/session/resolve`.
+Current Android flow: Client -> PINK Backend -> `POST /v1/session/resolve` for authenticated provider resolution, followed by direct authenticated Xtream catalog/playback networking from the Android client. Video does not proxy through the PINK Backend.
 
-Future separately authorized phases may add direct Xtream catalog/playback networking and the planned WireGuard path. Video must not proxy through the PINK Backend.
+Phase 3 Android implementation is COMPLETE / MERGED. This includes Live/VOD/Series catalogs and playback, Series detail/episodes, EPG/Catch Up, Favorites/History/Continue Watching/resume, Global Search, phone UX and Android TV/D-pad implementation.
+
+Foundation / Mega/Xtream authentication proof is CERTIFIED. Later Phase 3 real-provider playback/catalog proofs and post-Shell physical-TV feature proofs remain separate residual validation gates where not explicitly certified. Deterministic TV test coverage is not represented as physical-device certification.
+
+Phase 4 — WireGuard is the next separately supervised phase and has not started. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work. Public launch remains NO.
 
 See:
 - docs/PRODUCT_SPEC.md
@@ -43,4 +47,4 @@ See:
 - docs/ROADMAP.md
 - SUPERVISOR_HANDOFF.md
 
-Implementation proceeds only under explicit Owner/Supervisor builder orders. Android Shell 002 is not complete or merged until Supervisor audit and merge authorization.
+Implementation proceeds only under explicit Owner/Supervisor builder orders. Phase 3 implementation completion does not constitute production readiness, release approval or public-launch approval.

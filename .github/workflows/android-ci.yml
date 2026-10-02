@@ -388,8 +388,22 @@ jobs:
           echo "WG_API24_VALUE=$API"
           test "$API" = "24"
 
-          adb install -r app/build/outputs/apk/debug/app-debug.apk
-          adb install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          bounded_install() {
+            local label="$1"
+            shift
+            echo "WG_API24_INSTALL_BEGIN=$label"
+            if ! timeout --signal=TERM 180s adb install --no-streaming "$@"; then
+              echo "WG_API24_INSTALL_FAILED=$label"
+              adb get-state || true
+              adb shell getprop sys.boot_completed || true
+              exit 1
+            fi
+            echo "WG_API24_INSTALL_DONE=$label"
+          }
+
+          adb wait-for-device
+          bounded_install APP -r app/build/outputs/apk/debug/app-debug.apk
+          bounded_install TEST -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           echo "WG_API24_INSTALL=PASS"
 
           INSTRUMENTATION_COMPONENT="com.pinkiptv.app.test/androidx.test.runner.AndroidJUnitRunner"

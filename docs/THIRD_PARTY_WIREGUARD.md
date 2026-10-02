@@ -11,10 +11,26 @@ Scope: PINK IPTV Phase 4 WireGuard dependency/compliance foundation only. This i
 - Release tag: `1.0.20260102`
 - Release commit: `09b75c2bd37f749e2a8c85876394854113c74be7`
 - Primary upstream license: Apache License 2.0
-- AAR SHA-256: `PENDING_EXACT_CI_ARTIFACT_RECONCILIATION`
-- AAR byte size: `PENDING_EXACT_CI_ARTIFACT_RECONCILIATION`
+- AAR SHA-256: `2b9c16db026496123e4db695d26d03d1958a201096c7c4c89b21077dc70f3119`
+- AAR byte size: `5830762`
 
 PINK uses the non-root userspace `GoBackend` only. The final APK must exclude unused `libwg.so` and `libwg-quick.so` while retaining `libwg-go.so`.
+
+Exact released-AAR inventory observed by Stage 004A CI:
+
+- ABIs: `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`;
+- `libwg-go.so`: present for all four ABIs;
+- `libwg.so`: present for all four ABIs in the upstream AAR;
+- `libwg-quick.so`: present for all four ABIs in the upstream AAR.
+
+Exact PINK debug APK evidence from the same verifier:
+
+- APK byte size: `38795726`;
+- `libwg-go.so`: present for all four ABIs;
+- `libwg.so`: absent;
+- `libwg-quick.so`: absent.
+
+This debug APK size is build evidence only; it is not a production installed-size claim.
 
 ## wireguard-go provenance for libwg-go
 

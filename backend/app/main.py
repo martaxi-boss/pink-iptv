@@ -1,4 +1,6 @@
 from fastapi import Depends, FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.clients.xtream import XtreamClient
@@ -17,6 +19,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = runtime_settings
     app.state.session_factory = build_session_factory(runtime_settings.database_url)
     app.state.xtream_client_factory = XtreamClient
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(_request: Request, _error: RequestValidationError) -> JSONResponse:
+        # Validation inputs and even extra field names can contain credentials.
+        # Never serialize the error object or original request body.
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "Invalid request"},
+            headers={"Cache-Control": "no-store"},
+        )
 
     @app.post("/v1/session/resolve", response_model=ResolveResponse)
     def resolve_session(

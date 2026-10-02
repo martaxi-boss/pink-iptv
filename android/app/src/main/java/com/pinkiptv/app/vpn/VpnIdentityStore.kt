@@ -2,6 +2,8 @@ package com.pinkiptv.app.vpn
 
 import com.wireguard.crypto.Key
 import com.wireguard.crypto.KeyPair
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class VpnPublicIdentity(
     val identityAvailable: Boolean,
@@ -56,6 +58,8 @@ class SecureVpnIdentityStore(
     private val cipher: VpnIdentityCipher,
     private val persistence: VpnIdentityPersistence,
 ) : VpnIdentityStore {
+    private val ensureMutex = Mutex()
+
     override suspend fun loadIdentity(): VpnIdentityResult {
         val record = try {
             persistence.read()
@@ -92,8 +96,8 @@ class SecureVpnIdentityStore(
         }
     }
 
-    override suspend fun ensureIdentity(): VpnIdentityResult {
-        return when (val existing = loadIdentity()) {
+    override suspend fun ensureIdentity(): VpnIdentityResult = ensureMutex.withLock {
+        when (val existing = loadIdentity()) {
             VpnIdentityResult.Absent -> createIdentity()
             is VpnIdentityResult.Available -> existing
             is VpnIdentityResult.Failure -> existing

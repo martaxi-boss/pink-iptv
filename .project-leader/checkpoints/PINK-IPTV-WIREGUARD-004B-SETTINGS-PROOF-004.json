@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004",
+  "repository": "martaxi-boss/pink-iptv",
+  "updated_at": "2026-10-02T23:55:25.218300+00:00",
+  "last_durable_step": "Run 37078464214: API24 and Android build/JVM/lint passed; phone failed only on initial Settings D-pad focus; touch Settings test passed.",
+  "action_fingerprint": "004B-Settings-phone-TV-simulation-initial-focus",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "strategy": "Explicitly request real Compose keyboard input mode before TV autofocus; retain all focus/click assertions. Revalidate on new code head instead of rerunning unchanged test.",
+  "strategy_generation": 2,
+  "last_error": "phone job 111075173854: settings_vpn_prepare Focused=false at initial assertion; simulated TV configuration did not switch the phone input mode",
+  "next_step": "Run Android and Backend CI on corrected test; independently verify both Settings tests complete without skips, API24 and API36 regressions.",
+  "status": "ACTIVE"
+}

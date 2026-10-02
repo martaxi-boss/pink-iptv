@@ -3,7 +3,10 @@ package com.pinkiptv.app
 import android.content.res.Configuration
 import android.view.KeyEvent
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
@@ -55,6 +58,12 @@ class VpnSettingsDpadTest {
 
         composeRule.setContent {
             CompositionLocalProvider(LocalConfiguration provides configuration) {
+                val inputModeManager = LocalInputModeManager.current
+                SideEffect {
+                    check(inputModeManager.requestInputMode(InputMode.Keyboard)) {
+                        "Simulated TV proof requires keyboard input mode"
+                    }
+                }
                 PinkTheme {
                     SettingsScreen(
                         vpnState = VpnPreparationState(

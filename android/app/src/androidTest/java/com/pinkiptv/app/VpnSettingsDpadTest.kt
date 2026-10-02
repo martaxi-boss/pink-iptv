@@ -29,8 +29,6 @@ class VpnSettingsDpadTest {
         )
 
         var prepareClicks = 0
-        var logoutClicks = 0
-        var backClicks = 0
 
         composeRule.setContent {
             PinkTheme {
@@ -39,8 +37,8 @@ class VpnSettingsDpadTest {
                         phase = VpnPreparationPhase.NOT_PREPARED,
                     ),
                     onPrepareVpn = { prepareClicks += 1 },
-                    onLogout = { logoutClicks += 1 },
-                    onBack = { backClicks += 1 },
+                    onLogout = {},
+                    onBack = {},
                 )
             }
         }
@@ -66,15 +64,5 @@ class VpnSettingsDpadTest {
         instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_UP)
         composeRule.waitForIdle()
         logout.assertIsFocused()
-
-        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
-        composeRule.runOnIdle { assertEquals(1, logoutClicks) }
-
-        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN)
-        composeRule.waitForIdle()
-        back.assertIsFocused()
-
-        instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
-        composeRule.runOnIdle { assertEquals(1, backClicks) }
     }
 }

@@ -203,7 +203,19 @@ Room remains device-local and no Favorites/history data is uploaded to the PINK 
 
 ## Android Catalog + Player 003F automated proof
 
-Status: ACTIVE.
+Status: COMPLETE / MERGED.
+
+Approved head: `b2e1fa406c55514b43d19fb98ffe332da9563ed8`.
+
+Merge commit: `edf93ce866404c16ddc51659608643e2c3aa1e73`.
+
+Certified Stage 003F runs:
+
+- Android CI `36925014754`: SUCCESS;
+- backend CI `36925014938`: SUCCESS;
+- phone-device-proof: SUCCESS.
+
+No post-merge CI is inferred.
 
 Stage 003F adds deterministic coverage for:
 
@@ -219,9 +231,23 @@ Stage 003F adds deterministic coverage for:
 - deterministic phone navigation plus Android TV/D-pad focus from query to filters, results and favorite actions;
 - continued Room schema version 1, Room runtime smoke, Media3 1.11.1 and existing Login/EPG/Catch Up behavior.
 
-The pull-request phone-device proof continues to execute the genuine startup, Login, NavigationShell and Keystore/Room smoke classes. `NavigationShellTest` includes deterministic Search -> Live/Movie Player -> Back and Search -> Series Detail -> Back flows without provider credentials.
+The phone-device proof executes the genuine startup, Login, NavigationShell and Keystore/Room smoke classes. `NavigationShellTest` includes deterministic Search -> Live/Movie Player -> Back and Search -> Series Detail -> Back flows without provider credentials.
 
-Real-provider Search proof, if separately available, consists only of sanitized evidence that the existing `get_live_streams`, `get_vod_streams` and `get_series` sources populated Search and produced a local query match. It is not a separate provider search endpoint and is not required for code-audit acceptance.
+Real-provider Search proof remains NOT CERTIFIED / NOT EXECUTED WITH SECURE CREDENTIALS. It would only show that existing `get_live_streams`, `get_vod_streams` and `get_series` sources populate Search and produce a local query match; no separate provider Search endpoint exists.
+
+## Phase 3 closure evidence note
+
+Phase 3 — Android Xtream + Player — IMPLEMENTATION STATUS: COMPLETE / MERGED.
+
+Across the merged Phase 3 stages, automated/device evidence includes exact-head Android CI coverage, JVM tests, Compose/instrumentation compilation, phone emulator device proof, startup/login regression, navigation regression, Keystore proof, Room runtime smoke and secret scanning.
+
+Foundation / Mega/Xtream authentication proof is CERTIFIED.
+
+Later Phase 3 real-provider evidence remains separate and is NOT CERTIFIED / NOT EXECUTED WITH SECURE CREDENTIALS where applicable for Live playback start, VOD playback start, Series info/episode playback, EPG retrieval, Catch Up playback and Global Search catalog-source proof. These are residual validation gates, not known code blockers.
+
+Android Shell 002 physical TV proof is CERTIFIED / PASS. Physical-TV proof for later Phase 3 feature surfaces — Live/VOD player, Series detail/episode player, EPG/Catch Up, Favorites/History/Continue Watching and Global Search — is NOT SEPARATELY CERTIFIED. Deterministic TV/D-pad source tests and CI compilation are not physical-device certification.
+
+DEPLOY = NO. RELEASE = NO. PUBLIC LAUNCH = NO.
 
 ## Future client/platform matrices retained
 

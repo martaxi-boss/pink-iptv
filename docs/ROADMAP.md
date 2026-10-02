@@ -29,9 +29,11 @@ Implemented scope includes authenticated Xtream runtime, Live/VOD/Series catalog
 
 ## Phase 4 — WireGuard
 
-NEXT separately supervised phase; not started by the Phase 3 closure reconciliation.
+Stage 004A dependency/compliance foundation: ACTIVE.
 
-Required gates remain rollback/snapshot prerequisites, existing-service audit, one test peer, Android tunnel integration, networking safety, measured bandwidth/capacity and no production onboarding.
+Stage 004A pins the official released Android tunnel dependency, intentionally raises the Android minimum to API 24, verifies the released native payload and proves GoBackend native loadability without creating a real tunnel. No VPN server, peer, OVH, routing, firewall or NAT mutation is part of 004A.
+
+Later Phase 4 gates remain rollback/snapshot prerequisites, existing-service audit, one test peer, real Android tunnel integration, foreground-service/service-survival validation, networking safety, measured bandwidth/capacity and no production onboarding.
 
 ## Phase 5 — Windows
 

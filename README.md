@@ -2,7 +2,7 @@
 
 Private project for an original IPTV player for Android/Android TV and Windows.
 
-Status: Phase 3 Android Xtream + Player implementation COMPLETE / MERGED. Phase 4 WireGuard has not started. Windows has not started.
+Status: Phase 3 Android Xtream + Player implementation COMPLETE / MERGED. Phase 4 WireGuard Stage 004A dependency/compliance foundation is ACTIVE; no real VPN tunnel is implemented. Windows has not started.
 Public launch: NO.
 Repository must never contain production credentials, Mega OTT tokens, Xtream passwords, WireGuard private keys, or server private keys.
 
@@ -35,7 +35,7 @@ Phase 3 Android implementation is COMPLETE / MERGED. This includes Live/VOD/Seri
 
 Foundation / Mega/Xtream authentication proof is CERTIFIED. Later Phase 3 real-provider playback/catalog proofs and post-Shell physical-TV feature proofs remain separate residual validation gates where not explicitly certified. Deterministic TV test coverage is not represented as physical-device certification.
 
-Phase 4 — WireGuard is the next separately supervised phase and has not started. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work. Public launch remains NO.
+Phase 4 — WireGuard is active only at Stage 004A dependency/compliance foundation. Android minimum support is intentionally API 24 / Android 7.0. Stage 004A uses the official released WireGuard tunnel AAR and does not create a peer, contact OVH or establish a real VPN tunnel. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work. Public launch remains NO.
 
 See:
 - docs/PRODUCT_SPEC.md

@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-02
-Phase: Phase 3 — Android Xtream + Player — IMPLEMENTATION COMPLETE / MERGED
+Phase: Phase 4 — WireGuard Stage 004A — DEPENDENCY + COMPLIANCE FOUNDATION ACTIVE
 Public launch: NO
 
 ## Governance
@@ -185,6 +185,26 @@ DEPLOY = NO.
 RELEASE = NO.
 
 Phase 4 — WireGuard is next and remains a separate supervised phase. It retains its own gates for snapshot/rollback, existing-service audit, one test peer, Android tunnel integration, networking safety, measured bandwidth and no production onboarding.
+
+## Phase 4 / Stage 004A — ACTIVE
+
+Stage 004A integrates the official released WireGuard Android tunnel dependency as a dependency/compliance foundation only.
+
+- dependency: `com.wireguard.android:tunnel:1.0.20260102`;
+- upstream release commit: `09b75c2bd37f749e2a8c85876394854113c74be7`;
+- Android minimum support intentionally moves from API 23 to API 24 (Android 7.0);
+- compileSdk remains 36, targetSdk remains 36 and JDK remains 17;
+- PINK consumes the released Maven AAR; WireGuard source is not vendored;
+- future tunnel architecture is official non-root GoBackend only;
+- Stage 004A verifies AAR/APK native payload and GoBackend native loadability without establishing a VPN tunnel;
+- no VPN consent, peer creation, OVH mutation, routing/firewall/NAT mutation or real VPN connection is authorized in 004A;
+- foreground-service/service-survival behavior on API 26+ remains a later real-tunnel runtime gate.
+
+Phase 3 Android implementation remains COMPLETE / MERGED and its approved Xtream, Media3, Room, EPG/Catch Up, Favorites/History/Continue Watching and Global Search architecture remains unchanged.
+
+PUBLIC LAUNCH = NO.
+DEPLOY = NO.
+RELEASE = NO.
 
 ## Remaining technical gates
 

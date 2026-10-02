@@ -249,6 +249,29 @@ Android Shell 002 physical TV proof is CERTIFIED / PASS. Physical-TV proof for l
 
 DEPLOY = NO. RELEASE = NO. PUBLIC LAUNCH = NO.
 
+## WireGuard Stage 004A dependency/compliance proof
+
+Status: ACTIVE.
+
+Stage 004A keeps Phase 3 behavior intact while adding dependency/compliance gates for the official `com.wireguard.android:tunnel:1.0.20260102` release.
+
+Required CI/device evidence includes:
+
+- Android minSdk 24 with compileSdk/targetSdk 36 and JDK 17 unchanged;
+- exact released WireGuard AAR resolution;
+- SHA-256, byte-size, ABI and native-entry inventory for the resolved AAR;
+- final debug APK containing `libwg-go.so`;
+- final debug APK excluding `libwg.so` and `libwg-quick.so`;
+- literal `git diff --check` on the pull-request diff;
+- Android lint, JVM tests, debug APK assembly and Android instrumentation-test assembly;
+- `WireGuardNativeSmokeTest` on the phone emulator, constructing official `GoBackend` and requiring non-empty `getVersion()` without establishing a tunnel or requesting VPN consent;
+- existing startup, Login, NavigationShell and AndroidKeystore/Room device regression classes;
+- repository secret scanning.
+
+The verifier prints native filenames and artifact metadata only. It must not print VPN configuration, keys, provider credentials or other secret material.
+
+Stage 004A does not prove real VPN connectivity. Foreground-service/service-survival behavior, network transitions, always-on/lockdown semantics, real peer provisioning and measured tunnel bandwidth remain later Phase 4 runtime gates.
+
 ## Future client/platform matrices retained
 
 Order 001 backend proof does not remove the test plan for later phases.

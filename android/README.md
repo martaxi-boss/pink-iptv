@@ -16,7 +16,7 @@ PINK IPTV uses one Android `:app` module for phone/tablet, Android TV and TV Box
 - Kotlin serialization / coroutines
 - Room 2.8.5 / KSP 2.3.12 for non-secret local library metadata
 
-SDK contract: compileSdk 36, targetSdk 36, minSdk 23, JDK 17.
+SDK contract: compileSdk 36, targetSdk 36, minSdk 24 (Android 7.0), JDK 17.
 
 ## Completed baseline
 
@@ -147,6 +147,23 @@ Evidence not to overstate:
 - later Phase 3 feature-surface physical TV proof: NOT SEPARATELY CERTIFIED.
 
 Deterministic Android TV/D-pad tests and successful compilation/CI do not equal a physical-TV PASS.
+
+## Phase 4 / Stage 004A — ACTIVE
+
+Stage 004A establishes the WireGuard dependency/compliance foundation without creating a real tunnel.
+
+- official dependency: `com.wireguard.android:tunnel:1.0.20260102`;
+- released Maven AAR only; no vendored WireGuard source;
+- core-library desugaring: `com.android.tools:desugar_jdk_libs:2.1.5`;
+- future PINK runtime backend: official non-root `GoBackend` only;
+- unused `libwg.so` and `libwg-quick.so` are excluded from the PINK APK;
+- `libwg-go.so` is required and verified in the final APK;
+- instrumentation smoke constructs `GoBackend` and requires a non-empty backend version without requesting VPN consent or activating a tunnel;
+- Android minimum support intentionally changes from API 23 to API 24.
+
+No VPN UI, peer provisioning, OVH operation, routing/firewall/NAT mutation or real VPN connection is implemented in Stage 004A.
+
+The official GoBackend/VpnService foreground-service and service-survival behavior on Android API 26+ remains a hard runtime gate for the later stage that first establishes a real tunnel.
 
 ## Residual and future work after Phase 3 closure
 

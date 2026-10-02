@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pinkiptv.app"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
@@ -37,6 +37,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildTypes {
@@ -55,6 +56,11 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            // PINK Phase 4 uses only the official non-root GoBackend.
+            // Do not distribute the unused WireGuard tools / wg-quick native binaries.
+            excludes += setOf("**/libwg.so", "**/libwg-quick.so")
         }
     }
 
@@ -91,6 +97,9 @@ dependencies {
     implementation("androidx.room:room-runtime:" + roomVersion)
     implementation("androidx.room:room-ktx:" + roomVersion)
     ksp("androidx.room:room-compiler:" + roomVersion)
+
+    implementation("com.wireguard.android:tunnel:1.0.20260102")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

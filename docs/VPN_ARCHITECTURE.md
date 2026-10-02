@@ -37,9 +37,23 @@ Each installation gets:
 
 Never ship one shared private key in the APK/EXE.
 
-## Future app behavior
+## Android Stage 004A / 004B boundary
 
-A separately authorized VPN phase may add OS VPN permission/setup, device key generation, enrollment, tunnel health and reconnect policy. None of that is implemented by Android Shell 002.
+Stage 004A is COMPLETE / MERGED and consumes the official released `com.wireguard.android:tunnel:1.0.20260102` dependency with non-root `GoBackend` only. PINK does not vendor WireGuard source or ship the unused `libwg.so` / `libwg-quick.so` native binaries.
+
+Stage 004B is limited to local identity, Android permission and adapter preparation. Its architecture is:
+
+PINK Settings/state -> PINK preparation controller -> Android `VpnService.prepare()` gateway -> official `GoBackend` adapter.
+
+The device-install WireGuard identity is not tied to an Xtream account. The first identity is generated only after Android VPN preparation has been authorized. Later sessions reuse it, including across IPTV logout/login.
+
+The private WireGuard key is encrypted before persistence with a dedicated Android Keystore AES-256-GCM wrapping key named `pink_iptv_wireguard_identity_v1`. The dedicated `pink_wireguard_identity` DataStore contains only format version, IV and ciphertext. The existing IPTV credential alias/storage is separate. Corrupt encrypted identity fails closed and is not silently regenerated.
+
+The ordinary UI exposes no private key, PSK, endpoint or WireGuard configuration. 004B uses preparation states such as not prepared, awaiting system permission, ready for a later tunnel stage, denied and error. It does not claim VPN ON or CONNECTED.
+
+The official `GoBackend$VpnService` remains the only VPN service. Its merged PINK manifest explicitly sets `android.net.VpnService.SUPPORTS_ALWAYS_ON=false` until a future stage certifies real tunnel lifecycle/service-survival behavior.
+
+004B never calls `Backend.setState(... UP ...)`, creates no real `Config`, creates no peer and contacts no VPN server.
 
 ## Routing
 

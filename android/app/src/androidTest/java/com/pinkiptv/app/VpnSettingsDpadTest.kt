@@ -2,7 +2,11 @@ package com.pinkiptv.app
 
 import android.content.res.Configuration
 import android.view.KeyEvent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,7 +15,6 @@ import com.pinkiptv.app.ui.theme.PinkTheme
 import com.pinkiptv.app.vpn.VpnPreparationPhase
 import com.pinkiptv.app.vpn.VpnPreparationState
 import org.junit.Assert.assertEquals
-import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,26 +23,48 @@ class VpnSettingsDpadTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun preparationLogoutAndBackHaveDeterministicDpadOrder() {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val configuration = instrumentation.targetContext.resources.configuration
-        assumeTrue(
-            configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-                Configuration.UI_MODE_TYPE_TELEVISION,
-        )
-
+    fun touchPreparationInvokesOnlyThePreparationAction() {
         var prepareClicks = 0
-
         composeRule.setContent {
             PinkTheme {
                 SettingsScreen(
-                    vpnState = VpnPreparationState(
-                        phase = VpnPreparationPhase.NOT_PREPARED,
-                    ),
+                    vpnState = VpnPreparationState(),
                     onPrepareVpn = { prepareClicks += 1 },
                     onLogout = {},
                     onBack = {},
                 )
+            }
+        }
+        composeRule.onNodeWithTag("settings_vpn_status").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings_vpn_prepare").performClick()
+        composeRule.runOnIdle { assertEquals(1, prepareClicks) }
+    }
+
+    @Test
+    fun preparationLogoutAndBackHaveDeterministicDpadOrder() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        // Exercise TV focus logic on the CI emulator, without claiming physical-TV proof.
+        val configuration = Configuration(
+            instrumentation.targetContext.resources.configuration,
+        ).apply {
+            uiMode = (uiMode and Configuration.UI_MODE_TYPE_MASK.inv()) or
+                Configuration.UI_MODE_TYPE_TELEVISION
+        }
+
+        var prepareClicks = 0
+
+        composeRule.setContent {
+            CompositionLocalProvider(LocalConfiguration provides configuration) {
+                PinkTheme {
+                    SettingsScreen(
+                        vpnState = VpnPreparationState(
+                            phase = VpnPreparationPhase.NOT_PREPARED,
+                        ),
+                        onPrepareVpn = { prepareClicks += 1 },
+                        onLogout = {},
+                        onBack = {},
+                    )
+                }
             }
         }
 

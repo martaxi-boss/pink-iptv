@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-02T22:46:00Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "summary": "Recover and complete the already-authorized WireGuard 004B validation by fixing only the API24 Android CI harness hang, persisting control evidence, rerunning required CI, and returning to Supervisor audit. No VPN activation, infrastructure mutation, merge, release, deploy, secret change, or scope expansion is authorized.",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND"
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "84fe2dfffd4d381f45bd9b88a0983c122ba42ee4",
+    "task_branch": "builder/wireguard-004b-identity-permission-adapter",
+    "pr_number": 13
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    ".github/workflows/android-ci.yml",
+    ".project-leader/tasks/PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001.json",
+    ".project-leader/checkpoints/PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001.json",
+    ".project-leader/results/PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001.json"
+  ],
+  "allowed_actions": [
+    "edit_android_ci_harness",
+    "create_project_local_control_records",
+    "create_commits",
+    "run_ci",
+    "update_existing_pr"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "release_or_publish",
+    "production_deploy",
+    "vpn_server_or_ovh_mutation",
+    "peer_creation",
+    "real_vpn_tunnel_activation",
+    "production_secret_change",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "force_push_or_destructive_rewrite",
+    "branch_protection_or_ruleset_change",
+    "material_architecture_change",
+    "material_scope_change",
+    "mutation_outside_martaxi-boss/pink-iptv"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "vpn_server_or_ovh_mutation",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "API24 harness must fail or complete within bounded time instead of hanging indefinitely",
+    "WireGuard 004B functional non-effects remain unchanged",
+    "Real PR diff remains inside mutation_scope for this remediation task"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "terminal_condition": "Android CI and Backend CI complete successfully on the same final 004B implementation head; the API24 smoke job completes successfully; the remediation diff is confined to the authorized mutation_scope; Supervisor independently verifies CI and non-effects; merge remains a Human Gate.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

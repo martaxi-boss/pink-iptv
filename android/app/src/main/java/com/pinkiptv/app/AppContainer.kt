@@ -20,6 +20,12 @@ import com.pinkiptv.app.storage.AndroidKeystoreCredentialCipher
 import com.pinkiptv.app.storage.CredentialStore
 import com.pinkiptv.app.storage.DataStoreCredentialPersistence
 import com.pinkiptv.app.storage.SecureCredentialStore
+import com.pinkiptv.app.vpn.AndroidKeystoreVpnIdentityCipher
+import com.pinkiptv.app.vpn.AndroidVpnPermissionGateway
+import com.pinkiptv.app.vpn.DataStoreVpnIdentityPersistence
+import com.pinkiptv.app.vpn.SecureVpnIdentityStore
+import com.pinkiptv.app.vpn.VpnIdentityStore
+import com.pinkiptv.app.vpn.createPinkWireGuardBackend
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 
@@ -73,4 +79,15 @@ class AppContainer(context: Context) {
         cipher = AndroidKeystoreCredentialCipher(),
         persistence = DataStoreCredentialPersistence(context.applicationContext),
     )
+
+    val vpnIdentityStore: VpnIdentityStore = SecureVpnIdentityStore(
+        cipher = AndroidKeystoreVpnIdentityCipher(),
+        persistence = DataStoreVpnIdentityPersistence(context.applicationContext),
+    )
+
+    val vpnPermissionGateway = AndroidVpnPermissionGateway(context.applicationContext)
+
+    val wireGuardBackend by lazy {
+        createPinkWireGuardBackend(context.applicationContext)
+    }
 }

@@ -90,8 +90,7 @@ jobs:
           )
           control_sha_line = re.compile(
               r'^\\s*"(base_sha|implementation_head_sha|sha256|previous_event_sha256)"'
-              r'\\s*:\\s*"([0-9a-f]{40}|[0-9a-f]{64})"\\s*,?\\s*          PY
-
+              r'\\s*:\\s*"([0-9a-f]{40}|[0-9a-f]{64})"\\s*,?\\s*$'
           )
 
           def is_control_sha_metadata(path, line_number, kind):

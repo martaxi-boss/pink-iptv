@@ -148,7 +148,11 @@ Evidence not to overstate:
 
 Deterministic Android TV/D-pad tests and successful compilation/CI do not equal a physical-TV PASS.
 
-## Phase 4 / Stage 004A — ACTIVE
+## Phase 4 / Stage 004A — COMPLETE / MERGED
+
+Stage 004A approved head: `6d6611d8fd0cc784770fb9ec56d025bd87963b0a`.
+
+Stage 004A merge commit: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
 
 Stage 004A establishes the WireGuard dependency/compliance foundation without creating a real tunnel.
 
@@ -165,10 +169,27 @@ No VPN UI, peer provisioning, OVH operation, routing/firewall/NAT mutation or re
 
 The official GoBackend/VpnService foreground-service and service-survival behavior on Android API 26+ remains a hard runtime gate for the later stage that first establishes a real tunnel.
 
+## Phase 4 / Stage 004B — ACTIVE
+
+Stage 004B keeps the official 004A dependency unchanged and adds only the PINK-owned preparation layer:
+
+- device-install WireGuard identity, independent from IPTV usernames/providers and preserved across logout;
+- dedicated Android Keystore AES/GCM wrapping alias `pink_iptv_wireguard_identity_v1`;
+- dedicated DataStore `pink_wireguard_identity` containing only IV/ciphertext/version metadata;
+- corruption fail-closed with no automatic key rotation;
+- explicit user-driven `VpnService.prepare()` system permission flow;
+- truthful preparation states only — no VPN ON/CONNECTED claim;
+- thin read-only PINK GoBackend adapter and deterministic `pink` Tunnel callbacks;
+- Settings preparation UI with phone and D-pad focus behavior;
+- official GoBackend VpnService merged-manifest policy with always-on disabled;
+- dedicated API24 lower-bound runtime smoke.
+
+Stage 004B never calls `Backend.setState(... UP ...)`, builds no real WireGuard Config, creates no peer, contacts no VPN server and mutates no OVH/network infrastructure.
+
 ## Residual and future work after Phase 3 closure
 
 Catch Up history persistence and bulk XMLTV ingestion/synchronization remain outside the implemented client library scope.
 
-Phase 4 — WireGuard is next and has not started. It remains separately supervised with rollback/snapshot, service-audit, one-test-peer, Android tunnel integration, networking-safety and measured-bandwidth gates. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work.
+Phase 4 — WireGuard is active under staged supervision. After 004B, later gates remain rollback/snapshot, service-audit, one-test-peer provisioning, first real Android tunnel activation, API26+ service-survival validation, networking safety and measured bandwidth. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work.
 
 DEPLOY = NO. RELEASE = NO. PUBLIC LAUNCH = NO. Phase 3 implementation completion does not constitute production-launch approval.

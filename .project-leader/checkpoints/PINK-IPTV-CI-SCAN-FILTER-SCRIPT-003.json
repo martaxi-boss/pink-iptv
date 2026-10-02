@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CI-SCAN-FILTER-SCRIPT-003",
+  "repository": "martaxi-boss/pink-iptv",
+  "updated_at": "2026-10-02T23:08:00Z",
+  "last_durable_step": "Task Authorization for the replacement scan strategy is durable on PR #13 after inline strategy progress proved canonical SHA filtering works but the YAML run block self-triggers the Secret Keyword plugin.",
+  "action_fingerprint": "PINK-IPTV-CI-SCAN-FILTER-SCRIPT-003|move-filter-out-of-yaml|dedicated-helper",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "strategy": "Move report post-processing to .github/scripts/filter_scan_findings.py. Keep detect-secrets scanning all repository files, keep canonical SHA-only filtering, and reduce workflow run blocks to the scanner command plus one helper invocation.",
+  "strategy_generation": 1,
+  "last_error": "Inline workflow post-processing remained self-referential: Backend CI run 37075460075 still reported Secret Keyword findings on both workflow run blocks even though base_sha metadata filtering succeeded.",
+  "next_step": "Create the helper script, rebuild both scan steps from the known-good pre-inline baseline so they call the helper, inspect the exact diff, and run required CI.",
+  "status": "ACTIVE"
+}

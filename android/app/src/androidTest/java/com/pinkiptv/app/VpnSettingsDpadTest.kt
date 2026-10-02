@@ -1,12 +1,13 @@
 package com.pinkiptv.app
 
+import android.content.res.Configuration
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.pressKey
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.theme.PinkTheme
@@ -25,20 +26,29 @@ class VpnSettingsDpadTest {
         var prepareClicks = 0
 
         composeRule.setContent {
-            PinkTheme {
-                SettingsScreen(
-                    vpnState = VpnPreparationState(
-                        phase = VpnPreparationPhase.NOT_PREPARED,
-                    ),
-                    onPrepareVpn = { prepareClicks += 1 },
-                    onLogout = {},
-                    onBack = {},
-                )
+            val phoneConfiguration = LocalConfiguration.current
+            val tvConfiguration = Configuration(phoneConfiguration).apply {
+                uiMode = (uiMode and Configuration.UI_MODE_TYPE_MASK.inv()) or
+                    Configuration.UI_MODE_TYPE_TELEVISION
+            }
+
+            CompositionLocalProvider(LocalConfiguration provides tvConfiguration) {
+                PinkTheme {
+                    SettingsScreen(
+                        vpnState = VpnPreparationState(
+                            phase = VpnPreparationPhase.NOT_PREPARED,
+                        ),
+                        onPrepareVpn = { prepareClicks += 1 },
+                        onLogout = {},
+                        onBack = {},
+                    )
+                }
             }
         }
 
+        composeRule.waitForIdle()
+
         val prepare = composeRule.onNodeWithTag("settings_vpn_prepare")
-        prepare.performSemanticsAction(SemanticsActions.RequestFocus)
         prepare.assertIsFocused()
 
         prepare.performKeyInput { pressKey(Key.Enter) }

@@ -100,22 +100,7 @@ jobs:
       - name: Secret scan
         run: |
           detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.gradle|build|\.pytest_cache|\.ruff_cache)/' > /tmp/detect-secrets.json
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          report = json.loads(Path("/tmp/detect-secrets.json").read_text())
-          findings = [
-              (path, item.get("line_number"), item.get("type"))
-              for path, items in report.get("results", {}).items()
-              for item in items
-          ]
-          if findings:
-              for path, line, kind in findings:
-                  print(f"potential secret: {path}:{line} ({kind})")
-              raise SystemExit(1)
-          print("detect-secrets: no findings")
-          PY
+          python .github/scripts/filter_scan_findings.py /tmp/detect-secrets.json
 
   phone-device-proof:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}

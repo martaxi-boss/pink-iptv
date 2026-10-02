@@ -52,14 +52,17 @@ class SeriesDetailController(
     }
 
     fun clear() {
+        generation += 1
         selectedSeriesTitle = null
         currentDetail = null
         mutableState.value = SeriesDetailUiState()
     }
 
+    private var generation = 0L
     private var currentDetail: SeriesDetail? = null
 
     private fun load(seriesId: String, fallbackTitle: String) {
+        val requestGeneration = ++generation
         mutableState.value = SeriesDetailUiState(
             phase = SeriesDetailPhase.Loading,
             selectedSeriesId = seriesId,
@@ -67,7 +70,10 @@ class SeriesDetailController(
         )
 
         scope.launch {
-            when (val result = repository.seriesInfo(seriesId)) {
+            if (requestGeneration != generation) return@launch
+            val result = repository.seriesInfo(seriesId)
+            if (requestGeneration != generation) return@launch
+            when (result) {
                 is CatalogResult.Success -> applyDetail(
                     requestedSeriesId = seriesId,
                     fallbackTitle = fallbackTitle,

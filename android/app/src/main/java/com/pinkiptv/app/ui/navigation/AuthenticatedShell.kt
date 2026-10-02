@@ -34,6 +34,7 @@ import com.pinkiptv.app.ui.screens.SearchScreen
 import com.pinkiptv.app.ui.screens.SeriesDetailScreen
 import com.pinkiptv.app.ui.screens.SettingsScreen
 import com.pinkiptv.app.ui.screens.ShellScreen
+import com.pinkiptv.app.vpn.VpnPreparationState
 
 private object Routes {
     const val HOME = "home"
@@ -56,6 +57,8 @@ fun AuthenticatedShell(
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
     onLogout: () -> Unit,
+    vpnPreparationState: VpnPreparationState = VpnPreparationState(),
+    onPrepareVpn: () -> Unit = {},
     searchState: SearchUiState = SearchUiState(),
     seriesDetail: SeriesDetailUiState = SeriesDetailUiState(),
     epgState: EpgUiState = EpgUiState(),
@@ -275,6 +278,8 @@ fun AuthenticatedShell(
         }
         composable(Routes.SETTINGS) {
             SettingsScreen(
+                vpnState = vpnPreparationState,
+                onPrepareVpn = onPrepareVpn,
                 onBack = { navController.popBackStack() },
                 onLogout = onLogout,
             )

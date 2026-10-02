@@ -23,11 +23,15 @@ Android project shell, original PINK theme, login/home shell, backend API client
 
 ## Phase 3 — Android Xtream + Player
 
-Xtream catalog, Live/VOD/Series/EPG behavior, Media3 playback, favorites/history and Android TV navigation/focus.
+Implementation status: COMPLETE / MERGED.
+
+Implemented scope includes authenticated Xtream runtime, Live/VOD/Series catalogs and playback, Series detail/seasons/episodes, EPG/Catch Up, Favorites/History/Continue Watching/resume, Global Search, phone UX and Android TV navigation/focus. Residual real-provider and post-Shell physical-TV evidence remains separately certifiable and does not convert implementation closure into production readiness.
 
 ## Phase 4 — WireGuard
 
-Separately supervised VPN POC, rollback/snapshot prerequisites, per-installation peers, client tunnel integration, networking safety and measured capacity.
+NEXT separately supervised phase; not started by the Phase 3 closure reconciliation.
+
+Required gates remain rollback/snapshot prerequisites, existing-service audit, one test peer, Android tunnel integration, networking safety, measured bandwidth/capacity and no production onboarding.
 
 ## Phase 5 — Windows
 

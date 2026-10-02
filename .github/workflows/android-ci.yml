@@ -110,7 +110,7 @@ jobs:
               ".project-leader/checkpoints/",
               ".project-leader/recovery-events/",
           )
-          SHA_KEYS = {
+          SHA_FIELDS = {
               "base_sha",
               "implementation_head_sha",
               "sha256",
@@ -140,14 +140,14 @@ jobs:
                   source_line = source_line[:-1]
               if ":" not in source_line:
                   return False
-              raw_key, raw_value = source_line.split(":", 1)
+              raw_name, raw_value = source_line.split(":", 1)
               try:
-                  key = json.loads(raw_key.strip())
+                  field_name = json.loads(raw_name.strip())
                   value = json.loads(raw_value.strip())
               except (json.JSONDecodeError, TypeError):
                   return False
               return (
-                  key in SHA_KEYS
+                  field_name in SHA_FIELDS
                   and isinstance(value, str)
                   and len(value) in {40, 64}
                   and all(char in HEX_CHARS for char in value)

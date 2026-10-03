@@ -1,0 +1,20 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-PROJECT-HYGIENE-010",
+  "terminal_status": "STALE_EXECUTION_PACKET",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-PROJECT-HYGIENE-010.json",
+  "implementation_head_sha": "5b14e13a5c76eca11cff0fd76232d50afbf22f13",
+  "branch": "builder/project-hygiene-010",
+  "superseded_by": "PINK-IPTV-PROJECT-HYGIENE-011",
+  "changes": [],
+  "validation": [],
+  "ci": [],
+  "material_non_effects": [
+    "No implementation committed under Task010."
+  ],
+  "residual_blockers": [
+    "Preflight scanner rejects task SHA metadata; bounded replacement Task011 includes reuse of the existing PR13 filter."
+  ]
+}

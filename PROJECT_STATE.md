@@ -4,11 +4,17 @@ Date: 2026-10-03
 Phase: Phase 4 — WireGuard Stage 004B — IDENTITY + PERMISSION + ADAPTER ACTIVE
 Public launch: NO
 
-## Development convergence 007 — 2026-10-03
+## Current-contract certification 008 — 2026-10-03
+
+The canonical contract was refreshed at Project Leader 638ed1047e7124257027ccc38ad7d12235164ba9 (plugin0.5.0, Task/Worker2.0). Audit008 found that task007's old-SHA retry does not satisfy the current structural Recovery rule. Its historical result/journal remain immutable and non-certifying for current acceptance.
+
+The existing PR13 composition is undergoing fresh task008 v2 certification with an authorization-only commit before correction, exact new CI and canonical external audit. Product/workflow/scanner bytes are preserved. The final task008 Worker Result and live PR13 receipt record actual acceptance once verified; this preparation text does not predict success. See [current-contract audit](docs/AUDIT_CURRENT_CONTRACT_008.md).
+
+## Historical development convergence 007 — 2026-10-03
 
 The authorized WireGuard004B, backend validation/privacy and Android catalog/session lifecycle workstreams are integrated together into PR13's development branch through PR18. PR14/15 are closed as absorbed; source branches and immutable historical records remain preserved.
 
-Certified integration implementation: fbcad5f3e47c6388935d2f87981922a9bfd43119. Post-integration Android CI37114668507 attempt2 and Backend CI37114668515 attempt1 succeeded. Task007 recovery journal durably persisted failure and authorization before retry, and recovery after observed success. Historical task006 retroactive authorization remains invalid.
+Certified integration implementation: fbcad5f3e47c6388935d2f87981922a9bfd43119. Post-integration Android CI37114668507 attempt2 and Backend CI37114668515 attempt1 succeeded. Task007 journal timestamps precede the old-SHA retry, but its certified implementation lacks the pre-retry journal in ancestry. Under the current contract this is STRUCTURALLY_INVALID for terminal Recovery certification. Historical task006 retroactive authorization remains invalid.
 
 The exact HEAD containing final metadata still requires live CI and external canonical Supervisor acceptance before promotion. See [convergence audit](docs/AUDIT_CONVERGENCE_PREFLIGHT_007.md) and [PR13 live final-head evidence](https://github.com/martaxi-boss/pink-iptv/pull/13). Stage004B remains development-only until separately authorized main promotion. Main is unchanged; no new product stage, real tunnel, infrastructure, release or production action follows from these records.
 

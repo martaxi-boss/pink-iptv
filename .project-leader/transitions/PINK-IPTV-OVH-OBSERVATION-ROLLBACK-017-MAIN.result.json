@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017-MAIN",
+  "task_id": "PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "29",
+    "revision": "986bbbe7915e3e3fa83477d09aed8a259993dc85",
+    "base_revision": "173e0e5293057c5540233b19253f1cfded1baf80",
+    "environment": null
+  },
+  "observed_at": "2026-10-03T23:27:23.004Z",
+  "final_state": {
+    "status": "REJECTED_INVALID_EFFECT_CLASS",
+    "revision": "173e0e5293057c5540233b19253f1cfded1baf80"
+  },
+  "evidence": [
+    "First authorization used the implementation E1 class, which is not allowed by the consequential-transition schema. No merge executed under it. Immutable history preserved; replacement exact E2 authorization PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017-MAIN-002 must validate before effect."
+  ],
+  "residual_blockers": [
+    "Superseded by the schema-valid E2 authorization; this first record remains non-certifying."
+  ]
+}

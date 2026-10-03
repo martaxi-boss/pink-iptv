@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014-RECEIPTS",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014-RECEIPTS.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "26",
+    "revision": "27664e5ebb4220ab672c79be7c39c004e7d422ce",
+    "base_revision": "71a7b7ff88a0b66eab5857a6e9199c12fb9fb89a",
+    "environment": "main"
+  },
+  "observed_at": "2026-10-03T21:16:29.857Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "43829215cceeccb3f0f2b4b99c139ab63ce4c9cb"
+  },
+  "evidence": [
+    "PR26 merge response observed; final head27664e5 exact expected, base71a7b7ff revalidated.",
+    "Canonical external verifier passed on receipt head27664e5; only task-local result and transition-result paths changed after certified31385b7.",
+    "Prior exact authorization7a5d384c persisted on builder/canonical-transitions-014. Result stored on this durable transition branch to avoid evidence-merge loops."
+  ],
+  "residual_blockers": []
+}

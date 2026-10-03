@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-SCANNER",
+  "task_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T21:24:59.665Z",
+  "action": "security_scanner_metadata_compatibility",
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Covered remediation of proved public transition SHA false positives. Bind only extension of the existing Hex High Entropy public metadata filter to .project-leader/transitions JSON revision/base_revision fields with 40/64 lowercase hex; preserve every other type/field/path as blocked and add negative regressions. No workflow/scanner plugin/control-plane change or credential exception."
+  },
+  "target": {
+    "kind": "repository_branch",
+    "identifier": "builder/transition-scan-preflight-016",
+    "revision": "e5e6c502127bc6e8483f0611c333b7caf4b2b9f9",
+    "base_revision": "43829215cceeccb3f0f2b4b99c139ab63ce4c9cb",
+    "environment": null
+  }
+}

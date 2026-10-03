@@ -325,3 +325,11 @@ When the separately supervised VPN phase opens, test throughput, packet loss, re
 ## R1 outbound binding proof
 
 Automated tests additionally prove that a validated public DNS result is pinned into the real transport connection, a subsequent/private peer swap is rejected before request bytes are written, provider paths are rejected, HTTP `Host` is preserved, and HTTPS SNI plus certificate verification remain enabled.
+
+## Public Project Leader transition metadata / preflight016
+
+The shared secret-scan filter recognizes only Hex High Entropy String findings on known SHA fields containing40/64 lowercase hexadecimal characters in the existing control-record JSON families, now including `.project-leader/transitions/` and `base_revision`. This is a public Git/artifact metadata exception, never a password/token/private-key exception. Workflow scan commands and detector types are unchanged.
+
+Backend regression tests verify transition authorization/result revision/base_revision fields and retain fail-closed cases for other finding types, credential field names, uppercase/non-hex/invalid lengths, invalid line numbers and product/non-JSON paths. The actual full repository scan must pass after the compatibility patch. Fresh Android and Backend CI certify this combined correction and preflight packet; a prior failed Task015 run is not reused.
+
+The host preflight script is validated for shell syntax, invalid-port rejection, read-only commands and explicit local-versus-OVH evidence boundaries. No real server, peer, tunnel, rollback, throughput or physical-TV proof follows from its local checks.

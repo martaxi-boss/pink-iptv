@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014-MAIN",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T21:12:13.040045+00:00",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Current Owner requests canonical full audit and automatic project continuation. Live Project Leader66db27d standing grant covers promotion of the independently audited existing004B/backend/session composition. Task014 passed immutable authorization, generic policy, exact CI37153153758/37153153811 with both push contexts green, preserved product/history and no post-CI material drift. Exact PR13 head951e5477/base84fe2dff revalidated; ordinary task prohibitions remain, this separately binds only normal merge. No release/deploy/provider/VPS/secret/peer/paid effect."
+  },
+  "target": {
+    "kind": "pull_request",
+    "identifier": "13",
+    "revision": "951e5477fb59fc5ad69375711fdf7dbcafa2e412",
+    "base_revision": "84fe2dfffd4d381f45bd9b88a0983c122ba42ee4",
+    "environment": "main"
+  }
+}

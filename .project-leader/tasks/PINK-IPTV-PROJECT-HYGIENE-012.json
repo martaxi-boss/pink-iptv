@@ -1,0 +1,119 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-PROJECT-HYGIENE-012",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T18:11:52.953420+00:00",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner requests hygiene. Reconcile docs on the live PR13 development composition, where the certified scanner filter already exists; close superseded PR4. Task011 candidate is rejected because it touched a protected workflow under E1. Preserve workflows, product, SQL/tests/history. Integrate only hygiene into the existing development branch after fresh Android/Backend CI; no main promotion."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "c6142d76e84731bb675ff9e75be982e0e6cfb540",
+    "task_branch": "builder/project-hygiene-012"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "docs/ARCHITECTURE.md",
+    "docs/UX_STRUCTURE.md",
+    "docs/IMPLEMENTATION_PLAN.md",
+    "docs/MEGA_OTT_INTEGRATION.md",
+    "docs/INFRASTRUCTURE.md",
+    "docs/HYGIENE_012.md",
+    ".project-leader/tasks/PINK-IPTV-PROJECT-HYGIENE-012.json",
+    ".project-leader/results/PINK-IPTV-PROJECT-HYGIENE-012.json",
+    ".project-leader/recovery-events/PINK-IPTV-PROJECT-HYGIENE-012/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request",
+    "merge_development_branch"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "force_push",
+    "modify_historical_authorizations",
+    "delete_active_migrations_or_tests",
+    "promote_pr13",
+    "runtime_or_ovh_mutation",
+    "control_plane_mutation",
+    "change_ci_workflows"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Runtime and history preserved",
+    "Obsolete workstream convergence",
+    "Documentation consistency",
+    "Secret filter preserves credential detection"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "pink-iptv-v1",
+    "path": "projects/policies/pink-iptv.json",
+    "sha256": "95ea2875af179ae32962dbf337a985cd513a8cd6af4d006167c4bb61cdf07c34",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "ca2916d3c4ff46fef7783a4c081c49697a25dfbf"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "terminal_condition": "Hygiene integrated into the existing PR13 development branch, with exact fresh Android and Backend CI and independent canonical v2 audit; PR4 closed; main/product/workflows/migrations/tests/history preserved.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1"
+}

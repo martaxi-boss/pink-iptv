@@ -1,0 +1,86 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016.json",
+  "authorization_commit_sha": "e5e6c502127bc6e8483f0611c333b7caf4b2b9f9",
+  "authorization_sha256": "c3b8969512857256067fd5350fb273a48a1312a6014898990611e034b1a6e0ed",
+  "implementation_head_sha": "358f0e88237d4b7721135ef9b4d1a6befc35a335",
+  "branch": "builder/transition-scan-preflight-016",
+  "pr_number": 28,
+  "recorded_at": "2026-10-03T21:55:47.910Z",
+  "changes": [
+    ".github/scripts/filter_scan_findings.py",
+    ".project-leader/tasks/PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016.json",
+    ".project-leader/transitions/PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-SCANNER.authorization.json",
+    "PROJECT_STATE.md",
+    "backend/tests/test_control_scan_filter.py",
+    "docs/SECURITY.md",
+    "docs/TEST_STRATEGY.md",
+    "docs/WIREGUARD_PREFLIGHT.md",
+    "infra/scripts/wireguard-preflight.sh"
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Maintain established encrypted Android credentials, device-local library, exact Xtream origin and bounded004B identity/permission/read-only backend. Prepare only the established service/rollback preflight; no server/peer/tunnel or Windows expansion."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Current generic policy verifier accepts the nine scoped paths from main43829215 to implementation358f0e88. Android/backend app/workflow/windows/shared/design trees are unchanged; only backend scanner regression tests are added."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical external verifier passed on implementation358f0e88: immutable authorizatione5e6c502/digest, exact run-ID data and complete same-SHA push/PR success. Individual endpoint504s were handled with unmodified full fresh GitHub collection payloads; verification logic was not changed."
+    },
+    {
+      "name": "Consequential transition readiness audit",
+      "status": "PASS",
+      "evidence": "Security scanner metadata effect separately authorized before edits. Main promotion binds live exact PR28/head358f0e88/base43829215 only after all required CI/evidence; no production/network/secret effects. Exact standing merge authorization69c66bca precedes normal PR28 merge173e0e529; GitHub main/tree/parents independently verified."
+    },
+    {
+      "name": "Public transition SHA compatibility and secret rejection",
+      "status": "PASS",
+      "evidence": "25 scanner regressions passed locally, Ruff lint/format passed, full repository credential scan passed. Only existing Hex High Entropy lowercase40/64 known-field predicate gains transitions/base_revision; other types/fields/paths/invalid formats remain blocked."
+    },
+    {
+      "name": "Read-only preflight safety and runtime boundary",
+      "status": "PASS",
+      "evidence": "Collector syntax, invalid-port rejection, local output format and mutation/secret-command audit passed. It reads no configs/keys/environments/logs and writes no host state. OVH/rollback/provider/real tunnel/capacity proof remains NOT EXECUTED; current SSH/dispatch capability absent."
+    },
+    {
+      "name": "Current-state closure",
+      "status": "PASS",
+      "evidence": "PROJECT_STATE records verified004B merge71a7b7ff/receipts43829215. PR24 andPR27 are closed unmerged, preserved non-certifying candidates; Task015 journal/result remain on its rejected branch. Security docs distinguish local encryption/history from backend/plaintext/remote collection."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37155196986
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37155196973
+    }
+  ],
+  "material_non_effects": [
+    "No product app/backend runtime/CI workflow/history mutation.",
+    "No release/deploy, actual OVH/rollback/network/peer/real tunnel/provider/secret/data/paid or third-project effect.",
+    "No local trusted gate/protected-main/ruleset enforcement claimed; canonical external audit used."
+  ],
+  "residual_blockers": [],
+  "artifacts": [
+    "docs/WIREGUARD_PREFLIGHT.md",
+    "https://github.com/martaxi-boss/pink-iptv/pull/28"
+  ],
+  "state_observed_at": "2026-10-03T21:55:47.910Z",
+  "post_transition_record": ".project-leader/transitions/PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-MAIN.result.json"
+}

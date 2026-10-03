@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T08:11:40.470772+00:00",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:37089068739:phone-device-proof:df66332caa26668c6e8049c4266a0de91240683e",
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 1,
+  "event": "FAILURE_OBSERVED",
+  "attempt_count": 1,
+  "previous_event_sha256": null,
+  "detail": "Live source-head Android CI 37089068739 attempt 1 completed failure. Phone instrumentation passed; activity launch reported Status ok, then the process-presence probe exited 255. No captured root cause; do not claim a product defect or infrastructure defect from this log alone."
+}

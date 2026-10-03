@@ -1,0 +1,25 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CANONICAL-RECERTIFICATION-009",
+  "terminal_status": "STALE_EXECUTION_PACKET",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-CANONICAL-RECERTIFICATION-009.json",
+  "authorization_commit_sha": "228120d83d61be1e392a0228942d0f104e657653",
+  "authorization_sha256": "a9e68141b9bc826d1f0c91dc69afd03946cd877706da3df9e73d60f7b7ec72ad",
+  "implementation_head_sha": "9a57f3c49c029e7154e1e1b05179b56f068a9378",
+  "branch": "builder/canonical-recertification-009",
+  "pr_number": 20,
+  "recorded_at": "2026-10-03T14:53:34.562Z",
+  "changes": [
+    "Documentation-only recertification prepared; concurrent canonical Task008 in PR13 supersedes the duplicate candidate"
+  ],
+  "validation": [],
+  "ci": [],
+  "material_non_effects": [
+    "No development integration or main merge; no product/workflow mutation"
+  ],
+  "residual_blockers": [
+    "Concurrent valid CURRENT-CONTRACT-CERTIFICATION-008 on PR13 addresses the same defect. Preserve this duplicate branch as history and externally audit the active canonical composition instead."
+  ]
+}

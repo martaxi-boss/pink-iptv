@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CONVERGENCE-PREFLIGHT-007",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-03T10:13:59.568Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:37114668507:phone-device-proof:fbcad5f3e47c6388935d2f87981922a9bfd43119",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": null,
+  "detail": "Live GitHub run 37114668507 attempt1 completed failure: phone-device-proof job 111179913592 failed; android and wireguard-api24-smoke succeeded. Failure observed and persisted before any retry. Exact development merge head fbcad5f3e47c6388935d2f87981922a9bfd43119; audit job logs before authorizing a bounded recovery."
+}

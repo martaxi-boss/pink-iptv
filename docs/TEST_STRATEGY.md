@@ -329,3 +329,7 @@ Automated tests additionally prove that a validated public DNS result is pinned 
 ## Canonical recertification 008
 
 Current acceptance of the existing Stage004B development composition uses Task008 and [its audit](AUDIT_CANONICAL_RECERTIFICATION_008.md). Task007's old Worker Result does not satisfy current structural Recovery ancestry or post-CI material-drift rules. Preserve it as historical evidence; require fresh exact-head Android CI (including API24/API36 device jobs) and Backend CI, immutable v2 authorization and external canonical Supervisor verification for Task008. No new product or real tunnel certification is inferred.
+
+## Canonical recertification 009 — current acceptance
+
+Task009 supersedes Task008 (central digest mismatch) and the Task007 current-certification claim. Use [the current audit](AUDIT_CANONICAL_RECERTIFICATION_009.md), fresh exact-head Android/Backend CI and immutable authorization bound to current canonical policy. Historical task records remain unchanged and cannot certify this candidate.

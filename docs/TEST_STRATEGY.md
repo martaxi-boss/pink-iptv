@@ -251,7 +251,7 @@ DEPLOY = NO. RELEASE = NO. PUBLIC LAUNCH = NO.
 
 ## WireGuard Stage 004A dependency/compliance proof
 
-Status: ACTIVE.
+Status: COMPLETE / MERGED.
 
 Stage 004A keeps Phase 3 behavior intact while adding dependency/compliance gates for the official `com.wireguard.android:tunnel:1.0.20260102` release.
 
@@ -271,6 +271,25 @@ Required CI/device evidence includes:
 The verifier prints native filenames and artifact metadata only. It must not print VPN configuration, keys, provider credentials or other secret material.
 
 Stage 004A does not prove real VPN connectivity. Foreground-service/service-survival behavior, network transitions, always-on/lockdown semantics, real peer provisioning and measured tunnel bandwidth remain later Phase 4 runtime gates.
+
+## WireGuard Stage 004B identity/permission/adapter proof
+
+Status: ACTIVE.
+
+004B must preserve all 004A payload/compliance gates and additionally prove:
+
+- deterministic JVM coverage for identity absent/create/reuse, storage/decrypt/parse failure and corruption without silent rotation;
+- deterministic permission flow covering explicit user action, system Intent required, already-authorized, RESULT_OK, denial and repeated preparation;
+- adapter coverage for backend version, fresh DOWN state, callback mapping, TOGGLE non-persistence, safe backend failure and zero `setState(UP)` calls;
+- real Android Keystore/DataStore device identity persistence with alias separation from IPTV credential storage;
+- plaintext WireGuard private key absent from the DataStore file;
+- IPTV logout preserves VPN identity;
+- merged manifest exposes official `GoBackend$VpnService` with `BIND_VPN_SERVICE` and `SUPPORTS_ALWAYS_ON=false`;
+- Settings preparation action remains touch/D-pad reachable without an ON/OFF switch or connected-state claim;
+- API36 phone proof retains all Phase 3/004A regression classes plus identity/manifest/Settings tests;
+- dedicated API24 runtime smoke proves app startup, GoBackend native load/version, VPN identity Keystore/DataStore, merged-manifest policy and no crash/ANR.
+
+004B automated permission tests must not physically accept the Android system VPN dialog. No automated 004B test may establish a real tunnel or contact a VPN server.
 
 ## Future client/platform matrices retained
 

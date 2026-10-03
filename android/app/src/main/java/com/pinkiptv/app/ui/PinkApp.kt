@@ -21,6 +21,7 @@ import com.pinkiptv.app.state.RootScreen
 import com.pinkiptv.app.ui.navigation.AuthenticatedShell
 import com.pinkiptv.app.ui.screens.LoginScreen
 import com.pinkiptv.app.ui.screens.SplashScreen
+import com.pinkiptv.app.vpn.VpnPreparationState
 
 @Composable
 fun PinkApp(
@@ -32,12 +33,14 @@ fun PinkApp(
     seriesDetail: SeriesDetailUiState,
     epgState: EpgUiState,
     libraryState: LibraryUiState,
+    vpnPreparationState: VpnPreparationState,
     selectedPlayback: PlaybackRef?,
     selectedPlaybackStartPositionMs: Long,
     playbackFacadeFactory: PlaybackFacadeFactory,
     playbackActivityRecorder: PlaybackActivityRecorder,
     onLogin: (String, String) -> Unit,
     onLogout: () -> Unit,
+    onPrepareVpn: () -> Unit,
     onLoadCatalog: (CatalogKind) -> Unit,
     onSelectCatalogCategory: (CatalogKind, String?) -> Unit,
     onLoadSearch: () -> Unit,
@@ -80,6 +83,7 @@ fun PinkApp(
             seriesDetail = seriesDetail,
             epgState = epgState,
             libraryState = libraryState,
+            vpnPreparationState = vpnPreparationState,
             selectedPlayback = selectedPlayback,
             selectedPlaybackStartPositionMs = selectedPlaybackStartPositionMs,
             playbackFacadeFactory = playbackFacadeFactory,
@@ -111,6 +115,7 @@ fun PinkApp(
             onSelectLibraryPlayback = onSelectLibraryPlayback,
             onClearPlayback = onClearPlayback,
             onLogout = onLogout,
+            onPrepareVpn = onPrepareVpn,
         )
     }
 }

@@ -1,0 +1,111 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T01:50:09.102Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "summary": "Prevent delayed login/bootstrap responses and credential operations from restoring a session after logout or overwriting a newer login. Add deterministic lifecycle regressions and use the canonical v2 SHA metadata scanner boundary.",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND"
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "f30faa0080fef20f4e477d219630914d8656422d",
+    "task_branch": "builder/android-session-lifecycle-006",
+    "pr_number": null
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "android/**",
+    ".github/scripts/**",
+    ".project-leader/**",
+    "docs/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "peer_creation",
+    "real_vpn_tunnel_activation",
+    "vpn_server_or_ovh_mutation",
+    "modify_historical_v1_records",
+    "change_ci_workflows"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Delayed authentication cannot restore logout or overwrite newer session",
+    "Credential persistence serializes save and clear across logout",
+    "V2 metadata scanner retains non-metadata findings"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "pink-iptv-v1",
+    "path": "projects/policies/pink-iptv.json",
+    "sha256": "c1a19d44de2cfb9198f261100fa7ac179b56b0e464813e4746a3128862b4375d",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "a8eeff8f25ef9f632ed2542c167b2137a439f705"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "terminal_condition": "Session lifecycle regressions, scanner probes and both CI succeed on implementation SHA. Nested PR targets existing catalog remediation branch; no merge/deploy/release/provider or infrastructure access.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1"
+}

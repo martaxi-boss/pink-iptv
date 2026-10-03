@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001",
+  "repository": "martaxi-boss/pink-iptv",
+  "updated_at": "2026-10-02T22:53:00Z",
+  "last_durable_step": "API24 harness remediation is durable on the PR branch. New Backend CI run 37074658324 passed Ruff, Alembic and 63 tests, then failed only because detect-secrets classified the Task Authorization base_sha field as a Hex High Entropy String.",
+  "action_fingerprint": "PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001|control-record-secret-scan|base_sha-false-positive",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "strategy": "Do not retry unchanged CI. Keep the API24 remediation intact and delegate the secret-scanner compatibility fix to a separate bounded E1 authorization that explicitly includes both CI workflow files; this task does not widen its own mutation scope.",
+  "strategy_generation": 2,
+  "last_error": "Backend CI run 37074658324 failed only at Secret scan: .project-leader/tasks/PINK-IPTV-WIREGUARD-004B-CI-RECOVERY-001.json base_sha was reported as Hex High Entropy String after all backend validations passed.",
+  "next_step": "Supervisor creates an independent bounded Task Authorization for Project Leader control-record SHA false-positive handling in Android and Backend CI, then Builder applies the narrow scanner compatibility fix and returns to full CI audit.",
+  "status": "ACTIVE"
+}

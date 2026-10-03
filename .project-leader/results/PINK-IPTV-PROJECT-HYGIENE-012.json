@@ -1,0 +1,78 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-PROJECT-HYGIENE-012",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-PROJECT-HYGIENE-012.json",
+  "authorization_commit_sha": "1731627abeaebd1611cefcc3b8c2fdfcc1811ab5",
+  "authorization_sha256": "c752080d8f2fc2ee9c4bfcab1d15f276f9329778b1a1df4a02801b54e1ee2370",
+  "implementation_head_sha": "2885d6851d9ac79e67d6a9ed87d4682877514793",
+  "branch": "builder/project-hygiene-012",
+  "pr_number": 23,
+  "recorded_at": "2026-10-03T20:29:40.663715+00:00",
+  "changes": [
+    ".project-leader/tasks/PINK-IPTV-PROJECT-HYGIENE-012.json",
+    "docs/ARCHITECTURE.md",
+    "docs/HYGIENE_012.md",
+    "docs/IMPLEMENTATION_PLAN.md",
+    "docs/INFRASTRUCTURE.md",
+    "docs/MEGA_OTT_INTEGRATION.md",
+    "docs/UX_STRUCTURE.md"
+  ],
+  "validation": [
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Current canonical verifier 66db27d accepts immutable historical Task012 bound to ca2916d policy; seven authorised paths, no protected mutation."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Fresh GitHub API proves run IDs, exact implementation SHA, same-SHA push/PR success, immutable authorization digest/ancestry and no rerun journal required."
+    },
+    {
+      "name": "Runtime and history preserved",
+      "status": "PASS",
+      "evidence": "Android/backend/.github/infra/windows/shared/design Git tree IDs identical to starting c6142d; SQL migrations and tests unchanged."
+    },
+    {
+      "name": "Obsolete workstream convergence",
+      "status": "PASS",
+      "evidence": "PR4 and rejected candidate PR22 are CLOSED/unmerged. PR23 is the sole hygiene development change. PR23 MERGED into development at c89f3a6d8d0bc9cf3f123ded218280acc22fab72 after exact-target audit."
+    },
+    {
+      "name": "Documentation consistency",
+      "status": "PASS",
+      "evidence": "Merged Phase3/004A distinguished from pending004B and future Windows/real-tunnel stages; architecture/UX/integration/operational docs reconciled."
+    },
+    {
+      "name": "Secret filter preserves credential detection",
+      "status": "PASS",
+      "evidence": "Baseline scanner unchanged; earlier full scan passed and password/non-hex/product-path/invalid-line negative controls remained blocked."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37143358663
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37143358661
+    }
+  ],
+  "material_non_effects": [
+    "Main unchanged; no PR13 main promotion, deployment, release, tunnel, peer, OVH/provider/secret/payment/history effects.",
+    "No product source, dependency, workflow, SQL migration or test changes.",
+    "No project-local trusted gate claimed."
+  ],
+  "residual_blockers": [],
+  "state_observed_at": "2026-10-03T20:31:23.869Z",
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/23",
+    "development merge c89f3a6d8d0bc9cf3f123ded218280acc22fab72"
+  ]
+}

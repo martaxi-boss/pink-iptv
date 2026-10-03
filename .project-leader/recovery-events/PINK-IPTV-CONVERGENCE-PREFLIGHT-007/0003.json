@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CONVERGENCE-PREFLIGHT-007",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-03T10:27:20.114Z",
+  "event": "RECOVERED",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:37114668507:phone-device-proof:fbcad5f3e47c6388935d2f87981922a9bfd43119",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "f7ab2fc63947d630f4121d8135d042c7871394b645d90107ab37bfd10063a9a7",
+  "detail": "After live run37114668507 attempt2 completed success on unchanged integration head fbcad5f3e47c6388935d2f87981922a9bfd43119, verified job111182289406 actual emitted PHONE_DEVICE_PROOF=PASS, PHONE_LAUNCH_SMOKE=PASS, PHONE_CRASH_ANR=NONE and WG_SETTINGS_TOUCH_AND_SIMULATED_TV=PASS. Successful Android/API24 jobs retained. Durable FAILURE_OBSERVED and RETRY_AUTHORIZED precede retry start10:15:25Z (authorization commit10:15:06Z). Recovery is recorded only after observed run/job/log success; no code or workflow mutation."
+}

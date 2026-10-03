@@ -1,0 +1,79 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CONVERGENCE-PREFLIGHT-007",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-CONVERGENCE-PREFLIGHT-007.json",
+  "authorization_commit_sha": "eac641f04ab4e7b9ef06c2d314ffd630623ed4d4",
+  "authorization_sha256": "6922f306af66bdc14ff35f7a4390034793548f417a9379f892b9a4cf0baf2dce",
+  "implementation_head_sha": "fbcad5f3e47c6388935d2f87981922a9bfd43119",
+  "branch": "builder/convergence-preflight-007",
+  "pr_number": 18,
+  "recorded_at": "2026-10-03T10:30:06.673Z",
+  "changes": [
+    "Exact authorized PR13/14/15 development composition, preserving PR13 workflows and v2 scanner",
+    "Immutable historical task/result/checkpoint reconciliation and explicit rejection of retrospective task006 Recovery",
+    "PR18 development integration; PR14/15 closed as absorbed, source branches preserved",
+    "Task007 causal append-only failure/retry/recovered journal and final evidence index"
+  ],
+  "validation": [
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Canonical c426 managed policy validator on live development-base diff; exact Task007 base53a208a retained. No workflow or protected-file mutation by Task007; historical JSON byte-identical."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical c426 authorization-byte/digest, ancestry, exact implementation-SHA CI and causal journal functions executed on live connector-fetched GitHub payloads. Final evidence-only HEAD is separately audited before promotion."
+    },
+    {
+      "name": "Exact workstream composition and conflict resolution",
+      "status": "PASS",
+      "evidence": "Independent tree reconstruction from main and PR13/14/15: zero unexpected blobs. Preserve all PR13 workflow/scanner blobs, import source code/tests/docs verbatim. Merge fbcad5f has tested d310d56 tree4501de0; PR14/15 heads are ancestors."
+    },
+    {
+      "name": "Retroactive recovery rejected and historical evidence superseded",
+      "status": "PASS",
+      "evidence": "Current canonical verifier rejects task006 RETRY_AUTHORIZED commit08:16:27 after retry08:03:57. Historical records untouched and indexed as snapshots. New Task007 retry authorized commit10:15:06 before attempt2 start10:15:25; RECOVERED commit10:27:21 after actual success."
+    },
+    {
+      "name": "Combined API24 and API36 device proof",
+      "status": "PASS",
+      "evidence": "Post-integration Android37114668507 attempt2 success: job111182289406 emits PHONE_DEVICE_PROOF/LAUNCH_SMOKE/settings touch+simulatedTV PASS and CRASH_ANR NONE. API24 original successful smoke retained; actual native/Keystore/manifest/startup markers verified. Backend37114668515 attempt1 success; initial combined Backend37113330880:70 tests, migration and scan."
+    },
+    {
+      "name": "Convergence preflight exhausts covered preparation",
+      "status": "PASS",
+      "evidence": "Authorized implementation/overlap/evidence corrections and development integration completed; redundant PR14/15 reconciled; main unchanged. Post-integration CI succeeded and causal Recovery audited. Final metadata HEAD receives a separate current CI/Supervisor acceptance audit before any main Human Gate; no uncovered stage or infrastructure action executed."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37114668507
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37114668515
+    }
+  ],
+  "artifacts": [
+    "docs/AUDIT_CONVERGENCE_PREFLIGHT_007.md",
+    ".project-leader/recovery-events/PINK-IPTV-CONVERGENCE-PREFLIGHT-007/0001.json",
+    ".project-leader/recovery-events/PINK-IPTV-CONVERGENCE-PREFLIGHT-007/0002.json",
+    ".project-leader/recovery-events/PINK-IPTV-CONVERGENCE-PREFLIGHT-007/0003.json"
+  ],
+  "material_non_effects": [
+    "Main unchanged; no main merge/release/deploy",
+    "No workflow or production/provider/OVH/server/peer/tunnel change",
+    "No control-plane mutation or project-specific Project Leader adaptation",
+    "No branch/history deletion, force push or historical authorization rewrite",
+    "No project-local trusted gate claimed; canonical external Supervisor audit used",
+    "Historical task006 retry remains invalid; no retroactive authorization fabricated"
+  ],
+  "residual_blockers": []
+}

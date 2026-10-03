@@ -24,6 +24,10 @@ import com.pinkiptv.app.model.toCatalogKindOrNull
 import com.pinkiptv.app.model.toCatalogUiItem
 import com.pinkiptv.app.model.toPlaybackRef
 import com.pinkiptv.app.storage.CredentialStore
+import com.pinkiptv.app.vpn.VpnIdentityStore
+import com.pinkiptv.app.vpn.VpnPermissionGateway
+import com.pinkiptv.app.vpn.VpnPreparationController
+import com.pinkiptv.app.vpn.VpnPrepareAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -35,6 +39,8 @@ class AppViewModel(
     localLibraryRepository: LocalLibraryRepository,
     activeLibraryProfileStore: ActiveLibraryProfileStore,
     private val playbackActivityRecorder: PlaybackActivityRecorder,
+    vpnIdentityStore: VpnIdentityStore,
+    vpnPermissionGateway: VpnPermissionGateway,
 ) : ViewModel() {
     private val sessionController = SessionController(
         repository = repository,
@@ -66,6 +72,11 @@ class AppViewModel(
         profileStore = activeLibraryProfileStore,
         scope = viewModelScope,
     )
+    private val vpnPreparationController = VpnPreparationController(
+        identityStore = vpnIdentityStore,
+        permissionGateway = vpnPermissionGateway,
+        scope = viewModelScope,
+    )
 
     val uiState = sessionController.state
     val liveCatalog = catalogController.live
@@ -77,6 +88,7 @@ class AppViewModel(
     val selectedPlayback = playbackSelectionController.selection
     val selectedPlaybackStartPositionMs = playbackSelectionController.resumePositionMs
     val library = libraryController.state
+    val vpnPreparation = vpnPreparationController.state
 
     init {
         viewModelScope.launch {
@@ -98,6 +110,7 @@ class AppViewModel(
     }
 
     fun logout() {
+        vpnPreparationController.onIptvLogout()
         playbackSelectionController.clear()
         seriesDetailController.clear()
         epgController.clear()
@@ -106,6 +119,17 @@ class AppViewModel(
         libraryController.clearVisible()
         playbackActivityRecorder.clearSession()
         sessionController.logout()
+    }
+
+    fun prepareVpn(): VpnPrepareAction =
+        vpnPreparationController.prepare()
+
+    fun onVpnPermissionResult(granted: Boolean) {
+        vpnPreparationController.onPermissionResult(granted)
+    }
+
+    fun onVpnPermissionLaunchFailed() {
+        vpnPreparationController.onPermissionLaunchFailed()
     }
 
     fun loadCatalog(kind: CatalogKind) {
@@ -249,6 +273,8 @@ class AppViewModel(
         private val localLibraryRepository: LocalLibraryRepository,
         private val activeLibraryProfileStore: ActiveLibraryProfileStore,
         private val playbackActivityRecorder: PlaybackActivityRecorder,
+        private val vpnIdentityStore: VpnIdentityStore,
+        private val vpnPermissionGateway: VpnPermissionGateway,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -261,6 +287,8 @@ class AppViewModel(
                 localLibraryRepository = localLibraryRepository,
                 activeLibraryProfileStore = activeLibraryProfileStore,
                 playbackActivityRecorder = playbackActivityRecorder,
+                vpnIdentityStore = vpnIdentityStore,
+                vpnPermissionGateway = vpnPermissionGateway,
             ) as T
         }
     }

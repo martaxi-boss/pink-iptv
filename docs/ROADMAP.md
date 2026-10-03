@@ -29,11 +29,15 @@ Implemented scope includes authenticated Xtream runtime, Live/VOD/Series catalog
 
 ## Phase 4 — WireGuard
 
-Stage 004A dependency/compliance foundation: ACTIVE.
+Stage 004A dependency/compliance foundation: COMPLETE / MERGED.
 
-Stage 004A pins the official released Android tunnel dependency, intentionally raises the Android minimum to API 24, verifies the released native payload and proves GoBackend native loadability without creating a real tunnel. No VPN server, peer, OVH, routing, firewall or NAT mutation is part of 004A.
+Stage 004A pins the official released Android tunnel dependency, intentionally raises the Android minimum to API 24, verifies the released native payload and proves GoBackend native loadability without creating a real tunnel. Approved head: `6d6611d8fd0cc784770fb9ec56d025bd87963b0a`; merge: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
 
-Later Phase 4 gates remain rollback/snapshot prerequisites, existing-service audit, one test peer, real Android tunnel integration, foreground-service/service-survival validation, networking safety, measured bandwidth/capacity and no production onboarding.
+Stage 004B identity/permission/adapter: ACTIVE.
+
+004B creates/reuses only device-install local identity after explicit Android VPN authorization, protects private key material with a dedicated Keystore/DataStore boundary, adds preparation-state/UI/permission plumbing, keeps always-on disabled and closes the API24 lower-bound runtime smoke. No real WireGuard Config, tunnel activation, peer, VPN server, OVH, routing, firewall or NAT mutation is authorized.
+
+Later Phase 4 gates remain rollback/snapshot prerequisites, existing-service audit, one test peer, first real Android tunnel integration, foreground-service/service-survival validation, networking safety, measured bandwidth/capacity and no production onboarding.
 
 ## Phase 5 — Windows
 

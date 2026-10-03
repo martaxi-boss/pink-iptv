@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-STALE-CATALOG-001",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-ANDROID-STALE-CATALOG-001.json",
+  "implementation_head_sha": "d15da5baf271f7f0fc08405b7fc2c01d9feb2bd4",
+  "branch": "builder/android-stale-catalog-001",
+  "pr_number": 15,
+  "recorded_at": "2026-10-03T00:00:59.473486+00:00",
+  "changes": [
+    "Generation-guarded catalog clear/loading and delayed responses",
+    "Generation-guarded same-ID Series detail requests",
+    "Four deterministic delayed-response regressions",
+    "Narrow scanner metadata helper reused in CI"
+  ],
+  "validation": [
+    {
+      "name": "Catalog clear invalidates queued and suspended requests",
+      "status": "PASS",
+      "evidence": "Android CI 37078859769: JVM tests, lint, APK/instrumentation assembly and API36 phone regression SUCCESS; bounded source/diff review"
+    },
+    {
+      "name": "Stale catalog success and failure cannot overwrite a new catalog",
+      "status": "PASS",
+      "evidence": "Android CI 37078859769: JVM tests, lint, APK/instrumentation assembly and API36 phone regression SUCCESS; bounded source/diff review"
+    },
+    {
+      "name": "Series same-ID requests accept only the newest generation",
+      "status": "PASS",
+      "evidence": "Android CI 37078859769: JVM tests, lint, APK/instrumentation assembly and API36 phone regression SUCCESS; bounded source/diff review"
+    },
+    {
+      "name": "JVM tests, lint, APK and instrumentation assembly pass",
+      "status": "PASS",
+      "evidence": "Android CI 37078859769: JVM tests, lint, APK/instrumentation assembly and API36 phone regression SUCCESS; bounded source/diff review"
+    },
+    {
+      "name": "No production or VPN effect",
+      "status": "PASS",
+      "evidence": "Android CI 37078859769: JVM tests, lint, APK/instrumentation assembly and API36 phone regression SUCCESS; bounded source/diff review"
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37078859769
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37078859820
+    }
+  ],
+  "material_non_effects": [
+    "No merge",
+    "No deploy/release",
+    "No provider access",
+    "No VPN, peer, OVH/network or production mutation",
+    "Control repository read-only"
+  ],
+  "residual_blockers": [
+    "Owner approval required for merge; later provider/physical-TV/production gates remain"
+  ]
+}

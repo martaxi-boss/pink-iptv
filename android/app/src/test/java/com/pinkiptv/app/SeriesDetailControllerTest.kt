@@ -13,6 +13,8 @@ import com.pinkiptv.app.model.SeriesItem
 import com.pinkiptv.app.model.SeriesSeason
 import com.pinkiptv.app.model.VodItem
 import com.pinkiptv.app.state.SeriesDetailController
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -78,6 +80,29 @@ class SeriesDetailControllerTest {
         assertEquals(SeriesDetailPhase.Idle, controller.state.value.phase)
         assertEquals(null, controller.state.value.selectedSeriesId)
         assertTrue(controller.state.value.episodes.isEmpty())
+    }
+
+    @Test
+    fun olderSameSeriesResponseCannotOverwriteNewerRequest() = runTest {
+        val oldDetail = CompletableDeferred<CatalogResult<SeriesDetail>>()
+        var calls = 0
+        val repository = object : CatalogRepository by FakeRepository(CatalogResult.Success(detail())) {
+            override suspend fun seriesInfo(seriesId: String): CatalogResult<SeriesDetail> {
+                calls += 1
+                return if (calls == 1) oldDetail.await() else CatalogResult.Success(
+                    detail().copy(name = "Newest"),
+                )
+            }
+        }
+        val controller = SeriesDetailController(repository, this)
+        controller.openSeries(seriesItem())
+        runCurrent()
+        controller.clear()
+        controller.openSeries(seriesItem())
+        runCurrent()
+        oldDetail.complete(CatalogResult.Success(detail().copy(name = "Stale")))
+        advanceUntilIdle()
+        assertEquals("Newest", controller.state.value.title)
     }
 
     private fun seriesItem() = CatalogUiItem(

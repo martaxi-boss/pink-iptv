@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-03T15:24:01.781Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:final-43e3b6e1:api24-kvm-permissions",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": null,
+  "detail": "Final automatic Android run37132248620 API24 job111230740712 failed Verify KVM with exit1 after udev setup, before application tests. /dev/kvm existed; access check did not pass. Exact host root cause remains unproven; prior required API24 job111227458656 passed on unchanged product tree. Persist failure before authorizing a fresh descendant-SHA retry; do not certify an old-SHA rerun. Existing phone job must become terminal before publishing the new retry head."
+}

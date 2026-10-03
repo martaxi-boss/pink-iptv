@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-02T23:35:26Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "summary": "Complete the existing WireGuard 004B Settings proof by running explicit simulated-TV D-pad and touch tests on the API36 phone emulator; document audited scope and remaining human gates. No real VPN or infrastructure action.",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND"
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "84fe2dfffd4d381f45bd9b88a0983c122ba42ee4",
+    "task_branch": "builder/wireguard-004b-identity-permission-adapter",
+    "pr_number": 13
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "android/app/src/androidTest/java/com/pinkiptv/app/VpnSettingsDpadTest.kt",
+    ".github/workflows/android-ci.yml",
+    "docs/AUDIT_2026-10-03.md",
+    ".project-leader/tasks/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json",
+    ".project-leader/results/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json",
+    ".project-leader/checkpoints/PINK-IPTV-WIREGUARD-004B-SETTINGS-PROOF-004.json"
+  ],
+  "allowed_actions": [
+    "edit_settings_tests",
+    "edit_android_ci_test_selection",
+    "document_audit",
+    "create_commits",
+    "run_ci",
+    "update_existing_pr"
+  ],
+  "prohibited_actions": [
+    "exclude_all_project_leader_records_from_secret_scanning",
+    "ignore_non_sha_findings",
+    "merge_to_main",
+    "release_or_publish",
+    "production_deploy",
+    "vpn_server_or_ovh_mutation",
+    "peer_creation",
+    "real_vpn_tunnel_activation",
+    "production_secret_change",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "force_push_or_destructive_rewrite",
+    "branch_protection_or_ruleset_change",
+    "material_architecture_change",
+    "material_scope_change",
+    "mutation_outside_martaxi-boss/pink-iptv"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "vpn_server_or_ovh_mutation",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Settings touch action invokes preparation without activating a tunnel",
+    "Simulated TV D-pad reaches prepare, logout and back",
+    "API36 Settings tests execute without skips",
+    "API24 smoke and API36 regression pass",
+    "No real tunnel, peer or infrastructure mutation"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "terminal_condition": "Settings proof and required CI pass; audit records residual physical-TV/provider and merge gates.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

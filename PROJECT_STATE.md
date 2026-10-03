@@ -1,8 +1,24 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-10-02
-Phase: Phase 4 — WireGuard Stage 004A — DEPENDENCY + COMPLIANCE FOUNDATION ACTIVE
+Date: 2026-10-03
+Phase: Phase 4 — WireGuard Stage 004B — IMPLEMENTED / MAIN PROMOTION PENDING
 Public launch: NO
+
+## Current canonical audit / continuation 014
+
+Canonical Project Leader: `66db27d8118cfa527a21466b8a5034acd5b4395e`.
+Live starting main: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
+Audited PR13 development composition: `196e50895d8239724352ef2d7e1fb8ac6fec754e`.
+
+004B identity, Android VPN permission and read-only backend adapter are implemented. Backend validation privacy and stale Android session/catalog/series/preparation fixes are part of the same composition. No real tunnel has been implemented or certified. Task014 reconciles this state and supplies the independent audit in [canonical audit](docs/AUDIT_CANONICAL_014.md).
+
+Task012 hygiene is complete and integrated through PR23. Its certified implementation `2885d6851d9ac79e67d6a9ed87d4682877514793` passed Android CI `37143358663`/`37143356834` and Backend CI `37143358661`/`37143356899`; all four exact-SHA contexts were re-read successfully. The development final head above differs only by Task012 result metadata. Task014 documentation changes require their own fresh implementation certificate; see its durable Worker Result and live PR receipt for actual acceptance. Preparation text is not future PASS evidence.
+
+Task008 certification/recovery is closed, superseded for the later documentation composition by Task012. Task007's old-SHA recovery and Task006 retrospective authorization remain historical, non-certifying records. Preserve them; do not resume their old next steps or reinterpret them as current grants.
+
+PR4 and rejected PR22/24 are closed unmerged. PR14/15 changes were absorbed through development PR18; PR19/20 are closed. PR13 is the sole application promotion candidate. Current consequential effects resolve through the canonical standing-authority contract and exact transition records, rather than an automatic merge Human Gate. No release, deployment, provider, OVH, peer, secret or paid effect follows from this audit.
+
+Main promotion remains pending at the time this document is authored. The Task014 exact transition result and live GitHub main/PR state are authoritative after integration. Real-provider and physical-TV evidence remains outstanding. Next WireGuard server/tunnel work first requires current service audit, rollback evidence and an executable authorized access path.
 
 ## Governance
 
@@ -21,8 +37,8 @@ BUILDER: implements only approved orders and reports evidence.
 - Mega response password and customer Xtream password are never persisted.
 - Per-line `dns_link` is authoritative and is never guessed or rewritten to another host/scheme.
 - Local mapping has no invented provider status field.
-- WireGuard remains a later phase and is not implemented by Order 001 or Order 002.
-- Android Shell 002 and Stages 003A/003B/003C/003D/003E/003F are complete and merged. Phase 3 Android implementation is COMPLETE / MERGED; Phase 4 WireGuard is the next separately supervised phase. Implementation completion does not imply production or public-launch approval.
+- WireGuard Phase 4 is active under staged supervision. Stage 004A dependency/compliance foundation is COMPLETE / MERGED; Stage 004B is limited to device-install identity, Android VPN permission and a read-only GoBackend adapter. No real tunnel is authorized in 004B.
+- Android Shell 002 and Stages 003A/003B/003C/003D/003E/003F are complete and merged. Phase 3 Android implementation is COMPLETE / MERGED. Phase 4 WireGuard is active in separately supervised stages; implementation completion does not imply production or public-launch approval.
 - Windows remains a later phase.
 - GitHub remains source of truth.
 
@@ -175,7 +191,7 @@ Evidence distinction is preserved:
 
 - Foundation / Mega/Xtream authentication proof: CERTIFIED;
 - later Phase 3 real-provider proof for Live playback, VOD playback, Series info/episode playback, EPG retrieval, Catch Up playback and Global Search catalog sources: NOT CERTIFIED / NOT EXECUTED WITH SECURE CREDENTIALS where applicable;
-- Android Shell 002 physical TV proof: CERTIFIED / PASS;
+- Android Shell 002 Android TV emulator proof: CERTIFIED / PASS; physical-TV proof is not established by that emulator evidence;
 - physical-TV proof for later Phase 3 feature surfaces (Live/VOD player, Series detail/episode player, EPG/Catch Up, Favorites/History/Continue Watching and Global Search): NOT SEPARATELY CERTIFIED.
 
 Deterministic Android TV/D-pad source tests and CI compilation do not equal physical-TV certification. The outstanding provider/device items are residual validation gates, not known code blockers.
@@ -184,27 +200,7 @@ PUBLIC LAUNCH = NO.
 DEPLOY = NO.
 RELEASE = NO.
 
-Phase 4 — WireGuard is next and remains a separate supervised phase. It retains its own gates for snapshot/rollback, existing-service audit, one test peer, Android tunnel integration, networking safety, measured bandwidth and no production onboarding.
-
-## Phase 4 / Stage 004A — ACTIVE
-
-Stage 004A integrates the official released WireGuard Android tunnel dependency as a dependency/compliance foundation only.
-
-- dependency: `com.wireguard.android:tunnel:1.0.20260102`;
-- upstream release commit: `09b75c2bd37f749e2a8c85876394854113c74be7`;
-- Android minimum support intentionally moves from API 23 to API 24 (Android 7.0);
-- compileSdk remains 36, targetSdk remains 36 and JDK remains 17;
-- PINK consumes the released Maven AAR; WireGuard source is not vendored;
-- future tunnel architecture is official non-root GoBackend only;
-- Stage 004A verifies AAR/APK native payload and GoBackend native loadability without establishing a VPN tunnel;
-- no VPN consent, peer creation, OVH mutation, routing/firewall/NAT mutation or real VPN connection is authorized in 004A;
-- foreground-service/service-survival behavior on API 26+ remains a later real-tunnel runtime gate.
-
-Phase 3 Android implementation remains COMPLETE / MERGED and its approved Xtream, Media3, Room, EPG/Catch Up, Favorites/History/Continue Watching and Global Search architecture remains unchanged.
-
-PUBLIC LAUNCH = NO.
-DEPLOY = NO.
-RELEASE = NO.
+Phase 4 — WireGuard is active under staged supervision. Stage 004A is COMPLETE / MERGED and Stage 004B is ACTIVE. Later gates remain snapshot/rollback, existing-service audit, one test peer, first real Android tunnel activation, networking safety, measured bandwidth and no production onboarding.
 
 ## Remaining technical gates
 
@@ -241,3 +237,22 @@ Beyond Android Shell 002, separate orders are still required for:
 5. future production/provider/device validation for evidence that remains not separately certified.
 
 Public launch remains: NO.
+
+
+## Phase 4 / Stage 004A — COMPLETE / MERGED
+
+Stage 004A approved head: `6d6611d8fd0cc784770fb9ec56d025bd87963b0a`.
+
+Stage 004A merge commit: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
+
+Stage 004A pins `com.wireguard.android:tunnel:1.0.20260102`, raises Android minimum support to API 24, enables core-library desugaring, preserves only `libwg-go.so` in the PINK APK and proves official GoBackend native loadability without requesting VPN permission or establishing a tunnel.
+
+## Phase 4 / Stage 004B — IMPLEMENTED / MAIN PROMOTION PENDING
+
+Stage 004B adds device-install-scoped WireGuard identity, a dedicated Android Keystore AES-256-GCM wrapping key (`pink_iptv_wireguard_identity_v1`), dedicated `pink_wireguard_identity` DataStore persistence, explicit Android `VpnService.prepare()` permission handling, a PINK-owned preparation state machine and a thin read-only GoBackend adapter using tunnel name `pink`.
+
+Identity is independent from Xtream accounts and survives IPTV logout. Corrupt encrypted identity fails closed and is never silently rotated. Public UI state contains no private key, PSK, provider URL or IPTV credential.
+
+The merged official GoBackend VpnService is explicitly marked `SUPPORTS_ALWAYS_ON=false` for this stage. 004B does not execute `Backend.setState(... UP ...)`, build a real WireGuard Config, create a peer, contact OVH, modify routing/firewall/NAT or establish a real VPN tunnel.
+
+Public launch: NO.

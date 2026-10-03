@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CONVERGENCE-PREFLIGHT-007",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-03T10:15:05.361Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:37114668507:phone-device-proof:fbcad5f3e47c6388935d2f87981922a9bfd43119",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "6beebc64eeca772f7869c9c874d5a9f65bc6c77b7af1501161ffaf48e4a9f306",
+  "detail": "Authorize one bounded retry of only failed jobs of completed Android run 37114668507 on unchanged fbcad5f3e47c6388935d2f87981922a9bfd43119. Job111179913592 passed all eight instrumentation classes and reported Activity launch Status:ok, then exited255 at the process-presence probe before crash/ANR evidence. Root cause is unproven; transient emulator/launch harness behavior is inferred from the exact same tree's initial full device proof success. Preserve successful jobs. No code/workflow change, no active-run redispatch. This authorization is durably persisted BEFORE calling rerun."
+}

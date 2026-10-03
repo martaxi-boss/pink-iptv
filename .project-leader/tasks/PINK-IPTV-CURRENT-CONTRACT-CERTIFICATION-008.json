@@ -1,0 +1,113 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T14:49:04.266Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner requests live canonical Project Leader verification, PINK IPTV reconstruction, audit and automatic covered remediation. Refresh the existing PR13 development composition certification under the current contract; preserve historical immutable records and product tree. No new product stage or main promotion."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "ca728c6fc107cc786c3f18794f7c72150365f9b1",
+    "task_branch": "builder/wireguard-004b-identity-permission-adapter",
+    "pr_number": 13
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    ".project-leader/tasks/PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008.json",
+    ".project-leader/results/PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008.json",
+    ".project-leader/recovery-events/PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008/**",
+    "docs/AUDIT_CURRENT_CONTRACT_008.md",
+    "PROJECT_STATE.md"
+  ],
+  "allowed_actions": [
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "force_push",
+    "modify_historical_authorizations",
+    "change_ci_workflows",
+    "peer_creation",
+    "real_vpn_tunnel_activation",
+    "vpn_server_or_ovh_mutation",
+    "control_plane_mutation"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Historical recovery structural gap classified",
+    "Product tree preserved",
+    "Convergence preflight"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "pink-iptv-v1",
+    "path": "projects/policies/pink-iptv.json",
+    "sha256": "95ea2875af179ae32962dbf337a985cd513a8cd6af4d006167c4bb61cdf07c34",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "638ed1047e7124257027ccc38ad7d12235164ba9"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "terminal_condition": "Current canonical external v2 verification accepts immutable task authorization, exact fresh implementation CI and evidence-only final descendant; historical007 old-SHA retry is explicitly non-certifying without rewriting its records. PR13 promotion candidate audited and preserved; stop before uncovered main merge.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1"
+}

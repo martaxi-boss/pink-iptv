@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-03T15:24:49.860Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:final-43e3b6e1:api24-kvm-permissions",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "e80d32af16fb4e0c44e5ba8e5926575a50d78b8f1aa4de94c7405f34d890e3c1",
+  "detail": "Authorize one bounded fresh-SHA CI execution for final API24 runner access failure. FAILURE_OBSERVED commit95884e0 is already persisted; this authorization commit must be an ancestor of the newly published implementation SHA before CI begins. Preserve all product/workflow blobs. Publish only after run37132248620 is terminal, to avoid duplicate active execution. Required new Android and Backend push/PR contexts must succeed; no old-SHA rerun is a terminal certificate. No workflow, infrastructure or permission configuration change is performed."
+}

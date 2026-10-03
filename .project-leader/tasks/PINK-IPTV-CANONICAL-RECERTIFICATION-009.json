@@ -1,0 +1,113 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CANONICAL-RECERTIFICATION-009",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T14:51:21.010Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "summary": "Audit and correct certification drift in the existing authorized WireGuard004B/backend/Android composition under the current canonical contract. Preserve product, workflows and historical records; produce fresh exact-head evidence and integrate evidence into the same development branch only.",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND"
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "867db081e5ef0e382c674703e1fe3af22a0ce278",
+    "task_branch": "builder/canonical-recertification-009",
+    "pr_number": null
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    ".project-leader/**",
+    "docs/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request",
+    "merge_development_branch"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "force_push",
+    "modify_historical_authorizations",
+    "change_ci_workflows",
+    "peer_creation",
+    "real_vpn_tunnel_activation",
+    "vpn_server_or_ovh_mutation",
+    "control_plane_mutation"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Immutable authorization audit",
+    "Product and workflow tree preservation",
+    "Current canonical evidence supersedes historical certification",
+    "Convergence preflight"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "pink-iptv-v1",
+    "path": "projects/policies/pink-iptv.json",
+    "sha256": "95ea2875af179ae32962dbf337a985cd513a8cd6af4d006167c4bb61cdf07c34",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "638ed1047e7124257027ccc38ad7d12235164ba9"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "terminal_condition": "Fresh exact-head Android and Backend CI certifies unchanged existing product composition under current canonical v2. Historical Task007 structural recovery certificate is explicitly superseded without rewriting history. Integrate evidence into PR13 development only and stop before uncovered main merge.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1"
+}

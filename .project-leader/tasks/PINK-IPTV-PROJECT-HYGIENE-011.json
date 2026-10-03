@@ -1,0 +1,120 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-PROJECT-HYGIENE-011",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T18:08:22.454289+00:00",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner-requested hygiene, bounded replacement of Task010 after preflight found main secret scanner rejects canonical task SHA metadata. Reuse the already-certified PR13 field-aware scanner filter, reconcile obsolete docs and close superseded PR4. No product/SQL/test/runtime changes or promotion of PR13."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "5b14e13a5c76eca11cff0fd76232d50afbf22f13",
+    "task_branch": "builder/project-hygiene-010"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "docs/ARCHITECTURE.md",
+    "docs/UX_STRUCTURE.md",
+    "docs/IMPLEMENTATION_PLAN.md",
+    "docs/MEGA_OTT_INTEGRATION.md",
+    "docs/INFRASTRUCTURE.md",
+    "docs/HYGIENE_010.md",
+    ".project-leader/tasks/PINK-IPTV-PROJECT-HYGIENE-011.json",
+    ".project-leader/results/PINK-IPTV-PROJECT-HYGIENE-011.json",
+    ".project-leader/recovery-events/PINK-IPTV-PROJECT-HYGIENE-011/**",
+    ".project-leader/transitions/PINK-IPTV-PROJECT-HYGIENE-011*",
+    ".github/scripts/filter_scan_findings.py",
+    ".github/workflows/backend-ci.yml",
+    ".project-leader/results/PINK-IPTV-PROJECT-HYGIENE-010.json"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "force_push",
+    "modify_historical_authorizations",
+    "delete_active_migrations_or_tests",
+    "promote_pr13",
+    "runtime_or_ovh_mutation",
+    "control_plane_mutation"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Runtime and history preserved",
+    "Obsolete workstream convergence",
+    "Documentation consistency",
+    "Secret filter preserves credential detection"
+  ],
+  "required_ci": [
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "pink-iptv-v1",
+    "path": "projects/policies/pink-iptv.json",
+    "sha256": "95ea2875af179ae32962dbf337a985cd513a8cd6af4d006167c4bb61cdf07c34",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "ca2916d3c4ff46fef7783a4c081c49697a25dfbf"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "terminal_condition": "CI-certified hygiene and scoped scanner remediation integrated through exact Supervisor standing-authority transition; PR4 closed; no active product/migration/test deletions or PR13 promotion.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1"
+}

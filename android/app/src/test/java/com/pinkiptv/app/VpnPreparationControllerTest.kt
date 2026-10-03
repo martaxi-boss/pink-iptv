@@ -9,6 +9,8 @@ import com.pinkiptv.app.vpn.VpnPreparationController
 import com.pinkiptv.app.vpn.VpnPreparationPhase
 import com.pinkiptv.app.vpn.VpnPrepareAction
 import com.pinkiptv.app.vpn.VpnPublicIdentity
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -117,6 +119,97 @@ class VpnPreparationControllerTest {
         advanceUntilIdle()
         gatewayFailure.prepare()
         assertEquals(VpnPreparationPhase.ERROR, gatewayFailure.state.value.phase)
+    }
+
+
+    @Test
+    fun delayedInitialReadCannotReplacePendingPermissionOrPermitDuplicateDialog() = runTest {
+        val pending = CompletableDeferred<VpnIdentityResult>()
+        var permissionCalls = 0
+        val store = object : VpnIdentityStore {
+            override suspend fun loadIdentity() = pending.await()
+            override suspend fun ensureIdentity(): VpnIdentityResult = VpnIdentityResult.Absent
+        }
+        val gateway = object : VpnPermissionGateway {
+            override fun prepare(): VpnPermissionCheck {
+                permissionCalls += 1
+                return VpnPermissionCheck.SystemPermissionRequired
+            }
+        }
+        val controller = VpnPreparationController(store, gateway, this)
+        runCurrent()
+        assertEquals(VpnPrepareAction.LaunchSystemPermission, controller.prepare())
+        pending.complete(VpnIdentityResult.Absent)
+        advanceUntilIdle()
+
+        assertEquals(VpnPreparationPhase.AWAITING_SYSTEM_PERMISSION, controller.state.value.phase)
+        assertEquals(VpnPrepareAction.None, controller.prepare())
+        assertEquals(1, permissionCalls)
+    }
+
+    @Test
+    fun delayedInitialReadCannotReplacePermissionDenial() = runTest {
+        val pending = CompletableDeferred<VpnIdentityResult>()
+        val store = object : VpnIdentityStore {
+            override suspend fun loadIdentity() = pending.await()
+            override suspend fun ensureIdentity(): VpnIdentityResult = VpnIdentityResult.Absent
+        }
+        val controller = VpnPreparationController(
+            store, FakePermissionGateway(VpnPermissionCheck.SystemPermissionRequired), this,
+        )
+        runCurrent()
+        controller.prepare()
+        controller.onPermissionResult(false)
+        pending.complete(VpnIdentityResult.Absent)
+        advanceUntilIdle()
+        assertEquals(VpnPreparationPhase.PERMISSION_DENIED, controller.state.value.phase)
+    }
+
+    @Test
+    fun delayedEnsureCannotReplaceLogoutRefresh() = runTest {
+        val pending = CompletableDeferred<VpnIdentityResult>()
+        val store = object : VpnIdentityStore {
+            override suspend fun loadIdentity(): VpnIdentityResult = VpnIdentityResult.Absent
+            override suspend fun ensureIdentity() = pending.await()
+        }
+        val controller = VpnPreparationController(
+            store, FakePermissionGateway(VpnPermissionCheck.AlreadyAuthorized), this,
+        )
+        advanceUntilIdle()
+        controller.prepare()
+        runCurrent()
+        controller.onIptvLogout()
+        runCurrent()
+        pending.complete(VpnIdentityResult.Available(VpnPublicIdentity(true, "synthetic-public-key")))
+        advanceUntilIdle()
+        assertEquals(VpnPreparationPhase.NOT_PREPARED, controller.state.value.phase)
+        assertFalse(controller.state.value.identityAvailable)
+    }
+
+    @Test
+    fun delayedLogoutReadCannotReplaceNewPreparation() = runTest {
+        val pending = CompletableDeferred<VpnIdentityResult>()
+        var reads = 0
+        val store = object : VpnIdentityStore {
+            override suspend fun loadIdentity(): VpnIdentityResult {
+                reads += 1
+                return if (reads == 1) VpnIdentityResult.Absent else pending.await()
+            }
+            override suspend fun ensureIdentity(): VpnIdentityResult =
+                VpnIdentityResult.Available(VpnPublicIdentity(true, "synthetic-public-key"))
+        }
+        val controller = VpnPreparationController(
+            store, FakePermissionGateway(VpnPermissionCheck.AlreadyAuthorized), this,
+        )
+        advanceUntilIdle()
+        controller.onIptvLogout()
+        runCurrent()
+        controller.prepare()
+        runCurrent()
+        pending.complete(VpnIdentityResult.Absent)
+        advanceUntilIdle()
+        assertEquals(VpnPreparationPhase.READY_FOR_TUNNEL_STAGE, controller.state.value.phase)
+        assertTrue(controller.state.value.identityAvailable)
     }
 
     private class FakePermissionGateway(

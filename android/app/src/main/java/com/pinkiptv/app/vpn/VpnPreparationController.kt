@@ -33,8 +33,11 @@ class VpnPreparationController(
     private val mutableState = MutableStateFlow(VpnPreparationState())
     val state: StateFlow<VpnPreparationState> = mutableState.asStateFlow()
 
+    private var generation = 0L
+
     init {
-        scope.launch { refreshLocalState() }
+        val requestGeneration = generation
+        scope.launch { refreshLocalState(requestGeneration) }
     }
 
     fun prepare(): VpnPrepareAction {
@@ -42,6 +45,7 @@ class VpnPreparationController(
             return VpnPrepareAction.None
         }
 
+        val requestGeneration = ++generation
         return when (permissionGateway.prepare()) {
             VpnPermissionCheck.SystemPermissionRequired -> {
                 mutableState.value = mutableState.value.copy(
@@ -50,7 +54,7 @@ class VpnPreparationController(
                 VpnPrepareAction.LaunchSystemPermission
             }
             VpnPermissionCheck.AlreadyAuthorized -> {
-                scope.launch { ensureIdentityAndReady() }
+                scope.launch { ensureIdentityAndReady(requestGeneration) }
                 VpnPrepareAction.None
             }
             VpnPermissionCheck.Failure -> {
@@ -63,27 +67,33 @@ class VpnPreparationController(
     }
 
     fun onPermissionResult(granted: Boolean) {
+        val requestGeneration = ++generation
         if (!granted) {
             mutableState.value = mutableState.value.copy(
                 phase = VpnPreparationPhase.PERMISSION_DENIED,
             )
             return
         }
-        scope.launch { ensureIdentityAndReady() }
+        scope.launch { ensureIdentityAndReady(requestGeneration) }
     }
 
     fun onPermissionLaunchFailed() {
+        generation += 1
         mutableState.value = mutableState.value.copy(
             phase = VpnPreparationPhase.ERROR,
         )
     }
 
     fun onIptvLogout() {
-        scope.launch { refreshLocalState() }
+        val requestGeneration = ++generation
+        scope.launch { refreshLocalState(requestGeneration) }
     }
 
-    private suspend fun refreshLocalState() {
-        mutableState.value = when (val result = identityStore.loadIdentity()) {
+    private suspend fun refreshLocalState(requestGeneration: Long) {
+        if (requestGeneration != generation) return
+        val result = identityStore.loadIdentity()
+        if (requestGeneration != generation) return
+        mutableState.value = when (result) {
             VpnIdentityResult.Absent -> VpnPreparationState(
                 phase = VpnPreparationPhase.NOT_PREPARED,
                 identityAvailable = false,
@@ -99,8 +109,11 @@ class VpnPreparationController(
         }
     }
 
-    private suspend fun ensureIdentityAndReady() {
-        mutableState.value = when (val result = identityStore.ensureIdentity()) {
+    private suspend fun ensureIdentityAndReady(requestGeneration: Long) {
+        if (requestGeneration != generation) return
+        val result = identityStore.ensureIdentity()
+        if (requestGeneration != generation) return
+        mutableState.value = when (result) {
             VpnIdentityResult.Absent -> VpnPreparationState(
                 phase = VpnPreparationPhase.ERROR,
                 identityAvailable = false,

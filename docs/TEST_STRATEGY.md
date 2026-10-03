@@ -325,3 +325,7 @@ When the separately supervised VPN phase opens, test throughput, packet loss, re
 ## R1 outbound binding proof
 
 Automated tests additionally prove that a validated public DNS result is pinned into the real transport connection, a subsequent/private peer swap is rejected before request bytes are written, provider paths are rejected, HTTP `Host` is preserved, and HTTPS SNI plus certificate verification remain enabled.
+
+## Canonical recertification 008
+
+Current acceptance of the existing Stage004B development composition uses Task008 and [its audit](AUDIT_CANONICAL_RECERTIFICATION_008.md). Task007's old Worker Result does not satisfy current structural Recovery ancestry or post-CI material-drift rules. Preserve it as historical evidence; require fresh exact-head Android CI (including API24/API36 device jobs) and Backend CI, immutable v2 authorization and external canonical Supervisor verification for Task008. No new product or real tunnel certification is inferred.

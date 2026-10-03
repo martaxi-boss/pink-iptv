@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-MAIN",
+  "task_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T21:53:08.837Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Covered correction/continuation: exact PR28 combines narrow public-transition SHA scanner compatibility, 25 negative/positive regressions and prepared read-only Phase4 preflight/security/current-state docs. Immutable E3 task and pre-effect scanner governance authorization verified; canonical external policy/evidence passed. Fresh Android37155196986/37155194602 and Backend37155196973/37155194599 all terminal success. GitHub live PR collection and Git refs prove head358f0e88/base43829215; no branch ruleset/protected-main gate. Only normal merge; no runtime/release/network/secret/peer/paid effect."
+  },
+  "target": {
+    "kind": "pull_request",
+    "identifier": "28",
+    "revision": "358f0e88237d4b7721135ef9b4d1a6befc35a335",
+    "base_revision": "43829215cceeccb3f0f2b4b99c139ab63ce4c9cb",
+    "environment": "main"
+  }
+}

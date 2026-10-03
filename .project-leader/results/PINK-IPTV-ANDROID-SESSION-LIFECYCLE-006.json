@@ -1,0 +1,69 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006.json",
+  "authorization_commit_sha": "4dd351774fe71fe348a00290615e6b94c76c705a",
+  "authorization_sha256": "19c77bc9f193483b3eb1680fb80036a10eb8585c5c8441e9b1f9aae77914e27f",
+  "implementation_head_sha": "bebb064260ec450137801bb85b62d5fc56d1e293",
+  "branch": "builder/android-session-lifecycle-006",
+  "pr_number": 17,
+  "recorded_at": "2026-10-03T02:13:49.797Z",
+  "changes": [
+    "Generation-guard queued/suspended login and bootstrap responses",
+    "Mark login in flight synchronously to prevent queued duplicates",
+    "Serialize credential persistence and complete logout cleanup before a new login",
+    "Six delayed-response/storage lifecycle regressions",
+    "Narrow canonical v2 SHA scanner metadata support"
+  ],
+  "validation": [
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Canonical managed_project_contract validation against pinned central policy bytes and GitHub PR17 changed-file payload; no protected workflow files changed"
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical evidence functions executed on connector-fetched run, authorization and ancestry payloads; authorization-only commit independently inspected"
+    },
+    {
+      "name": "Delayed authentication cannot restore logout or overwrite newer session",
+      "status": "PASS",
+      "evidence": "Android CI 37087726259: JVM regression suite, lint, APK/native/instrumentation assembly and API36 phone proof success"
+    },
+    {
+      "name": "Credential persistence serializes save and clear across logout",
+      "status": "PASS",
+      "evidence": "Android CI 37087726259: JVM regression suite, lint, APK/native/instrumentation assembly and API36 phone proof success"
+    },
+    {
+      "name": "V2 metadata scanner retains non-metadata findings",
+      "status": "PASS",
+      "evidence": "Nine local positive/negative scanner probes; Android and Backend CI scans success"
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37087726259
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37087724084
+    }
+  ],
+  "material_non_effects": [
+    "Main unchanged",
+    "No merge/deploy/release/public launch",
+    "No workflow changes",
+    "No provider/VPN/OVH/peer/tunnel/production mutation",
+    "Historical v1 records preserved",
+    "No project-local trusted gate claimed; external canonical audit performed"
+  ],
+  "residual_blockers": []
+}

@@ -14,6 +14,9 @@ SHA_FIELDS = {
     "implementation_head_sha",
     "sha256",
     "previous_event_sha256",
+    "revision",
+    "authorization_commit_sha",
+    "authorization_sha256",
 }
 HEX_CHARS = frozenset("0123456789abcdef")
 

@@ -6,10 +6,13 @@ import com.pinkiptv.app.model.SessionResult
 import com.pinkiptv.app.storage.CredentialStore
 import com.pinkiptv.app.storage.StoredCredentials
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 enum class RootScreen { Splash, Login, Home }
 
@@ -36,34 +39,60 @@ class SessionController(
     private val mutableState = MutableStateFlow(AppUiState())
     val state: StateFlow<AppUiState> = mutableState.asStateFlow()
 
+    private var generation = 0L
+    private val credentialMutex = Mutex()
+    private var credentialCleanup: Job? = null
+
     init {
-        scope.launch { bootstrap() }
+        val requestGeneration = generation
+        scope.launch { bootstrap(requestGeneration) }
     }
 
     fun login(username: String, password: String) {
+        if (mutableState.value.loginInFlight) return
+        val requestGeneration = ++generation
         if (username.isBlank() || password.isBlank()) {
             providerSessionStore.clear()
-            mutableState.value = AppUiState(
-                screen = RootScreen.Login,
-                loginError = LoginError.Required,
-            )
+            mutableState.value = loginState(LoginError.Required)
             return
         }
-        if (mutableState.value.loginInFlight) return
 
+        mutableState.value = AppUiState(
+            screen = RootScreen.Login,
+            loginInFlight = true,
+        )
+        val pendingCleanup = credentialCleanup
         scope.launch {
-            mutableState.value = AppUiState(
-                screen = RootScreen.Login,
-                loginInFlight = true,
-            )
-            when (val result = repository.resolve(username, password)) {
+            pendingCleanup?.join()
+            if (requestGeneration != generation) return@launch
+            val result = repository.resolve(username, password)
+            if (requestGeneration != generation) return@launch
+            when (result) {
                 is SessionResult.Success -> {
+                    // Validate the origin before persisting credentials or publishing a session.
+                    val valid = try {
+                        val origin = result.xtreamBaseUrl
+                        if (origin == null) false else {
+                            com.pinkiptv.app.model.XtreamOriginValidator.validate(origin)
+                            true
+                        }
+                    } catch (_: IllegalArgumentException) {
+                        false
+                    }
+                    if (!valid) {
+                        failLogin(LoginError.TemporaryUnavailable)
+                        return@launch
+                    }
+                    credentialMutex.withLock {
+                        if (requestGeneration == generation) {
+                            credentialStore.save(username, password)
+                        }
+                    }
+                    if (requestGeneration != generation) return@launch
                     if (providerSessionStore.establish(username, password, result)) {
-                        credentialStore.save(username, password)
                         mutableState.value = AppUiState(screen = RootScreen.Home)
                     } else {
-                        providerSessionStore.clear()
-                        mutableState.value = loginState(LoginError.TemporaryUnavailable)
+                        failLogin(LoginError.TemporaryUnavailable)
                     }
                 }
                 SessionResult.InvalidCredentials -> failLogin(LoginError.InvalidCredentials)
@@ -75,25 +104,37 @@ class SessionController(
     }
 
     fun logout() {
-        scope.launch {
-            providerSessionStore.clear()
-            credentialStore.clear()
-            mutableState.value = AppUiState(screen = RootScreen.Login)
+        generation += 1
+        providerSessionStore.clear()
+        mutableState.value = AppUiState(screen = RootScreen.Login)
+        val previousCleanup = credentialCleanup
+        credentialCleanup = scope.launch {
+            previousCleanup?.join()
+            credentialMutex.withLock { credentialStore.clear() }
         }
     }
 
-    private suspend fun bootstrap() {
-        val credentials = credentialStore.load()
+    private suspend fun bootstrap(requestGeneration: Long) {
+        val credentials = credentialMutex.withLock {
+            if (requestGeneration != generation) return
+            credentialStore.load()
+        }
+        if (requestGeneration != generation) return
         if (credentials == null) {
             providerSessionStore.clear()
             mutableState.value = AppUiState(screen = RootScreen.Login)
         } else {
-            reauthenticate(credentials)
+            reauthenticate(credentials, requestGeneration)
         }
     }
 
-    private suspend fun reauthenticate(credentials: StoredCredentials) {
-        when (val result = repository.resolve(credentials.username, credentials.password)) {
+    private suspend fun reauthenticate(
+        credentials: StoredCredentials,
+        requestGeneration: Long,
+    ) {
+        val result = repository.resolve(credentials.username, credentials.password)
+        if (requestGeneration != generation) return
+        when (result) {
             is SessionResult.Success -> {
                 if (providerSessionStore.establish(
                         credentials.username,
@@ -103,29 +144,25 @@ class SessionController(
                 ) {
                     mutableState.value = AppUiState(screen = RootScreen.Home)
                 } else {
-                    providerSessionStore.clear()
-                    mutableState.value = loginState(LoginError.TemporaryUnavailable)
+                    failLogin(LoginError.TemporaryUnavailable)
                 }
             }
-            SessionResult.InvalidCredentials -> {
-                providerSessionStore.clear()
-                credentialStore.clear()
-                mutableState.value = loginState(LoginError.InvalidCredentials)
+            SessionResult.InvalidCredentials,
+            SessionResult.Expired,
+            SessionResult.Disabled,
+            -> {
+                credentialMutex.withLock {
+                    if (requestGeneration == generation) credentialStore.clear()
+                }
+                if (requestGeneration != generation) return
+                val error = when (result) {
+                    SessionResult.InvalidCredentials -> LoginError.InvalidCredentials
+                    SessionResult.Expired -> LoginError.Expired
+                    else -> LoginError.Disabled
+                }
+                failLogin(error)
             }
-            SessionResult.Expired -> {
-                providerSessionStore.clear()
-                credentialStore.clear()
-                mutableState.value = loginState(LoginError.Expired)
-            }
-            SessionResult.Disabled -> {
-                providerSessionStore.clear()
-                credentialStore.clear()
-                mutableState.value = loginState(LoginError.Disabled)
-            }
-            SessionResult.TemporaryUnavailable -> {
-                providerSessionStore.clear()
-                mutableState.value = loginState(LoginError.TemporaryUnavailable)
-            }
+            SessionResult.TemporaryUnavailable -> failLogin(LoginError.TemporaryUnavailable)
         }
     }
 

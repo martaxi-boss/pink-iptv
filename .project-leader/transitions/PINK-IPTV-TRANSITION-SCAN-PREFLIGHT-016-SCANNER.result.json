@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-SCANNER",
+  "task_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-SCANNER.authorization.json",
+  "action": "security_scanner_metadata_compatibility",
+  "target": {
+    "kind": "repository_branch",
+    "identifier": "builder/transition-scan-preflight-016",
+    "revision": "e5e6c502127bc6e8483f0611c333b7caf4b2b9f9",
+    "base_revision": "43829215cceeccb3f0f2b4b99c139ab63ce4c9cb",
+    "environment": null
+  },
+  "observed_at": "2026-10-03T21:55:47.488Z",
+  "final_state": {
+    "status": "VERIFIED_COMPATIBILITY_PATCH",
+    "revision": "358f0e88237d4b7721135ef9b4d1a6befc35a335"
+  },
+  "evidence": [
+    "Authorization-only taske5e6c502 and pre-effect scanner authorization61208580 precede source358f0e88.",
+    "Only two predicate metadata additions: transitions JSON prefix and base_revision field; all other finding types/credential fields/product paths/invalid formats blocked by25 regressions.",
+    "Local Ruff/format/full scan passed; Android37155196986 and Backend37155196973 plus push37155194602/37155194599 terminal-success. Workflows and app source preserved."
+  ],
+  "residual_blockers": []
+}

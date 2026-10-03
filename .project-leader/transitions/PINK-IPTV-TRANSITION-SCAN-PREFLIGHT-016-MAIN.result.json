@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-MAIN",
+  "task_id": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "28",
+    "revision": "358f0e88237d4b7721135ef9b4d1a6befc35a335",
+    "base_revision": "43829215cceeccb3f0f2b4b99c139ab63ce4c9cb",
+    "environment": "main"
+  },
+  "observed_at": "2026-10-03T21:55:47.488Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "173e0e5293057c5540233b19253f1cfded1baf80"
+  },
+  "evidence": [
+    "Prior exact authorization69c66bca exists on builder/canonical-transitions-016 before effect.",
+    "Main173e0e529, parents43829215/358f0e88 and tree identical to certified implementation8cd54a3d independently read from GitHub.",
+    "Fresh four implementation CI contexts terminal-success; canonical external verifier passed using full live GitHub collection payloads after per-run API504 timeouts.",
+    "No real server/peer/tunnel/rollback/provider/TV/capacity proof, secret/network/paid or production effect."
+  ],
+  "residual_blockers": []
+}

@@ -3,7 +3,7 @@
   "task_id": "PINK-IPTV-ANDROID-STALE-CATALOG-001",
   "project": "PINK IPTV",
   "repository": "martaxi-boss/pink-iptv",
-  "created_at": "2026-10-02T23:43:00Z",
+  "created_at": "2026-10-02T23:40:51Z",
   "authority": {
     "kind": "TRANSACTIONAL_GRANT",
     "summary": "Remediate stale asynchronous catalog publication after clear/logout and stale same-series detail responses, found during the authorized whole-project audit. Add deterministic delayed-response regressions without provider or production access.",

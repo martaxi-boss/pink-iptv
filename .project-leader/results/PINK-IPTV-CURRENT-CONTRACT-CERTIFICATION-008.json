@@ -1,0 +1,69 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008.json",
+  "authorization_commit_sha": "ef88423665508d3d2fa9dec1666ee46bc1c37a48",
+  "authorization_sha256": "af7814b7f558eed3ac50467c6437719275a523caf33e57e8c71deca36f8e689e",
+  "implementation_head_sha": "a7feabc52a26ede5ceae012dd8586a46d863f8c7",
+  "branch": "builder/wireguard-004b-identity-permission-adapter",
+  "pr_number": 13,
+  "changes": [
+    "Refresh current canonical certification and explicitly supersede the structurally invalid historical Task007 certificate without rewriting history",
+    "Preserve Android/backend/workflow/scanner product trees and reconcile PR20 duplicate as closed, unmerged history"
+  ],
+  "validation": [
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Canonical638ed104 external managed policy/scope functions validated live diff ca728c6f..a7feabc5: only task008 authorization, PROJECT_STATE and docs/AUDIT_CURRENT_CONTRACT_008.md. Current base is the task-local dedicated branch starting SHA; enclosing PR13 main promotion remains separately gated."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical exact-run and same-SHA consistency functions verified Android37131091969 and Backend37131091959 at implementationa7feabc52a26ede5ceae012dd8586a46d863f8c7; latest push37131089256/37131089266 and PR contexts all completed success attempt1. Authorization ef884236 and digest af7814b7... verified live against current bytes and ancestry. No task008 retry."
+    },
+    {
+      "name": "Historical recovery structural gap classified",
+      "status": "PASS",
+      "evidence": "Current canonical ancestry verification rejected Task007 RETRY_AUTHORIZEDc053579..implementationfbcad5f (behind2). Old task/result/journal preserved unchanged; fresh task008 does not rehabilitate historical recovery or material post-CI drift."
+    },
+    {
+      "name": "Product tree preserved",
+      "status": "PASS",
+      "evidence": "Live Git tree comparison proves Android434a7ed7f36940509e60165b03b0cdea658df30a, backendd1c3d43f1c6e815a657f16593c621e670909b792 and .github22ac173c720aa6f3e250ca482474df99b0e1708c unchanged from ca728c6f. API24job111227458656 emitted startup/native/Keystore/manifest PASS and CRASH_ANR NONE. API36job111227458563 emitted settings touch/simulatedTV, identity/native/manifest/launch/device-proof PASS and PHONE_CRASH_ANR NONE. Backendjob111226180235 emitted70 tests passed, PostgreSQL migration and scan. No physical-TV or real-provider/tunnel certification inferred."
+    },
+    {
+      "name": "Convergence preflight",
+      "status": "PASS",
+      "evidence": "PR19 superseded for stale digest. PR20 explicitly closed unmerged as duplicate of this valid current-contract008 task; their branches/history retained. PR14/15 absorbed through historical developmentPR18. PR13 is the sole active app promotion candidate; PR4 dirty legacy infrastructure documentation is outside active scope and preserved. Main remains84fe2dff. Final result-only descendant is independently audited after persistence; no material correction remains before main merge Human Gate."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37131091969
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37131091959
+    }
+  ],
+  "artifacts": [
+    "docs/AUDIT_CURRENT_CONTRACT_008.md"
+  ],
+  "material_non_effects": [
+    "Main unchanged; no merge/release/deploy",
+    "No application/backend/workflow/scanner changes",
+    "No real VPN/provider/OVH/server/peer, secrets, destructive, paid or control-plane effects",
+    "No local trusted gate claimed; canonical external verification used",
+    "Historical task/result/journal bytes preserved; old-SHA Task007 recovery certificate not rehabilitated"
+  ],
+  "residual_blockers": [],
+  "recorded_at": "2026-10-03T15:09:27.504Z",
+  "state_observed_at": "2026-10-03T15:09:27.504Z"
+}

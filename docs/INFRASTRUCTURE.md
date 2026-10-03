@@ -41,6 +41,12 @@ A dedicated VPN gateway remains the production design target when real capacity/
 
 Production VPN capacity, throughput and user/stream limits must be measured before any production claim. The current 4 vCore / 8 GB OVH host must not be translated into an assumed number of concurrent streams without benchmark evidence.
 
+## Build and operational access
+
+Builds and CI use GitHub-hosted runners. The previously available OVH KVM capability is historical infrastructure evidence, not a requirement to run a self-hosted runner or Remote Desktop Commander. Infrastructure access is through the authorized GitHub workflow/terminal path.
+
+Code and reproducible backups belong in GitHub. Runtime credentials remain in the VPS secret store and must never enter repository backups. This task does not activate paid provider backups or assert a fresh VPS audit.
+
 ## Deployment
 
 GitHub remains source of truth. Deploy only approved commits. Secrets remain in runtime environment/secret storage. The current backend bind, firewall, routing, Nginx and systemd configuration must not be changed without the corresponding authorized order.

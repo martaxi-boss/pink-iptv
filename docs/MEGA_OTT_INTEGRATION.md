@@ -52,7 +52,7 @@ Mega may call username/password subscriptions M3U internally. That provider nami
 
 The assigned `dns_link` is authoritative. PINK never infers a DNS host, derives random subdomains, substitutes another base domain, or brute-forces DNS.
 
-Beyond authentication, future Xtream functionality must feature-detect provider behavior rather than assume unsupported capabilities. Candidate later capabilities include Live categories/streams, VOD, Series, and EPG where the provider actually supports them.
+Android Phase 3 implements Live categories/streams, VOD, Series and EPG through the authenticated Xtream origin. Provider behavior is parsed defensively; unsupported capabilities fail safely. Later real-provider playback/catalog evidence remains separately certifiable.
 
 ## Platform DNS selection
 

@@ -12,7 +12,7 @@
 8. WireGuard gateway (later phase)
 9. GitHub repository and CI/CD
 
-Order 001 implements only items 3-6 plus CI.
+Current merged implementation: Android client, backend API, PostgreSQL mapping, Mega adapter and Xtream catalog/playback layer. Windows and server-side WireGuard remain future phases. Order 001 was the backend-only foundation; its boundaries below describe that completed order, not the current product scope.
 
 ## Order 001 runtime path
 
@@ -75,7 +75,7 @@ The only generated path is `player_api.php`; the provider host is never guessed 
 
 Mega documentation can return an HTTP `dns_link`. Order 001 preserves the exact scheme received. It does not upgrade HTTP to HTTPS automatically, even if a separate credential-free TLS probe would succeed.
 
-Production cleartext/TLS policy remains a Supervisor gate before Android networking is implemented.
+Android networking is implemented and preserves the backend-resolved provider origin. Production cleartext/TLS policy remains a validation gate before production exposure.
 
 ## Sessions
 
@@ -105,7 +105,7 @@ Auth, Catalog, Live TV, VOD, Series, EPG, Search, Favorites, History, Player, VP
 
 ### Android stack
 
-The approved later Android stack remains Kotlin, Jetpack Compose, Media3/ExoPlayer, platform secure storage, Room/DataStore where appropriate, and separately audited Android VPN/WireGuard integration.
+The implemented Android stack uses Kotlin, Jetpack Compose, Media3 1.11.1, Android Keystore/DataStore and Room schema 1. API 24 is the current minimum. WireGuard 004A is merged; identity/permission/read-only adapter work in PR #13 remains unmerged. No real tunnel is certified.
 
 ### Windows stack
 

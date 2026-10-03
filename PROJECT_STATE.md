@@ -1,8 +1,16 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-10-02
+Date: 2026-10-03
 Phase: Phase 4 — WireGuard Stage 004B — IDENTITY + PERMISSION + ADAPTER ACTIVE
 Public launch: NO
+
+## Development convergence 007 — 2026-10-03
+
+The authorized WireGuard004B, backend validation/privacy and Android catalog/session lifecycle workstreams are integrated together into PR13's development branch through PR18. PR14/15 are closed as absorbed; source branches and immutable historical records remain preserved.
+
+Certified integration implementation: fbcad5f3e47c6388935d2f87981922a9bfd43119. Post-integration Android CI37114668507 attempt2 and Backend CI37114668515 attempt1 succeeded. Task007 recovery journal durably persisted failure and authorization before retry, and recovery after observed success. Historical task006 retroactive authorization remains invalid.
+
+The exact HEAD containing final metadata still requires live CI and external canonical Supervisor acceptance before promotion. See [convergence audit](docs/AUDIT_CONVERGENCE_PREFLIGHT_007.md) and [PR13 live final-head evidence](https://github.com/martaxi-boss/pink-iptv/pull/13). Stage004B remains development-only until separately authorized main promotion. Main is unchanged; no new product stage, real tunnel, infrastructure, release or production action follows from these records.
 
 ## Governance
 

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T21:22:19.764958+00:00",
+  "action_fingerprint": "task015:backend-ci:transition-sha-metadata-false-positive",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 3,
+  "event": "BLOCKED",
+  "strategy_generation": 2,
+  "previous_event_sha256": "f1b7d88356212e2486f30284a871c70eeb1cd8634a56c3f6a7455ab970e3db69",
+  "detail": "Task015 is non-certifying and superseded by a fresh separately authorized task from canonical main. No OVH/runtime/tunnel effects. Required scanner correction is covered project remediation, not an Owner permission gate."
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T21:22:19.764958+00:00",
+  "action_fingerprint": "task015:backend-ci:transition-sha-metadata-false-positive",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 2,
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "previous_event_sha256": "17ece4a4d6a4cb96d928e55e6b950c8f37564f7773b87a2a3a602410430e7b8e",
+  "detail": "Immutable Task015 scope excludes scanner code. Preserve this candidate unmerged and bound a separate task for narrow public-transition-metadata compatibility plus negative scanner regressions and the existing preflight package; do not weaken workflows or retry old-SHA CI."
+}

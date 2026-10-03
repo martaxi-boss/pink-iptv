@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T21:22:19.764958+00:00",
+  "action_fingerprint": "task015:backend-ci:transition-sha-metadata-false-positive",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 1,
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "previous_event_sha256": null,
+  "detail": "Backend37154615157 PR and37154613193 push failed only Credential leak scan. Logs identify three Hex High Entropy String findings in public Task014 transition result revision/base_revision fields. Backend tests/migration passed; no actual credential identified."
+}

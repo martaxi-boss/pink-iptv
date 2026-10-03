@@ -1,0 +1,40 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015",
+  "terminal_status": "BLOCKED",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015.json",
+  "authorization_commit_sha": "90430dc3f0f08b46882387b3a174332d1536aa73",
+  "authorization_sha256": "976f9082186d331f2bdc3c7505d633ba739557839f6f95fc077bc71b2a6d8008",
+  "implementation_head_sha": "426105a86819a913f12863df4ccf7a792ebe598a",
+  "branch": "builder/wireguard-preflight-preparation-015",
+  "pr_number": 27,
+  "recorded_at": "2026-10-03T21:22:19.765789+00:00",
+  "changes": [
+    "infra/scripts/wireguard-preflight.sh",
+    "docs/WIREGUARD_PREFLIGHT.md",
+    "docs/SECURITY.md"
+  ],
+  "validation": [
+    {
+      "name": "Read-only collector safety",
+      "status": "PASS",
+      "evidence": "Syntax, invalid-port boundaries, local format and mutation/secret command audit passed; no OVH proof."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "FAILURE",
+      "run_id": 37154615157
+    }
+  ],
+  "material_non_effects": [
+    "No main/product/workflow/OVH/tunnel effects from Task015; rejected branch retained."
+  ],
+  "residual_blockers": [
+    "Existing scanner does not support public transition revision/base_revision metadata; correction is outside immutable Task015 scope and must use a fresh bounded task."
+  ],
+  "superseded_by": "PINK-IPTV-TRANSITION-SCAN-PREFLIGHT-016"
+}

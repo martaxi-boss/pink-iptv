@@ -3,10 +3,11 @@ package com.pinkiptv.app
 import android.content.res.Configuration
 import android.view.KeyEvent
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
@@ -18,6 +19,7 @@ import com.pinkiptv.app.ui.theme.PinkTheme
 import com.pinkiptv.app.vpn.VpnPreparationPhase
 import com.pinkiptv.app.vpn.VpnPreparationState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -47,23 +49,21 @@ class VpnSettingsDpadTest {
     fun preparationLogoutAndBackHaveDeterministicDpadOrder() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         // Exercise TV focus logic on the CI emulator, without claiming physical-TV proof.
-        val configuration = Configuration(
-            instrumentation.targetContext.resources.configuration,
-        ).apply {
+        val phoneConfiguration = instrumentation.targetContext.resources.configuration
+        val configuration = Configuration(phoneConfiguration).apply {
             uiMode = (uiMode and Configuration.UI_MODE_TYPE_MASK.inv()) or
                 Configuration.UI_MODE_TYPE_TELEVISION
         }
 
         var prepareClicks = 0
+        val tvReady = mutableStateOf(false)
+        lateinit var inputModeManager: InputModeManager
 
         composeRule.setContent {
-            CompositionLocalProvider(LocalConfiguration provides configuration) {
-                val inputModeManager = LocalInputModeManager.current
-                SideEffect {
-                    check(inputModeManager.requestInputMode(InputMode.Keyboard)) {
-                        "Simulated TV proof requires keyboard input mode"
-                    }
-                }
+            CompositionLocalProvider(
+                LocalConfiguration provides if (tvReady.value) configuration else phoneConfiguration,
+            ) {
+                inputModeManager = LocalInputModeManager.current
                 PinkTheme {
                     SettingsScreen(
                         vpnState = VpnPreparationState(
@@ -75,6 +75,13 @@ class VpnSettingsDpadTest {
                     )
                 }
             }
+        }
+
+        // Request keyboard mode only after the Compose view and buttons are attached.
+        // Then enable TV configuration so its autofocus effect runs in the real input mode.
+        composeRule.runOnIdle {
+            assertTrue(inputModeManager.requestInputMode(InputMode.Keyboard))
+            tvReady.value = true
         }
 
         val prepare = composeRule.onNodeWithTag("settings_vpn_prepare")

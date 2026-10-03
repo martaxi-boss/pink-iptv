@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T20:50:19.684693+00:00",
+  "action_fingerprint": "task013:publish-development-branch:shell-auth-missing",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 3,
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 2,
+  "previous_event_sha256": "05be783947083ec0615bf805401f355367da04596fc3a4fbab13dc1597c6c00d",
+  "detail": "Authorize bounded connector publication under the unchanged Task013 scope. Commit this journal before substantive remote publication and certify only a descendant implementation SHA."
+}

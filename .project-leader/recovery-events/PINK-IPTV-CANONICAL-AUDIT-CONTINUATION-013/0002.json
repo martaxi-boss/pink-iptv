@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T20:50:19.684693+00:00",
+  "action_fingerprint": "task013:publish-development-branch:shell-auth-missing",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 2,
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "previous_event_sha256": "3a6ace0c0af7c9333a254329a9d61ab298717290b921bc9ccf5df6cc5ee41012",
+  "detail": "Stop shell push strategy. Use the authorized GitHub connector Git-data APIs; remote immutable authorization was persisted first, independently of failed local commit SHAs."
+}

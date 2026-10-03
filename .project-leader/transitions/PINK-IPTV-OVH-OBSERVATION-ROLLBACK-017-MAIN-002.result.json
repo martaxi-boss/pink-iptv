@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017-MAIN-002",
+  "task_id": "PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017-MAIN-002.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "29",
+    "revision": "986bbbe7915e3e3fa83477d09aed8a259993dc85",
+    "base_revision": "173e0e5293057c5540233b19253f1cfded1baf80",
+    "environment": null
+  },
+  "observed_at": "2026-10-03T23:28:26.012Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "0bc2b751c77da5702d8cfb24996d046e5f1829fc"
+  },
+  "evidence": [
+    "Schema-valid exact E2 authorization committed at 9d76a2d91227dcf10b32c9340d797107d7a97869 and read back before merge. First unused E1 candidate rejected with durable NOT_EXECUTED result; not used as authority.",
+    "PR29 exact head 986bbbe7915e3e3fa83477d09aed8a259993dc85 with base 173e0e5293057c5540233b19253f1cfded1baf80 re-read immediately before normal merge; main/tree/parents independently confirmed.",
+    "Backend CI37161588557 and canonical external Task v2 evidence passed; documentation scope only. No runtime/service/network/peer/tunnel effects."
+  ],
+  "residual_blockers": []
+}

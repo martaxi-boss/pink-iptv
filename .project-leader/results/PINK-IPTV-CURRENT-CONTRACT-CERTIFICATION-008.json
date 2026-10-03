@@ -7,50 +7,56 @@
   "authorization_record": ".project-leader/tasks/PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008.json",
   "authorization_commit_sha": "ef88423665508d3d2fa9dec1666ee46bc1c37a48",
   "authorization_sha256": "af7814b7f558eed3ac50467c6437719275a523caf33e57e8c71deca36f8e689e",
-  "implementation_head_sha": "a7feabc52a26ede5ceae012dd8586a46d863f8c7",
+  "implementation_head_sha": "1a7fe92c05d1304956923f9d5727aa277e4547af",
   "branch": "builder/wireguard-004b-identity-permission-adapter",
   "pr_number": 13,
   "changes": [
     "Refresh current canonical certification and explicitly supersede the structurally invalid historical Task007 certificate without rewriting history",
-    "Preserve Android/backend/workflow/scanner product trees and reconcile PR20 duplicate as closed, unmerged history"
+    "Preserve Android/backend/workflow/scanner product trees and reconcile PR20 duplicate as closed, unmerged history",
+    "Close the Task008 recovery after the result-only descendant API24 runner-access failure by certifying a fresh descendant SHA that already contains FAILURE_OBSERVED and RETRY_AUTHORIZED"
   ],
   "validation": [
     {
       "name": "Mutation scope audit",
       "status": "PASS",
-      "evidence": "Canonical638ed104 external managed policy/scope functions validated live diff ca728c6f..a7feabc5: only task008 authorization, PROJECT_STATE and docs/AUDIT_CURRENT_CONTRACT_008.md. Current base is the task-local dedicated branch starting SHA; enclosing PR13 main promotion remains separately gated."
+      "evidence": "Live diff ca728c6fc107cc786c3f18794f7c72150365f9b1..1a7fe92c05d1304956923f9d5727aa277e4547af is confined to Task008 authorization/result/recovery evidence, docs/AUDIT_CURRENT_CONTRACT_008.md and PROJECT_STATE.md. No Android/backend/workflow/scanner product mutation was introduced by the recovery."
     },
     {
       "name": "GitHub evidence verification",
       "status": "PASS",
-      "evidence": "Canonical exact-run and same-SHA consistency functions verified Android37131091969 and Backend37131091959 at implementationa7feabc52a26ede5ceae012dd8586a46d863f8c7; latest push37131089256/37131089266 and PR contexts all completed success attempt1. Authorization ef884236 and digest af7814b7... verified live against current bytes and ancestry. No task008 retry."
+      "evidence": "Exact retry implementation 1a7fe92c05d1304956923f9d5727aa277e4547af is the live PR13 head before this evidence-only closure. Android pull_request run37133463566 and Backend pull_request run37133463604 completed SUCCESS; Backend same-SHA push run37133460326 also completed SUCCESS. Android push is path-filtered for the recovery-metadata-only retry commit, so no same-SHA Android push context exists to contradict the successful required run. Authorization ef88423665508d3d2fa9dec1666ee46bc1c37a48 and digest af7814b7f558eed3ac50467c6437719275a523caf33e57e8c71deca36f8e689e remain unchanged."
     },
     {
       "name": "Historical recovery structural gap classified",
       "status": "PASS",
-      "evidence": "Current canonical ancestry verification rejected Task007 RETRY_AUTHORIZEDc053579..implementationfbcad5f (behind2). Old task/result/journal preserved unchanged; fresh task008 does not rehabilitate historical recovery or material post-CI drift."
+      "evidence": "Historical Task007 remains non-certifying under the current structural rule because its RETRY_AUTHORIZED evidence was not ancestral to its certified implementation. Those historical task/result/journal bytes remain unchanged; Task008 recovery uses a fresh descendant SHA instead of rehabilitating the old certificate."
     },
     {
       "name": "Product tree preserved",
       "status": "PASS",
-      "evidence": "Live Git tree comparison proves Android434a7ed7f36940509e60165b03b0cdea658df30a, backendd1c3d43f1c6e815a657f16593c621e670909b792 and .github22ac173c720aa6f3e250ca482474df99b0e1708c unchanged from ca728c6f. API24job111227458656 emitted startup/native/Keystore/manifest PASS and CRASH_ANR NONE. API36job111227458563 emitted settings touch/simulatedTV, identity/native/manifest/launch/device-proof PASS and PHONE_CRASH_ANR NONE. Backendjob111226180235 emitted70 tests passed, PostgreSQL migration and scan. No physical-TV or real-provider/tunnel certification inferred."
+      "evidence": "Live compare from ca728c6fc107cc786c3f18794f7c72150365f9b1 through retry implementation 1a7fe92c05d1304956923f9d5727aa277e4547af shows only Task008 evidence/state files. Android run37133463566 completed android, phone-device-proof and wireguard-api24-smoke jobs SUCCESS; Backend run37133463604 completed SUCCESS. No physical-TV or real-provider/tunnel certification is inferred."
     },
     {
       "name": "Convergence preflight",
       "status": "PASS",
-      "evidence": "PR19 superseded for stale digest. PR20 explicitly closed unmerged as duplicate of this valid current-contract008 task; their branches/history retained. PR14/15 absorbed through historical developmentPR18. PR13 is the sole active app promotion candidate; PR4 dirty legacy infrastructure documentation is outside active scope and preserved. Main remains84fe2dff. Final result-only descendant is independently audited after persistence; no material correction remains before main merge Human Gate."
+      "evidence": "PR19 and PR20 are closed unmerged; PR14/15 remain closed and their work is already absorbed through merged development PR18. PR13 remains the sole active application promotion candidate; PR4 is preserved as a separate conflicting legacy infrastructure-documentation workstream. Main remains84fe2dfffd4d381f45bd9b88a0983c122ba42ee4. No covered correction remains before the separately authorized exact-head merge-to-main Human Gate."
+    },
+    {
+      "name": "Recovery closure",
+      "status": "PASS",
+      "evidence": "Recovery journal sequence0001 FAILURE_OBSERVED and sequence0002 RETRY_AUTHORIZED are ancestral to implementation1a7fe92c05d1304956923f9d5727aa277e4547af; fresh required CI succeeded on that SHA. Sequence0003 RECOVERED is persisted only after observed success. No old-SHA rerun is used as terminal proof."
     }
   ],
   "ci": [
     {
       "name": "Android CI",
       "status": "SUCCESS",
-      "run_id": 37131091969
+      "run_id": 37133463566
     },
     {
       "name": "Backend CI",
       "status": "SUCCESS",
-      "run_id": 37131091959
+      "run_id": 37133463604
     }
   ],
   "artifacts": [
@@ -61,9 +67,10 @@
     "No application/backend/workflow/scanner changes",
     "No real VPN/provider/OVH/server/peer, secrets, destructive, paid or control-plane effects",
     "No local trusted gate claimed; canonical external verification used",
-    "Historical task/result/journal bytes preserved; old-SHA Task007 recovery certificate not rehabilitated"
+    "Historical task/result/journal bytes preserved; old-SHA Task007 recovery certificate not rehabilitated",
+    "No duplicate CI dispatch or old-SHA rerun; fresh CI was produced by the already-authorized descendant-SHA recovery"
   ],
   "residual_blockers": [],
-  "recorded_at": "2026-10-03T15:09:27.504Z",
-  "state_observed_at": "2026-10-03T15:09:27.504Z"
+  "recorded_at": "2026-10-03T15:54:19Z",
+  "state_observed_at": "2026-10-03T15:54:19Z"
 }

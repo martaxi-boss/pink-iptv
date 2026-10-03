@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-CURRENT-CONTRACT-CERTIFICATION-008",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-03T15:54:19Z",
+  "event": "RECOVERED",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:final-43e3b6e1:api24-kvm-permissions",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "5118a0834e6bf289568954bf4a455f680b824652f953919e144ae56d5531431f",
+  "detail": "Fresh descendant implementation 1a7fe92c05d1304956923f9d5727aa277e4547af contains the durable FAILURE_OBSERVED and RETRY_AUTHORIZED recovery events before CI. Android CI run37133463566 completed SUCCESS, including android job111233070793, phone-device-proof job111234313197 and wireguard-api24-smoke job111234313253. Backend CI run37133463604 completed SUCCESS and same-SHA push Backend run37133460326 also succeeded. The retry changed only task-local recovery metadata; product/workflow bytes remain unchanged. Recovery is closed without any old-SHA rerun or gated effect."
+}

@@ -22,7 +22,11 @@ The live canonical Skill requires inspecting the PR base branch. Only an actual 
 
 ## Integration in progress
 
-PR16 is merged into its development base at 53a208a5fe5a87a960d073f51df1f65074de880e. GitHub merged=true, parent PR13 head and original-head ancestry were independently re-read. Post-integration Android/Backend runs are executing. PR17 is awaiting the retried source-head proof. The status is WAITING_EXTERNAL_CI, not terminal validation success.
+PR16 is merged into its development base at 53a208a5fe5a87a960d073f51df1f65074de880e. GitHub merged=true, parent PR13 head, exact merge parents and original-head ancestry were independently re-read. The merge tree equals the certified source tree. Post-integration Backend CI 37108519467/37108515571 and push Android CI 37108515562 succeeded; Android PR run 37108519453 is still executing and includes the device-proof gates.
+
+PR17 source-head Android CI 37089068739 attempt 2 completed success. Actual job 111161437836 logs show PHONE_LAUNCH_SMOKE=PASS, PHONE_CRASH_ANR=NONE and PHONE_DEVICE_PROOF=PASS. PR17 is now merged into builder/android-stale-catalog-001 at 1e6ee4001c55cb04320773416a49b4e737ea9b14. GitHub merged=true, parent PR15 head, exact merge parents, ancestry and equal certified/merge trees were re-read. Its post-integration CI is executing. Overall validation remains WAITING_EXTERNAL_CI.
+
+Append-only recovery events 0001–0003 are persisted on the original session task branch under .project-leader/recovery-events/PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006/. Canonical journal validation checks the sequence, hash chain and bounded counters. Events were committed after the source PR was closed, so recovery metadata does not replace the certified parent integration SHA or restart its device proof.
 
 ## Generic control-plane finding
 

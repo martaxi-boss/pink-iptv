@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017.json",
+  "authorization_commit_sha": "9f8e1de098f73a9801f5eca5d61e64c67ac0194d",
+  "authorization_sha256": "ff035ed4becf836ce8ef0d9eb82ef45f8ad30434b30dd036f3dac458983ef2a4",
+  "implementation_head_sha": "986bbbe7915e3e3fa83477d09aed8a259993dc85",
+  "branch": "builder/ovh-observation-rollback-017",
+  "pr_number": 29,
+  "recorded_at": "2026-10-03T23:28:26.012Z",
+  "changes": [
+    ".project-leader/tasks/PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017.json",
+    "docs/OVH_OBSERVATIONS_017.md",
+    "docs/WIREGUARD_PREFLIGHT.md"
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Documentation preparation only inside existing staged WireGuard preflight. Preserve Android/backend source, UFW, SSH and runtime services; no peer/tunnel/server or Windows effect."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Canonical policy verifies three bounded paths; Android/backend/infra/workflow/windows/shared/design tree objects identical to accepted starting main."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical external verifier on exact authorization commit/digest, immutable task, authorization ancestry and complete live same-SHA collection with Backend push run37161588557. Job111315966709 proves lint/format, PostgreSQL migration, tests and credential scan terminal-success. No PR Backend context was triggered by these documentation paths. Exact E2 transition authorization 9d76a2d91227dcf10b32c9340d797107d7a97869 preceded normal merge 0bc2b751c77da5702d8cfb24996d046e5f1829fc; post-merge main/tree/parents verified. Initial unused E1 transition record remains rejected non-certifying history."
+    },
+    {
+      "name": "Observation provenance and limits",
+      "status": "PASS",
+      "evidence": "Three Owner screenshots transcribed with separate UTC observations. HTTP200/OpenAPI and PostgreSQL accepting are narrower than provider readiness; unknown runtime SHA and unverified transient unit purpose retained."
+    },
+    {
+      "name": "Rollback prerequisite audit",
+      "status": "PASS",
+      "evidence": "Preserve active UFW; no table flush, DROP-policy change, secret exposure or proof-service removal. Bind exact task-owned additive deltas and inverse steps after restricted runtime baseline and isolated restore rehearsal; no executed rollback claim."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37161588557
+    }
+  ],
+  "material_non_effects": [
+    "No runtime, source, workflows, secrets, services, firewall, paid, peer/tunnel or third-project mutation.",
+    "No deployed revision, whole-network readiness, restored backup, measured capacity or provider proof certified.",
+    "No project-local trusted gate or protected-main enforcement claimed; canonical external audit."
+  ],
+  "residual_blockers": [],
+  "artifacts": [
+    "docs/OVH_OBSERVATIONS_017.md",
+    "https://github.com/martaxi-boss/pink-iptv/pull/29"
+  ],
+  "state_observed_at": "2026-10-03T23:24:22.433Z",
+  "post_transition_record": ".project-leader/transitions/PINK-IPTV-OVH-OBSERVATION-ROLLBACK-017-MAIN-002.result.json"
+}

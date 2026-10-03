@@ -1,6 +1,8 @@
 # Implementation Plan for Builder Orders
 
-The supervisor should issue small auditable orders. Do not ask the builder to implement the whole product in one PR.
+Project Leader reconstructs live GitHub state, bounds one task and routes it through Supervisor/Builder/audit under the canonical contract. The order descriptions below preserve stage boundaries; completed stages are not instructions to rebuild them.
+
+Current merged stages: Foundation 001, Android Shell 002, Android Catalog/Player 003A–003F and WireGuard dependency/compliance 004A. Open PR #13 holds the combined 004B and Android/backend remediation work. Windows has not started. Public launch remains NO.
 
 ## Order 001 - Foundation / Mega Proof
 Allowed:
@@ -33,7 +35,10 @@ Allowed:
 - favorites/history
 - Android TV focus
 
-## Order 004 - WireGuard POC
+## Order 004 - staged WireGuard work
+- 004A dependency/compliance: COMPLETE / MERGED
+- 004B identity/permission/read-only adapter: open PR #13, not merged
+- later real-tunnel work retains the prerequisites below
 - snapshot/rollback first
 - server WireGuard
 - one test peer
@@ -49,10 +54,10 @@ Allowed:
 - VPN integration
 
 Each order requires:
-- latest main baseline
+- exact live starting revision, with merged main distinguished from pending development work
 - clean worktree
 - explicit changed-file scope
 - tests
 - security check
 - PR
-- supervisor review before merge.
+- Supervisor review and exact transition authorization before a consequential merge.

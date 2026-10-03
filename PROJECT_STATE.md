@@ -1,22 +1,24 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-03
-Phase: Phase 4 — WireGuard Stage 004B — IDENTITY + PERMISSION + ADAPTER ACTIVE
+Phase: Phase 4 — WireGuard Stage 004B — IMPLEMENTED / MAIN PROMOTION PENDING
 Public launch: NO
 
-## Current-contract certification 008 — 2026-10-03
+## Current canonical audit / continuation 013
 
-The canonical contract was refreshed at Project Leader 638ed1047e7124257027ccc38ad7d12235164ba9 (plugin0.5.0, Task/Worker2.0). Audit008 found that task007's old-SHA retry does not satisfy the current structural Recovery rule. Its historical result/journal remain immutable and non-certifying for current acceptance.
+Canonical Project Leader: `66db27d8118cfa527a21466b8a5034acd5b4395e`.
+Live starting main: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
+Audited PR13 development composition: `196e50895d8239724352ef2d7e1fb8ac6fec754e`.
 
-The existing PR13 composition is undergoing fresh task008 v2 certification with an authorization-only commit before correction, exact new CI and canonical external audit. Product/workflow/scanner bytes are preserved. The final task008 Worker Result and live PR13 receipt record actual acceptance once verified; this preparation text does not predict success. See [current-contract audit](docs/AUDIT_CURRENT_CONTRACT_008.md).
+004B identity, Android VPN permission and read-only backend adapter are implemented. Backend validation privacy and stale Android session/catalog/series/preparation fixes are part of the same composition. No real tunnel has been implemented or certified. Task013 reconciles this state and supplies the independent audit in [canonical audit](docs/AUDIT_CANONICAL_013.md).
 
-## Historical development convergence 007 — 2026-10-03
+Task012 hygiene is complete and integrated through PR23. Its certified implementation `2885d6851d9ac79e67d6a9ed87d4682877514793` passed Android CI `37143358663`/`37143356834` and Backend CI `37143358661`/`37143356899`; all four exact-SHA contexts were re-read successfully. The development final head above differs only by Task012 result metadata. Task013 documentation changes require their own fresh implementation certificate; see its durable Worker Result and live PR receipt for actual acceptance. Preparation text is not future PASS evidence.
 
-The authorized WireGuard004B, backend validation/privacy and Android catalog/session lifecycle workstreams are integrated together into PR13's development branch through PR18. PR14/15 are closed as absorbed; source branches and immutable historical records remain preserved.
+Task008 certification/recovery is closed, superseded for the later documentation composition by Task012. Task007's old-SHA recovery and Task006 retrospective authorization remain historical, non-certifying records. Preserve them; do not resume their old next steps or reinterpret them as current grants.
 
-Certified integration implementation: fbcad5f3e47c6388935d2f87981922a9bfd43119. Post-integration Android CI37114668507 attempt2 and Backend CI37114668515 attempt1 succeeded. Task007 journal timestamps precede the old-SHA retry, but its certified implementation lacks the pre-retry journal in ancestry. Under the current contract this is STRUCTURALLY_INVALID for terminal Recovery certification. Historical task006 retroactive authorization remains invalid.
+PR4 and rejected PR22 are closed unmerged. PR14/15 changes were absorbed through development PR18; PR19/20 are closed. PR13 is the sole application promotion candidate. Current consequential effects resolve through the canonical standing-authority contract and exact transition records, rather than an automatic merge Human Gate. No release, deployment, provider, OVH, peer, secret or paid effect follows from this audit.
 
-The exact HEAD containing final metadata still requires live CI and external canonical Supervisor acceptance before promotion. See [convergence audit](docs/AUDIT_CONVERGENCE_PREFLIGHT_007.md) and [PR13 live final-head evidence](https://github.com/martaxi-boss/pink-iptv/pull/13). Stage004B remains development-only until separately authorized main promotion. Main is unchanged; no new product stage, real tunnel, infrastructure, release or production action follows from these records.
+Main promotion remains pending at the time this document is authored. The Task013 exact transition result and live GitHub main/PR state are authoritative after integration. Real-provider and physical-TV evidence remains outstanding. Next WireGuard server/tunnel work first requires current service audit, rollback evidence and an executable authorized access path.
 
 ## Governance
 
@@ -189,7 +191,7 @@ Evidence distinction is preserved:
 
 - Foundation / Mega/Xtream authentication proof: CERTIFIED;
 - later Phase 3 real-provider proof for Live playback, VOD playback, Series info/episode playback, EPG retrieval, Catch Up playback and Global Search catalog sources: NOT CERTIFIED / NOT EXECUTED WITH SECURE CREDENTIALS where applicable;
-- Android Shell 002 physical TV proof: CERTIFIED / PASS;
+- Android Shell 002 Android TV emulator proof: CERTIFIED / PASS; physical-TV proof is not established by that emulator evidence;
 - physical-TV proof for later Phase 3 feature surfaces (Live/VOD player, Series detail/episode player, EPG/Catch Up, Favorites/History/Continue Watching and Global Search): NOT SEPARATELY CERTIFIED.
 
 Deterministic Android TV/D-pad source tests and CI compilation do not equal physical-TV certification. The outstanding provider/device items are residual validation gates, not known code blockers.
@@ -245,7 +247,7 @@ Stage 004A merge commit: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
 
 Stage 004A pins `com.wireguard.android:tunnel:1.0.20260102`, raises Android minimum support to API 24, enables core-library desugaring, preserves only `libwg-go.so` in the PINK APK and proves official GoBackend native loadability without requesting VPN permission or establishing a tunnel.
 
-## Phase 4 / Stage 004B — ACTIVE
+## Phase 4 / Stage 004B — IMPLEMENTED / MAIN PROMOTION PENDING
 
 Stage 004B adds device-install-scoped WireGuard identity, a dedicated Android Keystore AES-256-GCM wrapping key (`pink_iptv_wireguard_identity_v1`), dedicated `pink_wireguard_identity` DataStore persistence, explicit Android `VpnService.prepare()` permission handling, a PINK-owned preparation state machine and a thin read-only GoBackend adapter using tunnel name `pink`.
 

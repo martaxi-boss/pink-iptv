@@ -1,0 +1,117 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T20:46:55.089833+00:00",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner requests live canonical Project Leader confirmation, complete active-project audit and automatic continuation. Reconcile obsolete current-state certification text, independently audit PR13 composition, validate fresh CI, integrate documentation into the development branch and prepare exact main promotion under standing authority. Preserve product, workflows, historical records and external runtime. Later live-tunnel work must satisfy service/rollback/access prerequisites."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "196e50895d8239724352ef2d7e1fb8ac6fec754e",
+    "task_branch": "builder/canonical-audit-continuation-013"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "PROJECT_STATE.md",
+    "docs/AUDIT_CANONICAL_013.md",
+    ".project-leader/tasks/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013.json",
+    ".project-leader/results/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013.json",
+    ".project-leader/recovery-events/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013/**",
+    ".project-leader/transitions/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-013-*"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request",
+    "merge_development_branch"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "force_push",
+    "modify_historical_records",
+    "real_tunnel_without_preflight",
+    "cross_project_mutation"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Current-state reconciliation",
+    "Product and historical trees preserved",
+    "Promotion convergence preflight"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "66db27d8118cfa527a21466b8a5034acd5b4395e"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Audit/state correction validated and integrated into development; promotion separately exact-authorized and independently verified; next covered work reconstructed with any essential access gap explicit.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

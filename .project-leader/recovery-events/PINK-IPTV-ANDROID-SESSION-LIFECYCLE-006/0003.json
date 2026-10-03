@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T08:16:25.299526+00:00",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:37089068739:phone-device-proof:df66332caa26668c6e8049c4266a0de91240683e",
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 3,
+  "event": "RECOVERED",
+  "attempt_count": 2,
+  "previous_event_sha256": "b686fead3a8d2c195c730d00ce2c52daa2e45eb388c930f96141e48f3081bfb3",
+  "detail": "GitHub run 37089068739 attempt 2 completed success at unchanged source head df66332caa26668c6e8049c4266a0de91240683e. Phone job 111161437836 success; actual logs PHONE_LAUNCH_SMOKE=PASS, PHONE_CRASH_ANR=NONE and PHONE_DEVICE_PROOF=PASS. Recovery is verified; root cause of the first failure remains unproven. PR17 was subsequently merged into builder/android-stale-catalog-001 at 1e6ee4001c55cb04320773416a49b4e737ea9b14; post-integration CI still pending."
+}

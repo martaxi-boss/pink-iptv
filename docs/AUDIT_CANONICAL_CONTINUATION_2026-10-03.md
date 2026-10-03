@@ -1,3 +1,5 @@
+> HISTORICAL SNAPSHOT — stopping decision and evidence certification superseded by [convergence preflight 007](AUDIT_CONVERGENCE_PREFLIGHT_007.md). Preserve this report as history; it does not certify the combined current HEAD.
+
 # PINK IPTV — canonical audit and authorized continuation, 3 October 2026
 
 This audit reconstructs live GitHub source, PR diffs, task records, Actions runs, jobs and selected instrumentation logs. It is not a live OVH inspection, real-provider playback certification, physical-TV certification, penetration test or release certification.

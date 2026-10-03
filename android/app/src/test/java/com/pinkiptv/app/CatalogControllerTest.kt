@@ -12,6 +12,8 @@ import com.pinkiptv.app.model.SeriesDetail
 import com.pinkiptv.app.model.SeriesItem
 import com.pinkiptv.app.model.VodItem
 import com.pinkiptv.app.state.CatalogController
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -65,6 +67,63 @@ class CatalogControllerTest {
         advanceUntilIdle()
         assertEquals(CatalogPhase.Error, controller.series.value.phase)
         assertEquals(CatalogUiError.ProviderUnavailable, controller.series.value.error)
+    }
+
+    @Test
+    fun clearInvalidatesQueuedCatalogWork() = runTest {
+        var calls = 0
+        val repository = object : CatalogRepository by FakeCatalogRepository() {
+            override suspend fun liveCategories(): CatalogResult<List<CatalogCategory>> {
+                calls += 1
+                return CatalogResult.Success(emptyList())
+            }
+        }
+        val controller = CatalogController(repository, this)
+        controller.load(CatalogKind.Live)
+        controller.clear()
+        advanceUntilIdle()
+        assertEquals(0, calls)
+        assertEquals(CatalogPhase.Idle, controller.live.value.phase)
+    }
+
+    @Test
+    fun lateCategoryFailureCannotRestoreStateAfterClear() = runTest {
+        val pending = CompletableDeferred<CatalogResult<List<CatalogCategory>>>()
+        val repository = object : CatalogRepository by FakeCatalogRepository() {
+            override suspend fun liveCategories() = pending.await()
+        }
+        val controller = CatalogController(repository, this)
+        controller.load(CatalogKind.Live)
+        runCurrent()
+        controller.clear()
+        pending.complete(CatalogResult.Failure(CatalogError.NetworkFailure))
+        advanceUntilIdle()
+        assertEquals(CatalogPhase.Idle, controller.live.value.phase)
+    }
+
+    @Test
+    fun oldStreamResponseCannotOverwriteTheNextAccountCatalog() = runTest {
+        val oldStreams = CompletableDeferred<CatalogResult<List<LiveStream>>>()
+        var calls = 0
+        val repository = object : CatalogRepository by FakeCatalogRepository() {
+            override suspend fun liveStreams(): CatalogResult<List<LiveStream>> {
+                calls += 1
+                return if (calls == 1) oldStreams.await() else CatalogResult.Success(
+                    listOf(LiveStream("new", "New account", null, null, "live")),
+                )
+            }
+        }
+        val controller = CatalogController(repository, this)
+        controller.load(CatalogKind.Live)
+        runCurrent()
+        controller.clear()
+        controller.load(CatalogKind.Live)
+        runCurrent()
+        oldStreams.complete(CatalogResult.Success(
+            listOf(LiveStream("old", "Old account", null, null, "live")),
+        ))
+        advanceUntilIdle()
+        assertEquals(listOf("new"), controller.live.value.items.map { it.id })
     }
 
     private class FakeCatalogRepository(

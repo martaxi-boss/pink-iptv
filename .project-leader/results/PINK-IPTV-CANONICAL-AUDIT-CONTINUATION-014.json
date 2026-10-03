@@ -1,0 +1,75 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014.json",
+  "authorization_commit_sha": "8cd48de9bbbce5f811ca970e56e1a7752077a530",
+  "authorization_sha256": "686421533c6a0cca2478d174050db354db13fa79096f7daabc09dbe514c9f0de",
+  "implementation_head_sha": "31385b767d69bcb2f6389347c496bb9bbd52703b",
+  "branch": "builder/canonical-audit-continuation-014",
+  "pr_number": 25,
+  "recorded_at": "2026-10-03T21:13:37.572Z",
+  "changes": [
+    ".project-leader/tasks/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014.json",
+    "PROJECT_STATE.md",
+    "docs/AUDIT_CANONICAL_014.md"
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Repository/source audit preserves username-password-only Xtream contract, exact mapped dns_link, completed Phase3 and bounded004B preparation. Windows and real tunnel remain separate phases; report states provider/device/production limits."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Current canonical generic policy verifier accepts only Task014 authorization, PROJECT_STATE and docs/AUDIT_CANONICAL_014.md from exact development base196e508. No Task013 files, workflows or product bytes imported."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Required runs37153153758 Android PR and37153153811 Backend PR bind implementation31385b7; same-SHA push runs37153151140/37153151133 checked. Immutable authorization8cd48de9 and SHA256 verified from GitHub by canonical external verifier. Final evidence must be task-local descendants only."
+    },
+    {
+      "name": "Current-state reconciliation",
+      "status": "PASS",
+      "evidence": "Closed008 and accepted012 are represented accurately; emulator TV evidence is distinguished from physical TV; rejected PR24 remains unmerged and preserved."
+    },
+    {
+      "name": "Product and historical trees preserved",
+      "status": "PASS",
+      "evidence": "Android/backend/.github/infra/windows/shared/design trees match base196e508; previous tasks/results/journals unchanged; local69 non-PostgreSQL backend tests and full diff whitespace passed."
+    },
+    {
+      "name": "Promotion convergence preflight",
+      "status": "PASS",
+      "evidence": "PR25 targets the existing development branch; PR13 is sole product main candidate. Mainbase84fe2dff, no local trusted gate/protected-main/rulesets claimed. Promotion uses separate exact standing-authority authorization and independent result. Next runtime access gap is concrete. PR25 development merge951e5477 and PR13 main merge71a7b7ff independently verified. Exact prior authorization59b55af0 is durable on the transition branch; next OVH access gap identified."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37153153758
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37153153811
+    }
+  ],
+  "material_non_effects": [
+    "Product, protected workflows, historical records and runtime unchanged by Task014.",
+    "No release/deploy, real tunnel, peer, provider/OVH/secret/data/commercial effects.",
+    "No trusted project-local gate or branch protection claimed; external canonical audit used."
+  ],
+  "residual_blockers": [],
+  "artifacts": [
+    "docs/AUDIT_CANONICAL_014.md",
+    "https://github.com/martaxi-boss/pink-iptv/pull/25"
+  ],
+  "state_observed_at": "2026-10-03T21:13:37.572Z",
+  "post_transition_record": ".project-leader/transitions/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014-MAIN.result.json"
+}

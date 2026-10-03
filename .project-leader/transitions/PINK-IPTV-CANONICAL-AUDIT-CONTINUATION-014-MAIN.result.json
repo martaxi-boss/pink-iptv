@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014-MAIN",
+  "task_id": "PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-CANONICAL-AUDIT-CONTINUATION-014-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "13",
+    "revision": "951e5477fb59fc5ad69375711fdf7dbcafa2e412",
+    "base_revision": "84fe2dfffd4d381f45bd9b88a0983c122ba42ee4",
+    "environment": "main"
+  },
+  "observed_at": "2026-10-03T21:13:37.118Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "71a7b7ff88a0b66eab5857a6e9199c12fb9fb89a"
+  },
+  "evidence": [
+    "GitHub PR13 is merged, exact head951e5477, merge71a7b7ff and base84fe2dff verified independently.",
+    "Authorization exists before effect at commit59b55af0214a13b4d752e55c6a3cc81be205a369 on builder/canonical-transitions-014; preserve that exact durable ref.",
+    "Main merge tree equals certified implementation31385b7; implementation is ancestral; no product/material post-CI drift.",
+    "Android37153153758 and Backend37153153811 exact implementation CI plus push consistency passed canonical external verifier."
+  ],
+  "residual_blockers": []
+}

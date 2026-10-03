@@ -1,0 +1,118 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-03T21:17:28.356220+00:00",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Continue automatically after canonical audit/main promotion. Prepare only a read-only OVH service/network facts collector and explicit rollback/evidence packet for the established Phase4 prerequisites; reconcile security wording with already-approved encrypted Android credentials and device-local history. Preserve product/workflows/history, no SSH/server/network/secret/peer/tunnel mutation and no third-repository changes. Current runtime execution capability is absent and must remain an explicit next-step access boundary."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "43829215cceeccb3f0f2b4b99c139ab63ce4c9cb",
+    "task_branch": "builder/wireguard-preflight-preparation-015"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "infra/scripts/wireguard-preflight.sh",
+    "docs/WIREGUARD_PREFLIGHT.md",
+    "docs/SECURITY.md",
+    ".project-leader/tasks/PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015.json",
+    ".project-leader/results/PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015.json",
+    ".project-leader/recovery-events/PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015/**",
+    ".project-leader/transitions/PINK-IPTV-WIREGUARD-PREFLIGHT-PREPARATION-015-*"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "ssh_or_ovh_runtime_mutation",
+    "peer_or_real_tunnel_activation",
+    "cross_project_mutation",
+    "change_ci_workflows",
+    "modify_historical_records",
+    "force_push"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Read-only collector safety",
+    "Security wording preserves implemented contract",
+    "Runtime evidence boundary"
+  ],
+  "required_ci": [
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "66db27d8118cfa527a21466b8a5034acd5b4395e"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Prepared preflight collector/runbook and security wording accepted with exact applicable CI and scoped audit; integrated only through exact authorized transition; no actual OVH/rollback/tunnel proof inferred. The next runtime execution access boundary is explicit.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

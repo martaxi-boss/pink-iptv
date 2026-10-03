@@ -1,0 +1,25 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CANONICAL-RECERTIFICATION-008",
+  "terminal_status": "STALE_EXECUTION_PACKET",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-CANONICAL-RECERTIFICATION-008.json",
+  "authorization_commit_sha": "f68b2392408fb2c2d2c960d451341c856cc5d082",
+  "authorization_sha256": "be258473043f8f6d6456715964a12289af4bc9f6cdb15680f543b874dc75cd7e",
+  "implementation_head_sha": "867db081e5ef0e382c674703e1fe3af22a0ce278",
+  "branch": "builder/canonical-recertification-008",
+  "pr_number": 19,
+  "recorded_at": "2026-10-03T14:53:34.562Z",
+  "changes": [
+    "Documentation-only recertification prepared; concurrent canonical Task008 in PR13 supersedes the duplicate candidate"
+  ],
+  "validation": [],
+  "ci": [],
+  "material_non_effects": [
+    "No development integration or main merge; no product/workflow mutation"
+  ],
+  "residual_blockers": [
+    "Task008 central-policy digest is historical and fails exact current policy binding; superseded before acceptance. PR19 closed; no integration."
+  ]
+}

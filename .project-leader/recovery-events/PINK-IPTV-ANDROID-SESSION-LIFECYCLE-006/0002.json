@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-SESSION-LIFECYCLE-006",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-03T08:11:40.470772+00:00",
+  "strategy_generation": 1,
+  "action_fingerprint": "android-ci:37089068739:phone-device-proof:df66332caa26668c6e8049c4266a0de91240683e",
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "sequence": 2,
+  "event": "RETRY_AUTHORIZED",
+  "attempt_count": 2,
+  "previous_event_sha256": "108535ed563c50bc86b7ba8aef6ef8f49cb2397c89f7146f664e15d7e2b0bcd8",
+  "detail": "After inspecting the completed failed run and job 111106526517 logs, retried only failed jobs of run 37089068739. GitHub confirms attempt 2 exists. Existing passing build/backend jobs are retained; no active CI was redispatched and no code changed."
+}

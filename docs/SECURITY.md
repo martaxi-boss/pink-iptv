@@ -1,6 +1,6 @@
 # Security Baseline
 
-## Never commit or persist
+## Never commit; no backend or plaintext secret persistence
 
 - Mega OTT API token
 - Xtream customer passwords
@@ -10,7 +10,7 @@
 - SSH private keys
 - signing keystores/passwords
 
-Order 001's database schema contains no password/token/key columns.
+Order 001's backend database schema contains no password/token/key columns. The approved Android client stores IPTV username/password only as Keystore-protected AES/GCM ciphertext and IV in its dedicated DataStore; plaintext passwords never enter Room, saved UI state, repository, logs or backend storage. WireGuard identity uses its separate Keystore/DataStore boundary. This client-local encrypted storage is not an exception permitting backend or plaintext persistence.
 
 ## Environment-only secrets
 
@@ -72,4 +72,4 @@ Dependencies remain pinned/reproducible for the implemented backend. Dependency/
 
 ## Privacy and telemetry
 
-Collect only operational telemetry needed to diagnose failures and run the service. Viewing history is not collected by default. Any future analytics require Supervisor review, a defined data-minimization purpose, and appropriate user-facing disclosure.
+Collect only operational telemetry needed to diagnose failures and run the service. Viewing history is not collected by the backend or remote telemetry. The approved Android library stores account-isolated favorites/recent history and eligible resume positions locally in Room; these device-local features do not authorize transmission of viewing history. Any future analytics require Supervisor review, a defined data-minimization purpose, and appropriate user-facing disclosure.

@@ -1,7 +1,7 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-03
-Phase: Phase 4 — WireGuard Stage 004B — IMPLEMENTED / MAIN PROMOTION PENDING
+Phase: Phase 4 — WireGuard Stage 004B — COMPLETE / MERGED; runtime preflight preparation
 Public launch: NO
 
 ## Current canonical audit / continuation 014
@@ -18,7 +18,7 @@ Task008 certification/recovery is closed, superseded for the later documentation
 
 PR4 and rejected PR22/24 are closed unmerged. PR14/15 changes were absorbed through development PR18; PR19/20 are closed. PR13 is the sole application promotion candidate. Current consequential effects resolve through the canonical standing-authority contract and exact transition records, rather than an automatic merge Human Gate. No release, deployment, provider, OVH, peer, secret or paid effect follows from this audit.
 
-Main promotion remains pending at the time this document is authored. The Task014 exact transition result and live GitHub main/PR state are authoritative after integration. Real-provider and physical-TV evidence remains outstanding. Next WireGuard server/tunnel work first requires current service audit, rollback evidence and an executable authorized access path.
+PR13 was merged normally at `71a7b7ff88a0b66eab5857a6e9199c12fb9fb89a`; receipt PR26 was merged at `43829215cceeccb3f0f2b4b99c139ab63ce4c9cb`. Exact prior transition authorizations remain durable on `builder/canonical-transitions-014`; the Task014 Worker Result and main transition result are on main. Task016 now prepares the read-only runtime preflight and corrects public transition SHA scanner compatibility after rejected PR27/Task015. Its own CI/result controls must pass; this state text does not predict their success. Real-provider and physical-TV evidence remains outstanding. Next WireGuard server/tunnel work first requires current service audit, rollback evidence and an executable authorized access path.
 
 ## Governance
 
@@ -200,7 +200,7 @@ PUBLIC LAUNCH = NO.
 DEPLOY = NO.
 RELEASE = NO.
 
-Phase 4 — WireGuard is active under staged supervision. Stage 004A is COMPLETE / MERGED and Stage 004B is ACTIVE. Later gates remain snapshot/rollback, existing-service audit, one test peer, first real Android tunnel activation, networking safety, measured bandwidth and no production onboarding.
+Phase 4 — WireGuard is active under staged supervision. Stage 004A is COMPLETE / MERGED and Stage 004B is COMPLETE / MERGED. Later gates remain snapshot/rollback, existing-service audit, one test peer, first real Android tunnel activation, networking safety, measured bandwidth and no production onboarding.
 
 ## Remaining technical gates
 
@@ -247,7 +247,7 @@ Stage 004A merge commit: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
 
 Stage 004A pins `com.wireguard.android:tunnel:1.0.20260102`, raises Android minimum support to API 24, enables core-library desugaring, preserves only `libwg-go.so` in the PINK APK and proves official GoBackend native loadability without requesting VPN permission or establishing a tunnel.
 
-## Phase 4 / Stage 004B — IMPLEMENTED / MAIN PROMOTION PENDING
+## Phase 4 / Stage 004B — COMPLETE / MERGED
 
 Stage 004B adds device-install-scoped WireGuard identity, a dedicated Android Keystore AES-256-GCM wrapping key (`pink_iptv_wireguard_identity_v1`), dedicated `pink_wireguard_identity` DataStore persistence, explicit Android `VpnService.prepare()` permission handling, a PINK-owned preparation state machine and a thin read-only GoBackend adapter using tunnel name `pink`.
 

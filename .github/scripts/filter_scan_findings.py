@@ -8,9 +8,11 @@ CONTROL_RECORD_PREFIXES = (
     ".project-leader/results/",
     ".project-leader/checkpoints/",
     ".project-leader/recovery-events/",
+    ".project-leader/transitions/",
 )
 SHA_FIELDS = {
     "base_sha",
+    "base_revision",
     "implementation_head_sha",
     "sha256",
     "previous_event_sha256",

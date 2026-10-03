@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-STALE-CATALOG-001",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-02T23:40:51Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "summary": "Remediate stale asynchronous catalog publication after clear/logout and stale same-series detail responses, found during the authorized whole-project audit. Add deterministic delayed-response regressions without provider or production access.",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND"
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "84fe2dfffd4d381f45bd9b88a0983c122ba42ee4",
+    "task_branch": "builder/android-stale-catalog-001",
+    "pr_number": null
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "android/app/src/main/java/com/pinkiptv/app/state/CatalogController.kt",
+    "android/app/src/main/java/com/pinkiptv/app/state/SeriesDetailController.kt",
+    "android/app/src/test/java/com/pinkiptv/app/CatalogControllerTest.kt",
+    "android/app/src/test/java/com/pinkiptv/app/SeriesDetailControllerTest.kt",
+    ".github/scripts/filter_scan_findings.py",
+    ".github/workflows/android-ci.yml",
+    ".github/workflows/backend-ci.yml",
+    ".project-leader/tasks/PINK-IPTV-ANDROID-STALE-CATALOG-001.json",
+    ".project-leader/results/PINK-IPTV-ANDROID-STALE-CATALOG-001.json"
+  ],
+  "allowed_actions": [
+    "guard_stale_controller_publication",
+    "add_delayed_response_regressions",
+    "reuse_control_sha_scan_filter",
+    "create_commits",
+    "run_ci",
+    "create_pr"
+  ],
+  "prohibited_actions": [
+    "exclude_all_project_leader_records_from_secret_scanning",
+    "ignore_non_sha_findings",
+    "merge_to_main",
+    "release_or_publish",
+    "production_deploy",
+    "vpn_server_or_ovh_mutation",
+    "peer_creation",
+    "real_vpn_tunnel_activation",
+    "production_secret_change",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "force_push_or_destructive_rewrite",
+    "branch_protection_or_ruleset_change",
+    "material_architecture_change",
+    "material_scope_change",
+    "mutation_outside_martaxi-boss/pink-iptv"
+  ],
+  "human_gates": [
+    {
+      "action": "merge_to_main",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "vpn_server_or_ovh_mutation",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_owner_approval": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_owner_approval": true
+    }
+  ],
+  "required_validation": [
+    "Catalog clear invalidates queued and suspended requests",
+    "Stale catalog success and failure cannot overwrite a new catalog",
+    "Series same-ID requests accept only the newest generation",
+    "JVM tests, lint, APK and instrumentation assembly pass",
+    "No production or VPN effect"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "terminal_condition": "Delayed-response regressions and required CI succeed; PR ready for review; merge remains Owner gate.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

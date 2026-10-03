@@ -9,6 +9,8 @@ import com.pinkiptv.app.state.RootScreen
 import com.pinkiptv.app.state.SessionController
 import com.pinkiptv.app.storage.CredentialStore
 import com.pinkiptv.app.storage.StoredCredentials
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -207,6 +209,133 @@ class SessionControllerTest {
                 it.name.contains("password", ignoreCase = true)
             },
         )
+    }
+
+
+    @Test
+    fun delayedLoginCannotRestoreSessionAfterLogout() = runTest {
+        val pending = CompletableDeferred<SessionResult>()
+        val repository = object : SessionRepository {
+            override suspend fun resolve(username: String, password: String) = pending.await()
+        }
+        val store = FakeCredentialStore()
+        val runtime = RuntimeProviderSessionStore()
+        val controller = SessionController(repository, store, this, runtime)
+        advanceUntilIdle()
+        controller.login("old-user", "synthetic-value")
+        runCurrent()
+        controller.logout()
+        runCurrent()
+        pending.complete(success())
+        advanceUntilIdle()
+        assertEquals(RootScreen.Login, controller.state.value.screen)
+        assertNull(runtime.current())
+        assertNull(store.stored)
+        assertEquals(0, store.saveCount)
+    }
+
+    @Test
+    fun queuedDuplicateLoginStartsOnlyOneRequest() = runTest {
+        val repository = FakeSessionRepository(success())
+        val controller = SessionController(repository, FakeCredentialStore(), this)
+        advanceUntilIdle()
+        controller.login("first", "synthetic-value")
+        controller.login("second", "synthetic-value")
+        advanceUntilIdle()
+        assertEquals(listOf("first"), repository.calls.map { it.first })
+    }
+
+    @Test
+    fun delayedBootstrapCannotOverwriteNewLogin() = runTest {
+        val pending = CompletableDeferred<SessionResult>()
+        val repository = object : SessionRepository {
+            override suspend fun resolve(username: String, password: String): SessionResult =
+                if (username == "stored-user") pending.await() else success()
+        }
+        val store = FakeCredentialStore(StoredCredentials("stored-user", "synthetic-value"))
+        val runtime = RuntimeProviderSessionStore()
+        val controller = SessionController(repository, store, this, runtime)
+        runCurrent()
+        controller.login("new-user", "synthetic-value")
+        runCurrent()
+        pending.complete(SessionResult.InvalidCredentials)
+        advanceUntilIdle()
+        assertEquals(RootScreen.Home, controller.state.value.screen)
+        assertEquals("new-user", runtime.current()?.username)
+        assertEquals("new-user", store.stored?.username)
+        assertEquals(0, store.clearCount)
+    }
+
+    @Test
+    fun logoutWaitsForSuspendedSaveAndClearsItsResult() = runTest {
+        val saveStarted = CompletableDeferred<Unit>()
+        val finishSave = CompletableDeferred<Unit>()
+        var persisted: StoredCredentials? = null
+        val store = object : CredentialStore {
+            override suspend fun load(): StoredCredentials? = null
+            override suspend fun save(username: String, password: String) {
+                saveStarted.complete(Unit)
+                finishSave.await()
+                persisted = StoredCredentials(username, password)
+            }
+            override suspend fun clear() { persisted = null }
+        }
+        val runtime = RuntimeProviderSessionStore()
+        val controller = SessionController(FakeSessionRepository(success()), store, this, runtime)
+        advanceUntilIdle()
+        controller.login("old-user", "synthetic-value")
+        runCurrent()
+        assertEquals(true, saveStarted.isCompleted)
+        controller.logout()
+        runCurrent()
+        finishSave.complete(Unit)
+        advanceUntilIdle()
+        assertNull(persisted)
+        assertNull(runtime.current())
+        assertEquals(RootScreen.Login, controller.state.value.screen)
+    }
+
+    @Test
+    fun delayedStoredCredentialReadCannotRestoreLogout() = runTest {
+        val pending = CompletableDeferred<StoredCredentials?>()
+        var resolveCalls = 0
+        val store = object : CredentialStore {
+            override suspend fun load() = pending.await()
+            override suspend fun save(username: String, password: String) = Unit
+            override suspend fun clear() = Unit
+        }
+        val repository = object : SessionRepository {
+            override suspend fun resolve(username: String, password: String): SessionResult {
+                resolveCalls += 1
+                return success()
+            }
+        }
+        val runtime = RuntimeProviderSessionStore()
+        val controller = SessionController(repository, store, this, runtime)
+        runCurrent()
+        controller.logout()
+        pending.complete(StoredCredentials("stored-user", "synthetic-value"))
+        advanceUntilIdle()
+        assertEquals(0, resolveCalls)
+        assertNull(runtime.current())
+        assertEquals(RootScreen.Login, controller.state.value.screen)
+    }
+
+    @Test
+    fun immediateFailedLoginCannotCancelLogoutCredentialCleanup() = runTest {
+        val store = FakeCredentialStore(StoredCredentials("old-user", "synthetic-value"))
+        val repository = FakeSessionRepository(success())
+        val runtime = RuntimeProviderSessionStore()
+        val controller = SessionController(repository, store, this, runtime)
+        advanceUntilIdle()
+        controller.logout()
+        repository.result = SessionResult.InvalidCredentials
+        controller.login("new-user", "synthetic-value")
+        advanceUntilIdle()
+        assertNull(store.stored)
+        assertNull(runtime.current())
+        assertEquals(LoginError.InvalidCredentials, controller.state.value.loginError)
+        assertEquals(1, store.clearCount)
     }
 
     private fun success(

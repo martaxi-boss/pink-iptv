@@ -28,22 +28,27 @@ class CatalogController(
     val movies: StateFlow<CatalogUiState> = mutableMovies.asStateFlow()
     val series: StateFlow<CatalogUiState> = mutableSeries.asStateFlow()
 
+    private var generation = 0L
     private val allItems = mutableMapOf<CatalogKind, List<CatalogUiItem>>()
 
     fun load(kind: CatalogKind) {
         val state = stateFor(kind)
         if (state.value.phase == CatalogPhase.Loading) return
 
+        val requestGeneration = generation
+        state.value = state.value.copy(
+            phase = CatalogPhase.Loading,
+            error = null,
+        )
         scope.launch {
-            state.value = state.value.copy(
-                phase = CatalogPhase.Loading,
-                error = null,
-            )
+            if (requestGeneration != generation) return@launch
 
-            val categories = when (val result = categoryResult(kind)) {
+            val categoryResponse = categoryResult(kind)
+            if (requestGeneration != generation) return@launch
+            val categories = when (val result = categoryResponse) {
                 is CatalogResult.Success -> result.value
                 is CatalogResult.Failure -> {
-                    fail(kind, result.error)
+                    fail(kind, result.error, requestGeneration)
                     return@launch
                 }
             }
@@ -65,7 +70,7 @@ class CatalogController(
                         )
                     }
                     is CatalogResult.Failure -> {
-                        fail(kind, result.error)
+                        fail(kind, result.error, requestGeneration)
                         return@launch
                     }
                 }
@@ -86,7 +91,7 @@ class CatalogController(
                         )
                     }
                     is CatalogResult.Failure -> {
-                        fail(kind, result.error)
+                        fail(kind, result.error, requestGeneration)
                         return@launch
                     }
                 }
@@ -102,12 +107,13 @@ class CatalogController(
                         )
                     }
                     is CatalogResult.Failure -> {
-                        fail(kind, result.error)
+                        fail(kind, result.error, requestGeneration)
                         return@launch
                     }
                 }
             }
 
+            if (requestGeneration != generation) return@launch
             allItems[kind] = items
             val previousCategory = state.value.selectedCategoryId
             val selectedCategory = previousCategory
@@ -139,6 +145,7 @@ class CatalogController(
     }
 
     fun clear() {
+        generation += 1
         allItems.clear()
         mutableLive.value = CatalogUiState(CatalogKind.Live)
         mutableMovies.value = CatalogUiState(CatalogKind.Movies)
@@ -152,7 +159,8 @@ class CatalogController(
             CatalogKind.Series -> repository.seriesCategories()
         }
 
-    private fun fail(kind: CatalogKind, error: CatalogError) {
+    private fun fail(kind: CatalogKind, error: CatalogError, requestGeneration: Long) {
+        if (requestGeneration != generation) return
         stateFor(kind).value = CatalogUiState(
             kind = kind,
             phase = CatalogPhase.Error,

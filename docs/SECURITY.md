@@ -50,6 +50,8 @@ Signed PINK sessions live for at most five minutes in Order 001. The token subje
 
 `/v1/session/resolve` returns `Cache-Control: no-store`. Unknown usernames and wrong passwords share the same public result. Raw upstream exceptions are never returned to clients.
 
+Request-validation failures retain HTTP 422 but return only `{"detail":"Invalid request"}` with `Cache-Control: no-store`. Validation inputs, extra field names, parser context and request bodies are not echoed or logged by the handler. Invalid requests do not construct an Xtream client. Regression tests cover malformed JSON, missing fields, invalid credential types, extra values and sensitive extra field names.
+
 ## Backend transport and abuse controls
 
 The public PINK Backend is HTTPS-only. TLS certificate validation must remain enabled for backend and provider HTTPS connections.

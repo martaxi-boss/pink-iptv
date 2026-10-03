@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-BACKEND-VALIDATION-PRIVACY-001",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-BACKEND-VALIDATION-PRIVACY-001.json",
+  "implementation_head_sha": "eb0bdbc2afa305d1011e5c96a6a90c56f479367b",
+  "branch": "builder/backend-validation-privacy-001",
+  "pr_number": 14,
+  "changes": [
+    "Generic HTTP422 request validation handler with no-store",
+    "Seven privacy regressions",
+    "Narrow SHA metadata scanner filter reused from PR13"
+  ],
+  "validation": [
+    {
+      "name": "Invalid request responses never echo submitted values or field names",
+      "status": "PASS",
+      "evidence": "Seven regression cases; Backend CI job 111073945949"
+    },
+    {
+      "name": "Validation responses use no-store and HTTP422",
+      "status": "PASS",
+      "evidence": "Seven regression cases"
+    },
+    {
+      "name": "Invalid requests do not contact Xtream",
+      "status": "PASS",
+      "evidence": "Forbidden client factory asserted in regression tests"
+    },
+    {
+      "name": "Existing backend suite and formatting pass",
+      "status": "PASS",
+      "evidence": "69 local tests passed; PostgreSQL test skipped locally; CI: 70 passed, Ruff and migration success"
+    },
+    {
+      "name": "Secret scanning retains non-metadata findings",
+      "status": "PASS",
+      "evidence": "CI scan passed; local positive/negative metadata probes passed; metadata-only final head a18234f also passed Backend CI 37079090616"
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37078597908
+    }
+  ],
+  "material_non_effects": [
+    "No merge",
+    "No deploy or release",
+    "No Android/Windows application change",
+    "No VPN, peer, OVH or production mutation",
+    "Control reference repository read-only"
+  ],
+  "residual_blockers": [
+    "Merge requires Owner approval; production remains unauthorized"
+  ],
+  "recorded_at": "2026-10-02T23:58:54.470411+00:00",
+  "state_observed_at": "2026-10-02T23:58:54.470411+00:00"
+}

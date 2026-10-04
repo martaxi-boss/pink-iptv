@@ -279,6 +279,7 @@ private fun playerErrorMessage(error: PlayerError?): String =
             "Este conteúdo não tem dados de reprodução válidos."
         PlayerError.Network ->
             "Não foi possível ligar ao serviço de vídeo."
+        PlayerError.ProviderDenied -> "O fornecedor recusou a reprodução (401/403). A conta entrou, mas o acesso ao vídeo não foi autorizado."
         PlayerError.SourceUnavailable ->
             "A fonte de vídeo não está disponível."
         PlayerError.UnsupportedFormat ->

@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037.json",
+  "authorization_commit_sha": "ad6e33dab8deebbe7dd96f6087f0e87948e92489",
+  "authorization_sha256": "3108d4fd9ea9864680d34a651d595898029dabfb0f460d351016f0fe782db253",
+  "implementation_head_sha": "ff0c276650acf8efcd1293f15c81873c2f90a6c0",
+  "branch": "builder/android-device-remediation-037",
+  "pr_number": 34,
+  "recorded_at": "2026-10-04T20:53:47.810Z",
+  "state_observed_at": "2026-10-04T20:50:03Z",
+  "changes": [
+    "Protected saved-account retry and visible identity; bounded provider artwork; readable theme and responsive catalog/library labels.",
+    "Remove20second continuous-call cutoff, sanitized401/403 errors and one same-origin current-session legacyLive attempt on canonical401/404 only.",
+    "Reconcile physical findings and historical non-certifying039/040 diagnostics; independent source transport041."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Existing Xtream-only username/password, authoritative perline origin, current-session credentials, Room/Keystore/DataStore preserved. LegacyLive uses sameorigin; no redirects,403/network/othermedia fallback or loop. Independent041 proves firststream bothpaths200/MPEG-TS, not a cure for SIC/RTP401."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Exact383d3e39...ff0c2766 remotecompare28files: allowed android/**, two docs, immutableTask/recovery only;0backend/0workflow changes. Canonical scope/task validation and diffcheck PASS."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Exactff0c2766 AndroidPR37232393331/push37232390206 andBackendPR37232393327/push37232390207 all terminalSUCCESS. Lint/JVM/build/instrumentationcompile/leakscan/nativepayload, phone111526352941/API24111526352905 andBackendlint/format/migration/tests/scan passed. Canonical17301664 final-head native verification required before merge; no localtrustedgate claimed."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37232393331
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37232393327
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/34",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37232393331",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37232390206",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37232393327",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37232390207",
+    "APK11313718220 sourceff0c276650acf8efcd1293f15c81873c2f90a6c0 SHA256a7d119322bdc419532899a286a82b3f445499e6457d6d27496742b584a317994; persistentPINK-IPTV-0.1.1.apk.",
+    "https://github.com/martaxi-boss/VPS/actions/runs/37232584851"
+  ],
+  "material_non_effects": [
+    "No backend/runtime/provider/network mutation, release/publiclaunch or real AndroidVPN certification.",
+    "SIC/RTP401 not proved fixed; metadata/firstsource TS transport is not full physical AVdecode. Saved-login/artwork/layout/playback physical acceptance remains next validation.",
+    "Debugcertificate differs from prior031 APK. Removing prior test install clears old localdata/keys; login once in new install, then protected credentials support normal reopen.",
+    "Original039 scope mismatch and040 multistage recovery-verifier limitation stay explicitly non-certifying history; no retrospective authorization."
+  ],
+  "residual_blockers": []
+}

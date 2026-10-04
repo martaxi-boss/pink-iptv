@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-04T20:15:25.837Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "037-ci-6af03bb6-scanner-fictional-basic-auth",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": null,
+  "detail": "Android PR37230928912 and Backend push37230927179 fail only credential scan: ArtworkPolicyTest line11 embeds fictional BasicAuth URL. Android lint/JVM/build/native/instrumentation compile and Backend lint/format/migrations/tests pass. Preserve detector; construct dummy URL with HttpUrl.Builder instead."
+}

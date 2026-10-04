@@ -1,6 +1,9 @@
 package com.pinkiptv.app.ui.screens
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.text.style.TextOverflow
+import com.pinkiptv.app.ui.components.ProviderArtwork
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -192,12 +195,13 @@ private fun ColumnScope.SeriesDetailContent(
     onSelectSeason: (String) -> Unit,
     onOpenEpisode: (SeriesEpisode) -> Unit,
 ) {
-    state.plot?.takeIf { it.isNotBlank() }?.let { plot ->
-        Text(
-            text = plot,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.testTag("series_detail_plot"),
-        )
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        ProviderArtwork(state.artworkUrl, state.title ?: "Série", Modifier.size(72.dp, 108.dp), poster = true)
+        state.plot?.takeIf { it.isNotBlank() }?.let { plot ->
+            Text(plot, style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f).testTag("series_detail_plot"),
+                maxLines = 5, overflow = TextOverflow.Ellipsis)
+        }
     }
 
     if (state.genre != null || state.rating != null) {

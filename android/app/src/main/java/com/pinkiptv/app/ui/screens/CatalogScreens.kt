@@ -11,6 +11,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.text.style.TextOverflow
+import com.pinkiptv.app.ui.components.ProviderArtwork
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -212,7 +217,7 @@ private fun ColumnScope.CatalogContent(
         )
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 180.dp),
+            columns = GridCells.Adaptive(minSize = if (state.kind == CatalogKind.Live) 280.dp else 140.dp),
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -223,6 +228,7 @@ private fun ColumnScope.CatalogContent(
             gridItems(state.items, key = { it.id }) { item ->
                 CatalogItemCard(
                     item = item,
+                    poster = state.kind != CatalogKind.Live,
                     favorite = item.id in favoriteIds,
                     onClick = { onSelectItem(item) },
                     onToggleFavorite = { onToggleFavorite(item) },
@@ -265,6 +271,8 @@ private fun CategoryChip(
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -272,6 +280,7 @@ private fun CategoryChip(
 @Composable
 private fun CatalogItemCard(
     item: CatalogUiItem,
+    poster: Boolean,
     favorite: Boolean,
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -291,26 +300,30 @@ private fun CatalogItemCard(
             .onFocusChanged { focused = it.isFocused }
             .clickable(onClick = onClick),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.titleMedium,
-            )
-            item.subtitle?.takeIf { it.isNotBlank() }?.let { subtitle ->
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            if (poster) {
+                ProviderArtwork(item.artworkUrl, item.name,
+                    Modifier.fillMaxWidth().aspectRatio(2f / 3f), poster = true)
             }
-            CatalogActionButton(
-                label = if (favorite) "♥ FAVORITO" else "♡ FAVORITO",
-                testTag = "catalog_favorite_" + item.id,
-                onClick = onToggleFavorite,
-            )
+            Row(modifier = Modifier.padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                if (!poster) {
+                    ProviderArtwork(item.artworkUrl, item.name, Modifier.size(64.dp))
+                }
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(item.name, style = MaterialTheme.typography.titleSmall,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(if (poster) "Abrir detalhes / reproduzir" else "▶ Ver canal",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary)
+                    CatalogActionButton(
+                        label = if (favorite) "♥ Guardado" else "♡ Guardar",
+                        testTag = "catalog_favorite_" + item.id,
+                        onClick = onToggleFavorite,
+                    )
+                }
+            }
         }
     }
 }
@@ -336,6 +349,6 @@ private fun CatalogActionButton(
             .testTag(testTag)
             .onFocusChanged { focused = it.isFocused },
     ) {
-        Text(label)
+        Text(label, maxLines = 1, softWrap = false)
     }
 }

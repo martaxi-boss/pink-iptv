@@ -57,7 +57,7 @@ data class HomeItem(
 )
 
 @Composable
-fun HomeScreen(onNavigate: (String) -> Unit) {
+fun HomeScreen(onNavigate: (String) -> Unit, accountName: String? = null) {
     val items = remember {
         listOf(
             HomeItem("live", R.string.live_tv, Icons.Filled.LiveTv, "home_live"),
@@ -85,7 +85,14 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             color = MaterialTheme.colorScheme.primary,
         )
 
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("O que vamos ver hoje?", style = MaterialTheme.typography.titleLarge)
+            accountName?.let {
+                Text("Conta: " + it, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+            }
+        }
+        BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth()) {
             val columns = if (maxWidth >= 900.dp) 3 else 2
             val focusRequesters = remember(columns) {
                 List(items.size) { FocusRequester() }

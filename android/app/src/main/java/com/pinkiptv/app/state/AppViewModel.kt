@@ -109,6 +109,8 @@ class AppViewModel(
         sessionController.login(username, password)
     }
 
+    fun retrySavedLogin() = sessionController.retrySavedLogin()
+
     fun logout() {
         vpnPreparationController.onIptvLogout()
         playbackSelectionController.clear()

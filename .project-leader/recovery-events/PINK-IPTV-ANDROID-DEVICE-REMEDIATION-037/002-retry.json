@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-04T20:15:41.975Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "037-ci-6af03bb6-scanner-fictional-basic-auth",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "e8af8d319202647fe7f9589864e6c924877205a03021273000ecfb48c2d09eea",
+  "detail": "Supervisor authorizes bounded fixture correction within android/** and fresh automatic CI on new material descendant; no scan filter/baseline suppression, no old-SHA rerun, same product behavior."
+}

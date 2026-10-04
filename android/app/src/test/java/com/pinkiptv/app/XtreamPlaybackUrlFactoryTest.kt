@@ -16,6 +16,24 @@ import org.junit.Test
 
 class XtreamPlaybackUrlFactoryTest {
     @Test
+    fun legacyLiveKeepsOriginAndEncodesCredentialsWithoutExtension() {
+        val store = RuntimeProviderSessionStore()
+        assertTrue(store.establish("fixture/user", "fixture/pass", // pragma: allowlist secret
+            success("https://catalog.invalid:8443/")))
+        val source = (XtreamPlaybackUrlFactory(store).resolveLegacyLive(
+            LivePlaybackRef("303", "Legacy"),
+        ) as PlaybackSourceResult.Success).source
+        assertEquals("https", source.url.scheme)
+        assertEquals("catalog.invalid", source.url.host)
+        assertEquals(8443, source.url.port)
+        assertEquals("/fixture%2Fuser/fixture%2Fpass/303", source.url.encodedPath)
+        store.clear()
+        assertTrue(XtreamPlaybackUrlFactory(store).resolveLegacyLive(
+            LivePlaybackRef("303", "Legacy"),
+        ) is PlaybackSourceResult.Failure)
+    }
+
+    @Test
     fun livePreservesHttpHttpsAndExplicitPort() {
         val http = factory("http://catalog.invalid:8080/")
             .source(LivePlaybackRef("101", "News"))

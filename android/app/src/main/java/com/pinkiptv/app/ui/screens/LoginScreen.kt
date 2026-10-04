@@ -56,6 +56,8 @@ fun LoginScreen(
     loginInFlight: Boolean,
     loginError: LoginError?,
     onLogin: (String, String) -> Unit,
+    savedAccountName: String? = null,
+    onRetrySavedLogin: () -> Unit = {},
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -164,6 +166,24 @@ fun LoginScreen(
             text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
+        )
+
+        Text(
+            text = "A tua televisão, num só lugar",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (savedAccountName != null) {
+            Text("Conta guardada: " + savedAccountName, maxLines = 1)
+            Button(onClick = onRetrySavedLogin, enabled = !loginInFlight,
+                modifier = Modifier.testTag("login_saved_retry")) {
+                Text("Voltar a ligar à conta")
+            }
+        }
+        Text(
+            "A sessão fica guardada neste dispositivo até terminares sessão.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         OutlinedTextField(

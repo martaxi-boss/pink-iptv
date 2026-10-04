@@ -338,6 +338,50 @@ class SessionControllerTest {
         assertEquals(1, store.clearCount)
     }
 
+    @Test
+    fun temporaryStartupFailureKeepsAccountAndRetryUsesEncryptedStore() = runTest {
+        val store = FakeCredentialStore(StoredCredentials("remembered-user", "fixture-secret")) // pragma: allowlist secret
+        val repository = FakeSessionRepository(SessionResult.TemporaryUnavailable)
+        val controller = SessionController(repository, store, this)
+        advanceUntilIdle()
+        assertEquals("remembered-user", controller.state.value.accountName)
+        assertEquals(true, controller.state.value.savedAccountAvailable)
+        assertEquals(0, store.clearCount)
+        repository.result = success()
+        controller.retrySavedLogin()
+        advanceUntilIdle()
+        assertEquals(RootScreen.Home, controller.state.value.screen)
+        assertEquals("remembered-user", controller.state.value.accountName)
+        assertEquals(2, repository.calls.size)
+        controller.logout()
+        advanceUntilIdle()
+        assertNull(controller.state.value.accountName)
+        assertNull(store.stored)
+    }
+
+    @Test
+    fun logoutWhileRememberedRetryPendingCannotRestoreAccount() = runTest {
+        val pending = CompletableDeferred<SessionResult>()
+        var calls = 0
+        val repository = object : SessionRepository {
+            override suspend fun resolve(username: String, password: String): SessionResult {
+                calls++
+                return if (calls == 1) SessionResult.TemporaryUnavailable else pending.await()
+            }
+        }
+        val store = FakeCredentialStore(StoredCredentials("remembered-user", "fixture-secret")) // pragma: allowlist secret
+        val controller = SessionController(repository, store, this)
+        runCurrent()
+        controller.retrySavedLogin()
+        runCurrent()
+        controller.logout()
+        pending.complete(success())
+        advanceUntilIdle()
+        assertEquals(RootScreen.Login, controller.state.value.screen)
+        assertNull(controller.state.value.accountName)
+        assertNull(store.stored)
+    }
+
     private fun success(
         xtreamBaseUrl: String = "https://catalog.invalid/",
     ) = SessionResult.Success(

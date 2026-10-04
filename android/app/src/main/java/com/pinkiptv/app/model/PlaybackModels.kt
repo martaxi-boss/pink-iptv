@@ -57,6 +57,7 @@ enum class PlayerError {
     InvalidStreamMetadata,
     Network,
     SourceUnavailable,
+    ProviderDenied,
     UnsupportedFormat,
     PlaybackError,
 }

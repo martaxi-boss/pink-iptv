@@ -57,6 +57,7 @@ fun SettingsScreen(
     onPrepareVpn: () -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit,
+    accountName: String? = null,
 ) {
     val configuration = LocalConfiguration.current
     val isTv = configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
@@ -82,6 +83,9 @@ fun SettingsScreen(
     }
 
     ShellLayout(titleRes = R.string.settings) {
+        accountName?.let { Text("Conta: " + it, maxLines = 1) }
+        Text("Entrada automática ativa. Terminar sessão remove a conta guardada.",
+            style = MaterialTheme.typography.bodySmall)
         Text(
             text = stringResource(R.string.settings_local_session),
             style = MaterialTheme.typography.titleMedium,

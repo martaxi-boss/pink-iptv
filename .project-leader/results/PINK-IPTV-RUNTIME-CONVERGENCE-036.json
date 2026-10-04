@@ -1,0 +1,52 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-RUNTIME-CONVERGENCE-036.json",
+  "authorization_commit_sha": "de5c53c39c9f00d6faeae8753c6db231c1340a2b",
+  "authorization_sha256": "74be4ecce8f69b44e26b3bc72ec6061b9440af6820e8651349426f54a3e6548a",
+  "implementation_head_sha": "707e2deb71e6e495cf942110f719fb6df1fd89e1",
+  "branch": "builder/runtime-convergence-036",
+  "pr_number": 33,
+  "recorded_at": "2026-10-04T15:28:38.443Z",
+  "state_observed_at": "2026-10-04T15:27:29Z",
+  "changes": [
+    "Reconciled PROJECT_STATE/WireGuard preflight and added exact network/provider proof/handoff index. No Android/backend source change; old observations retained as history."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Separately canonical-verified VPS033/034/035 outputs support exact docs; app-only Xtream username/password, perline authoritativeDNS, deviceownedkeys, existing OVH/no paid/publiclaunch and stagedWireGuard boundaries preserved. Metadata is not AV/playback/Androidtunnel certification."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Exact base...implementation compare has only immutableTask and three allowed documentation files; policy/scope/standing records validated. No app/backend/workflow effect."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Required BackendCI PR37212931830/push37212929643 exact707e2deb71e6e495cf942110f719fb6df1fd89e1 passed jobs111467580339/111467573892 including lint/format/migration/tests/leakscan. Canonical17301664 native evidence verifier required before merge. Incidental Android CI is not task-certifying for docs-only scope; no localtrustedgate/protectedmain claimed."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37212931830
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/33",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37212931830",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37212929643",
+    "Existing certified APK11299940615 unexpired, source4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d; this docs task does not rebuild/certify newAPK."
+  ],
+  "material_non_effects": [
+    "No application/backend source/runtime/VPS/provider/customer data change, persistentgateway/Androidtunnel, Windows, release/distribution/publiclaunch effect from task036."
+  ],
+  "residual_blockers": []
+}

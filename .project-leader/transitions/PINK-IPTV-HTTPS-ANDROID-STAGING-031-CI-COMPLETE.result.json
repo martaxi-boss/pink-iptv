@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031-CI-COMPLETE",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "wait_exact_implementation_ci",
+  "target": {
+    "kind": "exact_implementation_workflow_runs",
+    "identifier": "PR32 implementation CI",
+    "revision": "4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d",
+    "base_revision": "4761a56f600176e0ffc02ee638acb36b9fc89342",
+    "environment": "GitHub-hosted CI"
+  },
+  "observed_at": "2026-10-04T09:57:53.009Z",
+  "final_state": {
+    "status": "EXACT_CI_TERMINAL_SUCCESS_CERTIFIED",
+    "revision": "4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d"
+  },
+  "evidence": [
+    "Backend CI pull_request run37192321417 completed SUCCESS",
+    "Android CI pull_request run37192321061 completed SUCCESS",
+    "Android CI push run37192318230 completed SUCCESS",
+    "Backend CI push run37192318231 completed SUCCESS"
+  ],
+  "residual_blockers": []
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031-MERGE",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-HTTPS-ANDROID-STAGING-031-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "github_pull_request",
+    "identifier": "https://github.com/martaxi-boss/pink-iptv/pull/32",
+    "revision": "62b90f27a35ba047aaf4bdb451d3c31a3660d83f",
+    "base_revision": "4761a56f600176e0ffc02ee638acb36b9fc89342",
+    "environment": "main source control; no release/deploy"
+  },
+  "observed_at": "2026-10-04T09:57:53.009Z",
+  "final_state": {
+    "status": "MERGED_NORMAL_COMMIT",
+    "revision": "8d99c049bc77bfb24d698443dee8625fa8c2c68d"
+  },
+  "evidence": [
+    "PR32 merged=true; live main8d99c049bc77bfb24d698443dee8625fa8c2c68d equals observed merge commit; approved exact head62b90f27a35ba047aaf4bdb451d3c31a3660d83f.",
+    "Canonical immutable/scope/CI/recovery/final evidence-only audit PASS before merge; no release/store/server/tunnel deployment under this promotion."
+  ],
+  "residual_blockers": []
+}

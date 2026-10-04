@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037-MAIN",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "github_pull_request",
+    "identifier": "34",
+    "revision": "ea66d888b4a924bd9edcc245663587ad2d4ef4a0",
+    "base_revision": "383d3e39f9b6ace77f2157af3024c387d19fadaa",
+    "environment": "martaxi-boss/pink-iptv main staging development"
+  },
+  "observed_at": "2026-10-04T20:57:11.391Z",
+  "final_state": {
+    "status": "AUDITED_STAGING_ANDROID_PR34_MERGED",
+    "revision": "0daf81aa603949e98a9cb1c2d607509f1e5d3e4e"
+  },
+  "evidence": [
+    "GitHub normalmerge expectedheadea66d888 returnedmergedtrue; independent livePR34 closed/merged and main0daf81aa readback; Task037 result present onmain.",
+    "Canonical task/scope/recovery/CI/finalhead verifierPASS, allff0c Android/Backend push/PR contextsSUCCESS; incidental evidence-descendantCI non-certifying. No runtime/release/provider/network effects."
+  ],
+  "residual_blockers": []
+}

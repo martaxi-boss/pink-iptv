@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037-CI-COMPLETE",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "reconcile_existing_required_ci",
+  "target": {
+    "kind": "github_actions_bound_runs",
+    "identifier": "AndroidPR37232393331/push37232390206;BackendPR37232393327/push37232390207",
+    "revision": "ff0c276650acf8efcd1293f15c81873c2f90a6c0",
+    "environment": "Exact certifying task037 revision"
+  },
+  "observed_at": "2026-10-04T20:57:11.391Z",
+  "final_state": {
+    "status": "STALE_WAIT_RECONCILED_ALL_REQUIRED_SUCCESS",
+    "revision": "ff0c276650acf8efcd1293f15c81873c2f90a6c0"
+  },
+  "evidence": [
+    "All existing boundruns terminalSUCCESS at20:50:03Z; phone/API24pass. PriorCIwait is historicaltransient, notcurrent. No redispatch/rerun performed."
+  ],
+  "residual_blockers": []
+}

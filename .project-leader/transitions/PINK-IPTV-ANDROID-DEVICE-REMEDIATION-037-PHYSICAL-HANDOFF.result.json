@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037-PHYSICAL-HANDOFF",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "owner_physical_android_validation",
+  "target": {
+    "kind": "owner_physical_android_device",
+    "identifier": "PINK-IPTV-0.1.1.apk scannedartifact11313718220 SHA256a7d119322bdc419532899a286a82b3f445499e6457d6d27496742b584a317994",
+    "revision": "ff0c276650acf8efcd1293f15c81873c2f90a6c0",
+    "environment": "Owner Android; new debug test install"
+  },
+  "observed_at": "2026-10-04T20:57:11.391Z",
+  "final_state": {
+    "status": "HUMAN_GATE_EXCLUSIVE_HUMAN_INTERVENTION",
+    "revision": null
+  },
+  "evidence": [
+    "Canonical066 resolve_next_action: controls_satisfied/convergence_completeTrue, PHYSICAL_DEVICE_TEST evidenced, decisionHUMAN_GATE/EXCLUSIVE_HUMAN_INTERVENTION. Automated task037 and source041 independently verified, PR34 merged, boundAPK saved and hash/source rechecked.",
+    "Owner phone installation/UI/realAV cannot be performed by available session tools or GitHub emulators. Android7/36 emulator tests passed but do not certify Owner hardware/network/candidate channels.",
+    "New debug certificate differs from prior031APK; uninstall oldtest clears localdata/keys, loginonce in newinstall. Future normal reopen restores protected credentials."
+  ],
+  "residual_blockers": [
+    "Owner checks automatic reentry after close/reopen, provider artwork/layout, and channel picture+sound, especially SIC/RTP. Reported401 not proved fixed; do not send passwords.",
+    "No realAndroidVPN/publiclaunch acceptance is implied."
+  ]
+}

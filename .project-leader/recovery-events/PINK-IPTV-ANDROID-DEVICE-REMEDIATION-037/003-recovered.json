@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-04T20:52:46.487Z",
+  "event": "RECOVERED",
+  "strategy_generation": 1,
+  "action_fingerprint": "037-ci-6af03bb6-scanner-fictional-basic-auth",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "66d8a0055dcaf4bbf5ab746afeb5cb32604f8d2875f4f107b0cc0898df8c77c6",
+  "detail": "Fresh material descendantff0c2766 has Android push37232390206/PR37232393331 and Backendpush37232390207/PR37232393327 terminalSUCCESS. Phone111526352941/API24111526352905 passed. Fictional BasicAuth fixture rebuilt without detector suppression; subsequent evidence-based boundedLive compatibility also passed. No rerun of oldSHA or task rewrite. External canonical final-head evidence audit remains required before merge."
+}

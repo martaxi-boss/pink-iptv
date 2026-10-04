@@ -50,24 +50,14 @@
   ],
   "ci": [
     {
-      "name": "Backend CI",
-      "status": "SUCCESS",
-      "run_id": 37192321417
-    },
-    {
       "name": "Android CI",
       "status": "SUCCESS",
       "run_id": 37192321061
     },
     {
-      "name": "Android CI",
-      "status": "SUCCESS",
-      "run_id": 37192318230
-    },
-    {
       "name": "Backend CI",
       "status": "SUCCESS",
-      "run_id": 37192318231
+      "run_id": 37192321417
     }
   ],
   "artifacts": [
@@ -77,7 +67,8 @@
     "Selected push archive SHA256=sha256:59eee35552bb93ad223f740a2229b27c782f3a613d8b7cd838aa81cac79c0d93; bytes=30076063; expires=2026-10-11T09:35:23Z",
     "APK SHA256 is included in app-debug.apk.sha256; archive digest is distinct from APK digest.",
     "https://github.com/martaxi-boss/VPS/actions/runs/37191347129",
-    "https://github.com/martaxi-boss/VPS/actions/runs/37192564587"
+    "https://github.com/martaxi-boss/VPS/actions/runs/37192564587",
+    "Additional same-SHA push contexts independently re-read: Android37192318230 SUCCESS, Backend37192318231 SUCCESS; canonical verifier enforces push/PR consistency."
   ],
   "material_non_effects": [
     "No release signing/store publication/public launch; DEBUG staging only.",

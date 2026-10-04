@@ -1,10 +1,20 @@
 # PINK IPTV - PROJECT STATE
 
 Date: 2026-10-04
-Phase: Phase 4 — WireGuard Stage 004B — COMPLETE / MERGED; runtime preflight preparation
+Phase: Phase4 — 004B merged; temporary external network proof passed, Android tunnel pending
 Public launch: NO
 
-## Current HTTPS staging continuation031
+## Current staging convergence036
+
+Canonical control: Project Leader0.6.5 at17301664dd53eb4f9c8d7b08d240180153782e1b. Application base:8d99c049bc77bfb24d698443dee8625fa8c2c68d. Documentation task036 changes no app/backend code.
+
+Separate VPS tasks033/034 certified protected structural baseline, isolated additive inverse, one temporary real external WireGuard peer handshake/ping and target-bound HTTPS NAT egress, followed by exact live firewall/forwarding/IPv4-configuration inverse, private-key/interface cleanup and preserved services/API/PostgreSQL. No persistent gateway or actual Android tunnel is active from this proof.
+
+Task035 reused the approved test line/runtime secret without emitting credentials. At2026-10-04T15:20:10Z the line/mapping were valid/matched, Xtream and selected PINK HTTPS login returnedSUCCESS, catalogs returned data and selected SeriesInfo/shortEPG schemas passed. Audio/video rendering and physical-device/TV remain unverified.
+
+Current scanned APK remains task031 artifact11299940615, source4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d. These observations do not rebuild it or certify an AndroidVPN implementation. See [current evidence/handoff](docs/WIREGUARD_RUNTIME_036.md). Task036 itself needs exact BackendCI/result and audited promotion; this text does not predict acceptance.
+
+## Previous HTTPS staging continuation031
 
 Backend staging origin: `https://pink-iptv.duckdns.org`, Owner-selected and pointing to existing OVH `146.59.145.3`; no AAAA was configured. Separate VPS task030 provisioned trusted TLS and an isolated Nginx proxy to loopback8010, preserving other sites, services and firewall. Exact [run37191347129](https://github.com/martaxi-boss/VPS/actions/runs/37191347129) passed host/external HTTPS and synthetic422 validation privacy; existing ACME account and renewal timer were reused. No full-main backend deployment, real peer/tunnel, provider/physical-TV or public-launch proof is inferred.
 

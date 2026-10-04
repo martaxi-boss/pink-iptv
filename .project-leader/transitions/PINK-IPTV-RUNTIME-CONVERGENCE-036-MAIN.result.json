@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036-MAIN",
+  "task_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-RUNTIME-CONVERGENCE-036-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "github_pull_request",
+    "identifier": "33",
+    "revision": "39c8f44b8f428d96945547c8eb6b1b8d2e691503",
+    "base_revision": "8d99c049bc77bfb24d698443dee8625fa8c2c68d",
+    "environment": "martaxi-boss/pink-iptv main"
+  },
+  "observed_at": "2026-10-04T15:30:28.090Z",
+  "final_state": {
+    "status": "PR33_NORMALLY_MERGED_CANONICAL_EVIDENCE_VERIFIED",
+    "revision": "383d3e39f9b6ace77f2157af3024c387d19fadaa"
+  },
+  "evidence": [
+    "Independent fresh GitHub mainref/PR33 confirm normalmerge383d3e39f9b6ace77f2157af3024c387d19fadaa, exact approvedhead39c8f44b8f428d96945547c8eb6b1b8d2e691503. Main WorkerResult matches certified implementation707e2deb71e6e495cf942110f719fb6df1fd89e1. Canonical postmerge ancestor/files proofPASS; no new app/backend deployment/release or postmergeCI claim."
+  ],
+  "residual_blockers": []
+}

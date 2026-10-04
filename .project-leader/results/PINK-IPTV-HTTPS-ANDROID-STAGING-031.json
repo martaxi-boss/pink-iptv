@@ -1,0 +1,89 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-HTTPS-ANDROID-STAGING-031.json",
+  "authorization_commit_sha": "90a029a62b4eb0ca5fe9b945db0a08daa94bcb32",
+  "authorization_sha256": "ac4e4dc88af4a0f7c4f5878f80d33bf37835f0a8fa7033aef0255c3cee49af8c",
+  "implementation_head_sha": "4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d",
+  "branch": "builder/https-android-staging-031",
+  "pr_number": 32,
+  "recorded_at": "2026-10-04T09:52:34.870Z",
+  "changes": [
+    "Android default PINK_API_BASE_URL=https://pink-iptv.duckdns.org; per-line provider dns_link and username/password-only UI preserved.",
+    "Existing CI returns debug APK/hash/source artifact after secret scan; KVM udev settle/bounded permission readiness in both emulator jobs retains hardware/test assertions.",
+    "Reconcile current trusted HTTPS030 and scoped inverse/source-drift/physical-proof limits; preserve historical records and causal recovery evidence."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Canonical task policy/scope/immutable authorization and causal recovery audit; exact implementation Android/Backend push+PR terminal-success; Android build/lint/JVM/native/instrumentation/scan and phone/API24 proof positive; separately certified VPS HTTPS030 and readonly renewal032. Debug artifacts bind source4e46 and observed unexpired archive IDs/digests; canonical final GitHub verifier required independently."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Canonical task policy/scope/immutable authorization and causal recovery audit; exact implementation Android/Backend push+PR terminal-success; Android build/lint/JVM/native/instrumentation/scan and phone/API24 proof positive; separately certified VPS HTTPS030 and readonly renewal032. Debug artifacts bind source4e46 and observed unexpired archive IDs/digests; canonical final GitHub verifier required independently."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical task policy/scope/immutable authorization and causal recovery audit; exact implementation Android/Backend push+PR terminal-success; Android build/lint/JVM/native/instrumentation/scan and phone/API24 proof positive; separately certified VPS HTTPS030 and readonly renewal032. Debug artifacts bind source4e46 and observed unexpired archive IDs/digests; canonical final GitHub verifier required independently."
+    },
+    {
+      "name": "Consequential transition readiness audit",
+      "status": "PASS",
+      "evidence": "Canonical task policy/scope/immutable authorization and causal recovery audit; exact implementation Android/Backend push+PR terminal-success; Android build/lint/JVM/native/instrumentation/scan and phone/API24 proof positive; separately certified VPS HTTPS030 and readonly renewal032. Debug artifacts bind source4e46 and observed unexpired archive IDs/digests; canonical final GitHub verifier required independently."
+    },
+    {
+      "name": "HTTPS source provenance and Android endpoint binding",
+      "status": "PASS",
+      "evidence": "Canonical task policy/scope/immutable authorization and causal recovery audit; exact implementation Android/Backend push+PR terminal-success; Android build/lint/JVM/native/instrumentation/scan and phone/API24 proof positive; separately certified VPS HTTPS030 and readonly renewal032. Debug artifacts bind source4e46 and observed unexpired archive IDs/digests; canonical final GitHub verifier required independently."
+    },
+    {
+      "name": "Debug APK secret scan and reproducibility",
+      "status": "PASS",
+      "evidence": "Canonical task policy/scope/immutable authorization and causal recovery audit; exact implementation Android/Backend push+PR terminal-success; Android build/lint/JVM/native/instrumentation/scan and phone/API24 proof positive; separately certified VPS HTTPS030 and readonly renewal032. Debug artifacts bind source4e46 and observed unexpired archive IDs/digests; canonical final GitHub verifier required independently."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37192321417
+    },
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37192321061
+    },
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37192318230
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37192318231
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37192321061/artifacts/11299940615",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37192318230/artifacts/11298823646",
+    "Selected PR archive SHA256=sha256:aa0c533e2132b1de32b3f804b13f1de522196f14f1b523d27d369f9c06b62fb7; bytes=30076086; expires=2026-10-11T09:36:30Z",
+    "Selected push archive SHA256=sha256:59eee35552bb93ad223f740a2229b27c782f3a613d8b7cd838aa81cac79c0d93; bytes=30076063; expires=2026-10-11T09:35:23Z",
+    "APK SHA256 is included in app-debug.apk.sha256; archive digest is distinct from APK digest.",
+    "https://github.com/martaxi-boss/VPS/actions/runs/37191347129",
+    "https://github.com/martaxi-boss/VPS/actions/runs/37192564587"
+  ],
+  "material_non_effects": [
+    "No release signing/store publication/public launch; DEBUG staging only.",
+    "No provider credentials/customer secrets embedded; no provider/DNS/peer/tunnel/server/source/data effects under this repository task.",
+    "Existing services/source overlay and other projects preserved by separate operations tasks; real provider/Owner physical device/TV and real tunnel remain separately bounded.",
+    "Managed repo lacks its own trusted canonical v2 PR gate; external canonical Supervisor/evidence verifier used. Intermediate unchanged5d939 and initial failed PR context not certified."
+  ],
+  "residual_blockers": []
+}

@@ -4,7 +4,15 @@ Date: 2026-10-04
 Phase: Phase4 — 004B merged; temporary external network proof passed, Android tunnel pending
 Public launch: NO
 
-## Current staging convergence036
+## Current Android refinement037
+
+Owner physical test on 2026-10-04 confirms installation, login and populated catalogs; Live playback fails. Task037 at application base383d3e39f9b6ace77f2157af3024c387d19fadaa improves protected saved-login retry, visible account, provider logos/posters, dark-theme contrast and responsive categories/library controls. Compilation/JVM tests passed initially; scanner fixture remediation and exact CI certification remain required before accepting the new debug APK.
+
+Separately bounded read-only VPS038/039 diagnostics observe active account and successful HTTPS login/catalogs, but selected stream endpoints return401 without redirects. No playback success, real Android tunnel, provider/runtime mutation or public launch is inferred. See [device findings and refinement](docs/ANDROID_DEVICE_REMEDIATION_037.md). Project Leader runtime is0.6.6; immutable Task037 retains its original0.6.5 policy binding.
+
+The following sections preserve previous evidence and decisions; their pending next steps do not supersede the current task.
+
+## Previous staging convergence036
 
 Canonical control: Project Leader0.6.5 at17301664dd53eb4f9c8d7b08d240180153782e1b. Application base:8d99c049bc77bfb24d698443dee8625fa8c2c68d. Documentation task036 changes no app/backend code.
 
@@ -28,7 +36,7 @@ Separately bounded VPS tasks021/022 recovered native Actions SSH execution and i
 
 See [runtime audit023](docs/OVH_RUNTIME_AUDIT_023.md) for exact runs/hashes/provenance and remaining network/rollback work. Direct session SSH absence no longer blocks continuation: use separate bounded VPS operations tasks through repository-return diagnostics. Stage004B is COMPLETE/MERGED. Current docs require their own exact CI/result and promotion evidence; this section does not predict acceptance. Physical-TV/provider proof, real tunnel and capacity remain unverified. Public launch:NO.
 
-## Current canonical audit / continuation 014
+## Previous canonical audit / continuation 014
 
 Canonical Project Leader: `66db27d8118cfa527a21466b8a5034acd5b4395e`.
 Live starting main: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.

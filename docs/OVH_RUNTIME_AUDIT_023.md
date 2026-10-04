@@ -50,3 +50,13 @@ Runtime Git HEAD deliberately remains ccccaf1; source-overlay provenance is sepa
 Continue the remaining network/rollback audit through the recovered native operations path: identify actual IPv4/IPv6 firewall management, bind exact additive PINK changes and their inverse, preserve a restricted baseline for only affected files/values, and rehearse in isolation before activating one test peer. Preserve global DROP policies, unrelated services and concurrent rules; never flush/reset or replay whole-firewall snapshots.
 
 Real provider Series/EPG/Catch Up/playback, physical-TV validation, Android user VPN permission, real tunnel lifecycle/routing/DNS/IPv6 safety and measured capacity remain separate evidence requirements. No connected/production/readiness claim follows from this audit. Windows remains later; public launch:NO.
+
+## Follow-up convergence028
+
+PR30 integrated task023 at cb842e86aa1f547d721231e366fbcb0fc50f7ad1 after exact Android/Backend CI and canonical evidence audit. The observations above retain their timestamps; newer separately bounded VPS tasks supersede the listed unresolved inventory items.
+
+Task025 ([run37175796253](https://github.com/martaxi-boss/VPS/actions/runs/37175796253), implementation374ef9254758400ee6db191d5d180afb2fdbb2eb) proved isolated WireGuard handshake and bidirectional tunnel traffic, then removed exact namespaces/interfaces/temporary keys and verified unchanged host firewall/forwarding plus active services/API/PG. It did not activate an Android/external peer or certify host NAT/forwarding rollback.
+
+Task026 ([run37176105887](https://github.com/martaxi-boss/VPS/actions/runs/37176105887), implementation612ffb628d1d3ffb266c482b77cce2cfd72e5835) corrected the earlier chain-name filter:32 IPv4 ufw chains,31 IPv6 ufw6 chains, both nft frontends and UFW IPV6=yes. IPv6 UFW management is now identified; zero from task022 was not an absence finding. No known literal/named-upstream PINK8010 proxy or PINK backend hostname was discovered in Nginx; the app still has the invalid build placeholder.
+
+Native Actions SSH remains available. Exact host gateway changes/inverse, external ingress, real peer/Android tunnel and provider/physical-TV/capacity proof remain separately bounded. The immediately reviewable HTTPS plan is [staging plan027](HTTPS_STAGING_PLAN_027.md), certified on its original isolated branch and integrated here through task028. The next uncovered action is selecting an Owner-controlled backend hostname/DNS path, not authorizing generic tools or pasting server commands.

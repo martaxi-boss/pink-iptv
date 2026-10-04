@@ -1,0 +1,64 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028.json",
+  "authorization_commit_sha": "7d539ede22cc4b37a52474bd4b9fbed240c35f3c",
+  "authorization_sha256": "6e946944c6e1cc120e774aa9921f1a01957e550bb919fa153e3e3f3af4d56cae",
+  "implementation_head_sha": "b76656b70260377798abd3d935f360a4e99b8095",
+  "branch": "builder/convergence-https-handoff-028",
+  "pr_number": 31,
+  "recorded_at": "2026-10-04T04:25:53.592717+00:00",
+  "changes": [
+    "Reconciled latest isolated WireGuard proof and actual ufw6 management with current runtime audit.",
+    "Integrated reviewed exact-scope HTTPS/TLS/Nginx/inverse plan with source/CI provenance.",
+    "Recorded next uncovered Owner public-backend hostname/DNS identity decision; native SSH/access remediation is complete."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Live bounded scope and central policy verified; VPS025/026 and original plan027 canonical evidence accepted; exactSHA Backend37176868921 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION after covered preparation."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Live bounded scope and central policy verified; VPS025/026 and original plan027 canonical evidence accepted; exactSHA Backend37176868921 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION after covered preparation."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Live bounded scope and central policy verified; VPS025/026 and original plan027 canonical evidence accepted; exactSHA Backend37176868921 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION after covered preparation."
+    },
+    {
+      "name": "Latest observation and accepted-plan provenance",
+      "status": "PASS",
+      "evidence": "Live bounded scope and central policy verified; VPS025/026 and original plan027 canonical evidence accepted; exactSHA Backend37176868921 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION after covered preparation."
+    },
+    {
+      "name": "Human Gate convergence preflight",
+      "status": "PASS",
+      "evidence": "Live bounded scope and central policy verified; VPS025/026 and original plan027 canonical evidence accepted; exactSHA Backend37176868921 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION after covered preparation."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37176868921
+    }
+  ],
+  "artifacts": [
+    "docs/HTTPS_STAGING_PLAN_027.md",
+    "docs/OVH_RUNTIME_AUDIT_023.md",
+    "docs/WIREGUARD_PREFLIGHT.md",
+    ".project-leader/transitions/PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028-NEXT-HTTPS.result.json"
+  ],
+  "material_non_effects": [
+    "Documentation integration only; no hostname/domain acquisition, DNS, certificate, Nginx, ingress, service, peer, tunnel, secret or paid changes.",
+    "No external/Android real-tunnel/provider/physicalTV/capacity certification."
+  ],
+  "residual_blockers": []
+}

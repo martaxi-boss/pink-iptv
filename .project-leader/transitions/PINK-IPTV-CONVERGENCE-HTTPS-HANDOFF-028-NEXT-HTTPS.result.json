@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028-NEXT-HTTPS",
+  "task_id": "PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "select_public_backend_hostname_and_dns_control",
+  "target": {
+    "kind": "unresolved_owner_controlled_public_identity",
+    "identifier": "PINK staging HTTPS backend",
+    "revision": null,
+    "base_revision": "cb842e86aa1f547d721231e366fbcb0fc50f7ad1",
+    "environment": "OVH development/staging"
+  },
+  "observed_at": "2026-10-04T04:25:06.288Z",
+  "final_state": {
+    "status": "HUMAN_GATE_NEW_UNCOVERED_MATERIAL_DECISION",
+    "revision": null
+  },
+  "evidence": [
+    "Native Actions SSH recovered and verified; VPS tasks021/022/024/025/026 canonical exactSHA evidence accepted.",
+    "Original public placeholder https://pink-api.invalid persists; no PINK8010 literal/named-upstream Nginx proxy/hostname found; prior decision retrieval found no hostname/TLS/DNS selection.",
+    "Reviewed plan027 and task028 current scope establish bounded HTTPS/TLS/inverse execution once exact Owner hostname/DNS authority is supplied.",
+    "No browser/terminal-access approval requested, new domain acquired, unrelated-project hostname reused or paid/third-project bridge created."
+  ],
+  "residual_blockers": [
+    "Owner-controlled PINK backend domain/subdomain and existing DNS management path are not selected/authorized; no credential values requested."
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-04T17:52:17.529672+00:00",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner physical test confirms login/catalog and unavailable video source. Repair playback using evidence without silently widening transport trust; improve encrypted remembered-login recovery and visible account identity; render existing provider artwork, refine catalog/home/detail/library layout, contrast and responsive controls. Preserve Xtream-only and existing Android architecture."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "383d3e39f9b6ace77f2157af3024c387d19fadaa",
+    "task_branch": "builder/android-device-remediation-037"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "android/**",
+    "docs/ANDROID_DEVICE_REMEDIATION_037.md",
+    "docs/SECURITY.md",
+    "PROJECT_STATE.md",
+    ".project-leader/tasks/PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037.json",
+    ".project-leader/results/PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037.json",
+    ".project-leader/transitions/PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037-*",
+    ".project-leader/recovery-events/PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "vps_or_provider_mutation",
+    "architecture_or_product_change",
+    "credential_or_raw_provider_data_publication",
+    "force_push",
+    "backend_source_change",
+    "automatic_cross_origin_credential_redirects"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "17301664dd53eb4f9c8d7b08d240180153782e1b"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Exact Android/Backend CI and external evidence audit pass, current owner physical findings are reconciled, updated scanned debug APK available; physical replay remains explicitly pending. No claim of real VPN implementation or playback success without observed evidence.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

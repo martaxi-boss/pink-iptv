@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 6,
+  "recorded_at": "2026-10-04T09:29:17.191Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 3,
+  "action_fingerprint": "031-kvm-settle-and-isolated-wait",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "7e08b45ae5c8cc8103a71289c3f6e763ed8ae5524dcc8ee088ae4dca656516c7",
+  "detail": "Authorize fresh descendant with verified actual KVM edit, exact push/PR contexts and isolated durable wait control, no oldSHA rerun or weakened emulator checks."
+}

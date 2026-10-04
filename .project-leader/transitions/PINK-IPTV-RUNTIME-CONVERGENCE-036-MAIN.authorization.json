@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036-MAIN",
+  "task_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-04T15:29:31.913Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Canonical covered documentation-only staging convergence; exact immutableTask/policy/scope and implementation BackendCI push/PR success independently verified. Exact final descendant contains only result/handoff evidence. Live PR33 mainbase/head/mergeability re-read; no protectedmain/localtrustedgate claimed; normalmerge only."
+  },
+  "target": {
+    "kind": "github_pull_request",
+    "identifier": "33",
+    "revision": "39c8f44b8f428d96945547c8eb6b1b8d2e691503",
+    "base_revision": "8d99c049bc77bfb24d698443dee8625fa8c2c68d",
+    "environment": "martaxi-boss/pink-iptv main"
+  }
+}

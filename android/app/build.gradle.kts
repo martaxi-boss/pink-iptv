@@ -7,7 +7,7 @@ plugins {
 }
 
 val configuredApiBaseUrl = providers.gradleProperty("PINK_API_BASE_URL")
-    .orElse("https://pink-api.invalid")
+    .orElse("https://pink-iptv.duckdns.org")
     .map { value -> value.trimEnd('/') + "/" }
 
 android {

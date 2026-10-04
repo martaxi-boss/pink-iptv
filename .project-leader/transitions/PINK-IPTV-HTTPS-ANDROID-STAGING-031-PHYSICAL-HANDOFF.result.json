@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031-PHYSICAL-HANDOFF",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "validate_owner_physical_android_login_and_playback",
+  "target": {
+    "kind": "owner_physical_android_device",
+    "identifier": "Certified debugAPK artifact11299940615",
+    "revision": "4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d",
+    "base_revision": "4761a56f600176e0ffc02ee638acb36b9fc89342",
+    "environment": "Owner Android hardware; HTTPS staging"
+  },
+  "observed_at": "2026-10-04T09:52:35.413Z",
+  "final_state": {
+    "status": "HUMAN_GATE_EXCLUSIVE_HUMAN_INTERVENTION",
+    "revision": "4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d"
+  },
+  "evidence": [
+    "Covered HTTPS/root certificate/renewal configuration, CI/API24/phone-emulator and artifact audit complete; public launch NO.",
+    "Native tool inventory and direct workspace have no connected physical Android/ADB capability. Existing native operations/CI routes control runners/VPS virtual emulator, not Owner handset/TV. No missing SSH/browser/tool-routing consent asserted.",
+    "Concrete handoff is physical installation and credential-private login/channel playback on Owner device; preserve already covered future stage scope and do not infer real VPN proof."
+  ],
+  "residual_blockers": [
+    "Owner must perform physical APK installation/login/playback validation; no credentials are requested in chat."
+  ]
+}

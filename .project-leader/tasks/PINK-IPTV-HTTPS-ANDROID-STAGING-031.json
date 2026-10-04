@@ -1,0 +1,127 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-04T09:08:07.682Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Bind Android default backend to Owner-selected pink-iptv.duckdns.org after separately certified HTTPS provision030; preserve username/password-only/provider dns_link contract. Add scanned debug APK CI artifact and reconcile current endpoint/HTTPS evidence in scoped docs; no release/signing/public launch/provider/tunnel/network/secret mutations."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "4761a56f600176e0ffc02ee638acb36b9fc89342",
+    "task_branch": "builder/https-android-staging-031"
+  },
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "mutation_scope": [
+    "android/app/build.gradle.kts",
+    ".github/workflows/android-ci.yml",
+    "PROJECT_STATE.md",
+    "docs/HTTPS_STAGING_PLAN_027.md",
+    "docs/HTTPS_STAGING_031.md",
+    "docs/WIREGUARD_PREFLIGHT.md",
+    ".project-leader/tasks/PINK-IPTV-HTTPS-ANDROID-STAGING-031.json",
+    ".project-leader/results/PINK-IPTV-HTTPS-ANDROID-STAGING-031.json",
+    ".project-leader/transitions/PINK-IPTV-HTTPS-ANDROID-STAGING-031-*",
+    ".project-leader/recovery-events/PINK-IPTV-HTTPS-ANDROID-STAGING-031/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request",
+    "change_project_governance"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "remove_or_broaden_secret_detection",
+    "modify_historical_records",
+    "real_tunnel_or_peer_activation",
+    "cross_project_mutation",
+    "force_push",
+    "release_signing_or_store_publication"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "add_scanned_debug_apk_ci_artifact",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Consequential transition readiness audit",
+    "HTTPS source provenance and Android endpoint binding",
+    "Debug APK secret scan and reproducibility"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "05225695684b54ce5becbb89cf0e5b6dc88dcafa"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Exact implementation Android/Backend push and PR contexts terminal-success, scanned debug APK artifact and selected HTTPS binding verified; reconcile docs and promote only after exact standing transition. Physical-device/provider/tunnel evidence not inferred.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

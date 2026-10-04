@@ -102,6 +102,27 @@ jobs:
           detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.gradle|build|\.pytest_cache|\.ruff_cache)/' > /tmp/detect-secrets.json
           python .github/scripts/filter_scan_findings.py /tmp/detect-secrets.json
 
+      - name: Record staging APK hash and source
+        shell: bash
+        env:
+          SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          APK_DIR=android/app/build/outputs/apk/debug
+          sha256sum "$APK_DIR/app-debug.apk" > "$APK_DIR/app-debug.apk.sha256"
+          printf 'SOURCE_HEAD=%s\nTESTED_CHECKOUT=%s\nBACKEND_ORIGIN=https://pink-iptv.duckdns.org\nBUILD_TYPE=DEBUG\nPUBLIC_LAUNCH=NO\n' "$SOURCE_HEAD" "$(git rev-parse HEAD)" > "$APK_DIR/staging-provenance.txt"
+
+      - name: Return scanned debug staging APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pink-iptv-staging-debug-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/app-debug.apk.sha256
+            android/app/build/outputs/apk/debug/staging-provenance.txt
+          if-no-files-found: error
+          retention-days: 7
+
   phone-device-proof:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
     needs: android
@@ -139,6 +160,11 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+          sudo udevadm settle --timeout=10
+          for check in $(seq 1 10); do
+            if test -r /dev/kvm && test -w /dev/kvm; then break; fi
+            sleep 1
+          done
           ls -l /dev/kvm
           test -r /dev/kvm
           test -w /dev/kvm
@@ -357,6 +383,11 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+          sudo udevadm settle --timeout=10
+          for check in $(seq 1 10); do
+            if test -r /dev/kvm && test -w /dev/kvm; then break; fi
+            sleep 1
+          done
           test -r /dev/kvm
           test -w /dev/kvm
           echo "WG_API24_KVM=PASS"

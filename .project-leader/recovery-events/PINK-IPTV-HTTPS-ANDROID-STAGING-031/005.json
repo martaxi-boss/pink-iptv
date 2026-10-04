@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 5,
+  "recorded_at": "2026-10-04T09:29:17.191Z",
+  "event": "REPLAN",
+  "strategy_generation": 3,
+  "action_fingerprint": "031-kvm-settle-and-isolated-wait",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "35bb6bb91159abd5e0b8e593c142653265d891f003f2f096903452f9e463a7bd",
+  "detail": "Insert settle/readiness retry immediately after shared udev trigger in both actual blocks, preserving phone ls and final permission assertions. Validate both parsed blocks contain correction and bash syntax; assert exec exitcode before publishing."
+}

@@ -4,7 +4,13 @@ Date: 2026-10-04
 Phase: Phase 4 — WireGuard Stage 004B — COMPLETE / MERGED; runtime preflight preparation
 Public launch: NO
 
-## Current runtime continuation 023
+## Current HTTPS staging continuation031
+
+Backend staging origin: `https://pink-iptv.duckdns.org`, Owner-selected and pointing to existing OVH `146.59.145.3`; no AAAA was configured. Separate VPS task030 provisioned trusted TLS and an isolated Nginx proxy to loopback8010, preserving other sites, services and firewall. Exact [run37191347129](https://github.com/martaxi-boss/VPS/actions/runs/37191347129) passed host/external HTTPS and synthetic422 validation privacy; existing ACME account and renewal timer were reused. No full-main backend deployment, real peer/tunnel, provider/physical-TV or public-launch proof is inferred.
+
+Task031 sets the Android default to this selected origin and adds a debug APK/hash/source CI artifact after the existing secret scan. Its own immutable task, exact CI and Worker Result determine actual acceptance; this text is not future PASS evidence. The earlier hostname Human Gate is resolved. See [HTTPS staging031](docs/HTTPS_STAGING_031.md) and [accepted plan027](docs/HTTPS_STAGING_PLAN_027.md).
+
+## Previous runtime continuation 023
 
 Current control source: Project Leader05225695684b54ce5becbb89cf0e5b6dc88dcafa (skill0.6.2). Starting PINK main:0bc2b751c77da5702d8cfb24996d046e5f1829fc. The older audit sections below preserve historical acceptance evidence.
 

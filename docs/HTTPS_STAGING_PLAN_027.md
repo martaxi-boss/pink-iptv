@@ -1,6 +1,14 @@
 # HTTPS staging plan and convergence preflight 027
 
-## Current evidence
+## Current resolution and execution 031
+
+Owner-selected backend identity: `https://pink-iptv.duckdns.org`. Readiness task029 verified A `146.59.145.3`, no AAAA, healthy existing services and an existing Certbot installation. The earlier identity Human Gate is resolved; the original plan below is retained as historical preparation.
+
+Separate VPS task030 successfully provisioned an isolated Nginx site and trusted certificate, using the existing ACME account without new registration or terms acceptance. Certified implementation `b28b5930280a37d09d2474c83b6772b4ed933dd7`, [run37191347129](https://github.com/martaxi-boss/VPS/actions/runs/37191347129), completed at2026-10-04T09:11:48Z. Host and external runner verified HTTPS/OpenAPI200 and synthetic generic422/no-store/non-echo; existing services, PostgreSQL and configured firewall were preserved. The HTTP site inverse was rehearsed; certificate retention is explicit, and no database/network gateway restore is claimed.
+
+Task031 binds the Android default origin and returns a scanned debug APK through existing CI. Its own Worker Result/exact implementation CI must certify that build; provisioning030 does not certify an Android build or physical-device/provider/tunnel test. See [staging handoff031](HTTPS_STAGING_031.md).
+
+## Historical preparation evidence027
 
 PINK starting main:0bc2b751c77da5702d8cfb24996d046e5f1829fc. Canonical control:05225695684b54ce5becbb89cf0e5b6dc88dcafa, Project Leader0.6.2. Task027 prepared and certified this document on an isolated PINK branch (implementation2c3dd17b82e00c05acf372c08ccd724109780ccf, Backend CI37176508272 SUCCESS). Task028 integrates the reviewed plan with current observations; no VPS write follows from this document.
 
@@ -15,7 +23,7 @@ Native Actions SSH access is recovered. Task024 fixed the existing staging valid
 
 Runtime credentials and provider dns_link are unrelated to the public PINK backend identity. Neither may be used as a guessed backend domain. Customer UI remains username/password only; no DNS/portal field is added.
 
-## Concrete next execution plan
+## Historical concrete execution plan027
 
 The unresolved input is an Owner-controlled hostname for the PINK staging backend and its existing DNS control path. No hostname acquisition or unrelated-project hostname reuse is authorized or discovered. Use the existing OVH host; no new server/subscription is required.
 
@@ -58,7 +66,7 @@ On failed candidate validation, do not enable/reload it. After enablement, remov
 
 Task024 source backup is an exact-file privacy inverse. Task025 proves namespace-object cleanup. Neither certifies host gateway NAT/forwarding or database restoration. Real peer enrollment, Android tunnel/lifecycle/DNS/IPv6/capacity and physical-TV/provider tests remain separately bounded.
 
-## Human Gate closure
+## Historical identity Human Gate closure (resolved by selected hostname and030)
 
 FORCED_OPERATIONAL_ACCESS_DISCOVERY covered direct/native inventory, target/adjacent operations and historical evidence. Native Actions SSH works; no browser/manual-terminal gate is asserted. Native OVH/DNS management capability is absent. PINK build history contains the invalid placeholder, with no selected public backend hostname; PINK-only Nginx audit returned no origin. Prior-decision retrieval did not establish a hostname/TLS/DNS grant. No private conversation is copied here.
 

@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-RUNTIME-RECONCILIATION-023-MERGE",
+  "task_id": "PINK-IPTV-RUNTIME-RECONCILIATION-023",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-RUNTIME-RECONCILIATION-023-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "30",
+    "revision": "26d151cb5a3e43339aa0db19057d07b8f99064d2",
+    "base_revision": "0bc2b751c77da5702d8cfb24996d046e5f1829fc",
+    "environment": null
+  },
+  "observed_at": "2026-10-04T04:22:04.731Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "cb842e86aa1f547d721231e366fbcb0fc50f7ad1"
+  },
+  "evidence": [
+    "PR30 observed closed/merged at exact authorized head 26d151cb5a3e43339aa0db19057d07b8f99064d2",
+    "Canonical evidence verifier passed exact certifying Android/Backend SHA with all sameSHA push/PR contexts; final descendant changes only task023 WorkerResult.",
+    "Merge authorization durably persisted at 161cdcd47f3b2b9c3955f4b778b485119fd2c2f2 before merge; live main had no protected status requirements."
+  ],
+  "residual_blockers": []
+}

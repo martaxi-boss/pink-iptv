@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036-PHYSICAL-HANDOFF",
+  "task_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "owner_physical_android_login_and_channel_playback",
+  "target": {
+    "kind": "owner_physical_android_device",
+    "identifier": "Owner Android with existing scanned APK11299940615",
+    "revision": "4e46bfc96fea45b82a6e5689c2607bbc3bdc9f7d",
+    "environment": "Owner physical Android; existing authorized test line"
+  },
+  "observed_at": "2026-10-04T15:28:38.443Z",
+  "final_state": {
+    "status": "HUMAN_GATE_EXCLUSIVE_HUMAN_INTERVENTION",
+    "revision": null
+  },
+  "evidence": [
+    "Native tool inventory/direct ADB discovery expose no Owner physicaldevice control. Existing GitHub-hosted emulator and VPS bridge cannot install/interact with that physical device. Covered native networking/provider diagnostics033/034/035 complete; credential resend/SSH/browser gate not required. Existing debugartifact source/expiry reverified."
+  ],
+  "residual_blockers": [
+    "Owner installs existing debugAPK and confirms login/catalog/channel picture+sound; no credentialvalue should be posted. Android realVPN integration remains later separately boundedstage."
+  ]
+}

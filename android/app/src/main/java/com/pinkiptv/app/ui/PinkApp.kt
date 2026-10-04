@@ -67,6 +67,7 @@ fun PinkApp(
     onOpenSeriesFavorite: (FavoriteItem) -> Unit,
     onSelectLibraryPlayback: (PlaybackRef, Long) -> Unit,
     onClearPlayback: () -> Unit,
+    onRetrySavedLogin: () -> Unit = {},
 ) {
     when (state.screen) {
         RootScreen.Splash -> SplashScreen()
@@ -74,8 +75,11 @@ fun PinkApp(
             loginInFlight = state.loginInFlight,
             loginError = state.loginError,
             onLogin = onLogin,
+            savedAccountName = state.accountName.takeIf { state.savedAccountAvailable },
+            onRetrySavedLogin = onRetrySavedLogin,
         )
         RootScreen.Home -> AuthenticatedShell(
+            accountName = state.accountName,
             liveCatalog = liveCatalog,
             movieCatalog = movieCatalog,
             seriesCatalog = seriesCatalog,

@@ -72,7 +72,7 @@ class AppContainer(context: Context) {
     val playbackFacadeFactory: PlaybackFacadeFactory = Media3PlaybackFacadeFactory(
         context = context.applicationContext,
         sessionStore = providerSessionStore,
-        client = providerHttpClient,
+        client = providerHttpClient.newBuilder().callTimeout(0, TimeUnit.MILLISECONDS).build(),
     )
 
     val credentialStore: CredentialStore = SecureCredentialStore(

@@ -28,6 +28,8 @@ data class AppUiState(
     val screen: RootScreen = RootScreen.Splash,
     val loginInFlight: Boolean = false,
     val loginError: LoginError? = null,
+    val accountName: String? = null,
+    val savedAccountAvailable: Boolean = false,
 )
 
 class SessionController(
@@ -90,7 +92,7 @@ class SessionController(
                     }
                     if (requestGeneration != generation) return@launch
                     if (providerSessionStore.establish(username, password, result)) {
-                        mutableState.value = AppUiState(screen = RootScreen.Home)
+                        mutableState.value = AppUiState(screen = RootScreen.Home, accountName = username)
                     } else {
                         failLogin(LoginError.TemporaryUnavailable)
                     }
@@ -100,6 +102,17 @@ class SessionController(
                 SessionResult.Disabled -> failLogin(LoginError.Disabled)
                 SessionResult.TemporaryUnavailable -> failLogin(LoginError.TemporaryUnavailable)
             }
+        }
+    }
+
+    fun retrySavedLogin() {
+        if (mutableState.value.loginInFlight) return
+        val requestGeneration = ++generation
+        mutableState.value = mutableState.value.copy(loginInFlight = true, loginError = null)
+        val pendingCleanup = credentialCleanup
+        scope.launch {
+            pendingCleanup?.join()
+            bootstrap(requestGeneration)
         }
     }
 
@@ -142,7 +155,7 @@ class SessionController(
                         result,
                     )
                 ) {
-                    mutableState.value = AppUiState(screen = RootScreen.Home)
+                    mutableState.value = AppUiState(screen = RootScreen.Home, accountName = credentials.username)
                 } else {
                     failLogin(LoginError.TemporaryUnavailable)
                 }
@@ -162,7 +175,15 @@ class SessionController(
                 }
                 failLogin(error)
             }
-            SessionResult.TemporaryUnavailable -> failLogin(LoginError.TemporaryUnavailable)
+            SessionResult.TemporaryUnavailable -> {
+                providerSessionStore.clear()
+                mutableState.value = AppUiState(
+                    screen = RootScreen.Login,
+                    loginError = LoginError.TemporaryUnavailable,
+                    accountName = credentials.username,
+                    savedAccountAvailable = true,
+                )
+            }
         }
     }
 

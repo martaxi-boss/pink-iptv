@@ -1,5 +1,8 @@
 package com.pinkiptv.app.ui.theme
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -34,6 +37,12 @@ fun PinkTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = PinkDarkScheme,
         typography = Typography(),
-        content = content,
-    )
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            content = content,
+        )
+    }
 }

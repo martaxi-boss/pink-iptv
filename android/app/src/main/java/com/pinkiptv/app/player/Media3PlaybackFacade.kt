@@ -8,6 +8,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.HttpDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -103,7 +104,13 @@ internal class Media3PlaybackFacade(
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            currentError = mapMedia3Error(error.errorCode)
+            val http = generateSequence<Throwable>(error) { it.cause }
+                .filterIsInstance<HttpDataSource.InvalidResponseCodeException>().firstOrNull()
+            currentError = if (http?.responseCode == 401 || http?.responseCode == 403) {
+                PlayerError.ProviderDenied
+            } else {
+                mapMedia3Error(error.errorCode)
+            }
             syncState()
         }
     }

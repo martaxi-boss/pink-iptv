@@ -1,0 +1,13 @@
+# Android physical findings and refinement 037
+
+Owner device evidence on 2026-10-04: installation, login, Live/VOD/Series catalog and favorite navigation observed. Channel playback failed with a generic source error; no picture/sound PASS. VPN preparation dialog observed, not a real tunnel.
+
+Separately bounded VPS diagnostic038 run37222285591 at17:54:35Z reused the known approved test line and found HTTP401 for the two reported channels in both TS/HLS, without redirects. Metadata authentication succeeded. This does not certify that the exact same cause occurs on every device/network/channel. Its synthetic HTTPS request used the wrong route and returned404; this does not invalidate the Owner's successful actual login or earlier HTTPS proof. No credential/URL/raw payload was returned. No provider/subscription/runtime/service/network mutation.
+
+Implementation037 preserves existing Xtream-only architecture, Room and Keystore/DataStore. Successful login already saved credentials and reauthenticated on startup. Temporary startup failure now offers retry from the protected store without retyping, and Home/Settings show the current username. Explicit logout removes saved credentials; revoked/expired/disabled authentication remains fail-closed. Password stays outside UI state.
+
+Theme now supplies surface/content colors for all child screens, addressing black-on-dark text. Provider artwork already present in models is rendered as channel logos or portrait posters; optional failures show title initials. Downloads are redirect-disabled, bounded to2MiB and4 concurrent jobs, decoded at512px maximum edge, memory-only8MiB cache. No dependency or artwork generation added. Categories/tab labels stay on one line; library tabs scroll rather than collapsing vertically. Series has provider artwork and a bounded synopsis header. TV focus/test identities remain intact.
+
+Player reports401/403 distinctly without exception/URL exposure. Continuous playback no longer inherits the catalog's20second whole-call timeout; connect/read timeouts remain. This removes an independent duration defect but does not make a denied source playable. Automatic redirects, provider origin selection and TLS checks are preserved.
+
+Release/public launch and real Android VPN remain unapproved. A new scanned debug APK and exact CI are required before handing over this version. Physical reopen/login/artwork/layout/playback remains a later validation result, not inferred from implementation. Current task records distinguish the old physical handoff from these concrete findings; no historical evidence is deleted.

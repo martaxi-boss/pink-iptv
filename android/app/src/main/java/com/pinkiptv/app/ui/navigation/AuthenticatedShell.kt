@@ -91,6 +91,7 @@ fun AuthenticatedShell(
     onOpenSeriesFavorite: (FavoriteItem) -> Unit = {},
     onSelectLibraryPlayback: (PlaybackRef, Long) -> Unit = { _, _ -> },
     onClearPlayback: () -> Unit = {},
+    accountName: String? = null,
 ) {
     val navController = rememberNavController()
 
@@ -99,7 +100,7 @@ fun AuthenticatedShell(
         startDestination = Routes.HOME,
     ) {
         composable(Routes.HOME) {
-            HomeScreen(onNavigate = { route -> navController.navigate(route) })
+            HomeScreen(onNavigate = { route -> navController.navigate(route) }, accountName = accountName)
         }
         composable(Routes.LIVE) {
             CatalogScreen(
@@ -278,6 +279,7 @@ fun AuthenticatedShell(
         }
         composable(Routes.SETTINGS) {
             SettingsScreen(
+                accountName = accountName,
                 vpnState = vpnPreparationState,
                 onPrepareVpn = onPrepareVpn,
                 onBack = { navController.popBackStack() },

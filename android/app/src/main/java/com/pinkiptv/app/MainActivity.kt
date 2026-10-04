@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
                     playbackFacadeFactory = container.playbackFacadeFactory,
                     playbackActivityRecorder = container.playbackActivityRecorder,
                     onLogin = appViewModel::login,
+                    onRetrySavedLogin = appViewModel::retrySavedLogin,
                     onLogout = appViewModel::logout,
                     onPrepareVpn = {
                         when (appViewModel.prepareVpn()) {

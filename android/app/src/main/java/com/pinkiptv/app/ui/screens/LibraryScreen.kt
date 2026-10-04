@@ -1,6 +1,8 @@
 package com.pinkiptv.app.ui.screens
 
 import android.content.res.Configuration
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -99,7 +101,8 @@ fun LibraryScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("library_tabs"),
+                .testTag("library_tabs")
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             LibraryTabButton(
@@ -347,7 +350,7 @@ private fun LibraryTabButton(
         ),
         modifier = modifier,
     ) {
-        Text(label)
+        Text(label, maxLines = 1, softWrap = false)
     }
 }
 
@@ -372,7 +375,7 @@ private fun LibraryActionButton(
             .testTag(testTag)
             .onFocusChanged { focused = it.isFocused },
     ) {
-        Text(label)
+        Text(label, maxLines = 1, softWrap = false)
     }
 }
 

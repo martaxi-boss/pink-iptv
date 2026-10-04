@@ -1,0 +1,64 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-HTTPS-STAGING-PLAN-027",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-HTTPS-STAGING-PLAN-027.json",
+  "authorization_commit_sha": "ea9a6fc53d69ef17058d6123ffc4a024aae441c0",
+  "authorization_sha256": "400cdf749a58b1e93be0fc7b1ba2ada965779455d97636b4b07efe5f194a0b6b",
+  "implementation_head_sha": "2c3dd17b82e00c05acf372c08ccd724109780ccf",
+  "branch": "builder/https-staging-plan-027",
+  "recorded_at": "2026-10-04T04:19:23.729990+00:00",
+  "changes": [
+    "Prepared reviewable exact-scope HTTPS/Nginx/certificate/ingress/source-build/inverse plan with unresolved Owner hostname.",
+    "Recorded latest WireGuard isolated handshake/cleanup and corrected ufw6 ownership discovery; prior decision search found no backend hostname/DNS grant."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Canonical policy/scope/discovery/plan review; exactSHA Backend37176508272 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION, not missingSSH. No runtime activation or main promotion."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Canonical policy/scope/discovery/plan review; exactSHA Backend37176508272 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION, not missingSSH. No runtime activation or main promotion."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Canonical policy/scope/discovery/plan review; exactSHA Backend37176508272 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION, not missingSSH. No runtime activation or main promotion."
+    },
+    {
+      "name": "Operational discovery and prior-decision closure",
+      "status": "PASS",
+      "evidence": "Canonical policy/scope/discovery/plan review; exactSHA Backend37176508272 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION, not missingSSH. No runtime activation or main promotion."
+    },
+    {
+      "name": "Concrete HTTPS staging plan and inverse review",
+      "status": "PASS",
+      "evidence": "Canonical policy/scope/discovery/plan review; exactSHA Backend37176508272 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION, not missingSSH. No runtime activation or main promotion."
+    },
+    {
+      "name": "Human Gate convergence preflight",
+      "status": "PASS",
+      "evidence": "Canonical policy/scope/discovery/plan review; exactSHA Backend37176508272 SUCCESS; next hostname/DNS effect resolves NEW_UNCOVERED_MATERIAL_DECISION, not missingSSH. No runtime activation or main promotion."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37176508272
+    }
+  ],
+  "artifacts": [
+    "docs/HTTPS_STAGING_PLAN_027.md"
+  ],
+  "material_non_effects": [
+    "Documentation preparation only; no domain acquisition/reuse/DNS/Nginx/certificate/ingress/runtime/secret/cost/client deployment changes.",
+    "Template placeholders do not constitute deployed configuration or rollback certification."
+  ],
+  "residual_blockers": []
+}

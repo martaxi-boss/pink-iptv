@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-HTTPS-ANDROID-STAGING-031",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-04T09:27:49.865Z",
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "action_fingerprint": "031-kvm-settle-and-isolated-wait",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "a3af8aabb5176c74304d3008a252d084d95acbdb9642804d492c16c85aa667e7",
+  "detail": "Keep every existing emulator check/hardware requirement; settle udev and bound device read/write readiness after trigger. Persist pre-retry journal and CI wait only on separate control refs before moving task PRhead, so noncertifying metadata does not cancel active certifying jobs. No oldSHA rerun or test weakening."
+}

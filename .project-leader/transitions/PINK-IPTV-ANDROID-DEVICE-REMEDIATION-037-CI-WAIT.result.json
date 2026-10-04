@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037-CI-WAIT",
+  "task_id": "PINK-IPTV-ANDROID-DEVICE-REMEDIATION-037",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "NOT_EXECUTED",
+  "authorization_record": null,
+  "action": "await_existing_exact_required_ci",
+  "target": {
+    "kind": "github_actions_bound_runs",
+    "identifier": "AndroidPR37232393331/push37232390206;BackendPR37232393327/push37232390207",
+    "revision": "ff0c276650acf8efcd1293f15c81873c2f90a6c0",
+    "base_revision": "383d3e39f9b6ace77f2157af3024c387d19fadaa",
+    "environment": "PR34 Android staging"
+  },
+  "observed_at": "2026-10-04T20:49:33.947Z",
+  "final_state": {
+    "status": "WAITING_EXTERNAL_CI_TRANSIENT",
+    "revision": "ff0c276650acf8efcd1293f15c81873c2f90a6c0"
+  },
+  "evidence": [
+    "Exact Android push and both Backend contexts terminalSUCCESS; AndroidPR mainbuild/API24 completedSUCCESS, phone-device-proof111526352941 still executing in existing run37232393331. No duplicate dispatch or rerun; recheck at bounded5minute cadence,60minute stale threshold.",
+    "Separate evidence branch avoids changing PR head or cancelling certifying emulator via automatic PR concurrency. On interruption reconstruct task/PR/head/exactrunbinding before continuing."
+  ],
+  "residual_blockers": [
+    "Only existing phone-device-proof remains; no Owner approval or artificial access gate."
+  ]
+}

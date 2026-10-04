@@ -32,6 +32,13 @@ internal class XtreamPlaybackUrlFactory(
     private val sessionStore: RuntimeProviderSessionStore,
 ) {
     internal fun resolve(ref: PlaybackRef): PlaybackSourceResult {
+        return resolve(ref, legacyLive = false)
+    }
+
+    internal fun resolveLegacyLive(ref: LivePlaybackRef): PlaybackSourceResult =
+        resolve(ref, legacyLive = true)
+
+    private fun resolve(ref: PlaybackRef, legacyLive: Boolean): PlaybackSourceResult {
         val session = sessionStore.current()
             ?: return PlaybackSourceResult.Failure(PlayerError.SessionUnavailable)
 
@@ -42,11 +49,11 @@ internal class XtreamPlaybackUrlFactory(
         val builder = session.origin.newBuilder()
         val kind = when (ref) {
             is LivePlaybackRef -> {
+                if (!legacyLive) builder.addPathSegment("live")
                 builder
-                    .addPathSegment("live")
                     .addPathSegment(session.username)
                     .addPathSegment(session.password)
-                    .addPathSegment(ref.streamId + ".ts")
+                    .addPathSegment(ref.streamId + if (legacyLive) "" else ".ts")
                 PlaybackKind.Live
             }
             is VodPlaybackRef -> {

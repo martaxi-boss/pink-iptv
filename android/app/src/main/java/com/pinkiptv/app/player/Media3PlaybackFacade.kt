@@ -74,6 +74,7 @@ internal class Media3PlaybackFacade(
     private var requestedStartPositionMs = 0L
     private var pendingResume = false
     private var released = false
+    private val liveFallback = LiveSourceFallback()
 
     private val player = ExoPlayer.Builder(context)
         .setMediaSourceFactory(
@@ -106,6 +107,19 @@ internal class Media3PlaybackFacade(
         override fun onPlayerError(error: PlaybackException) {
             val http = generateSequence<Throwable>(error) { it.cause }
                 .filterIsInstance<HttpDataSource.InvalidResponseCodeException>().firstOrNull()
+            val ref = currentRef
+            if (!released && liveFallback.take(ref, http?.responseCode, sessionStore.current() != null)) {
+                val fallback = urlFactory.resolveLegacyLive(ref as LivePlaybackRef)
+                if (fallback is PlaybackSourceResult.Success) {
+                    currentError = null
+                    player.setMediaItem(MediaItem.Builder().setMediaId(ref.streamId)
+                        .setUri(fallback.source.url.toString()).build())
+                    player.prepare()
+                    player.playWhenReady = true
+                    syncState()
+                    return
+                }
+            }
             currentError = if (http?.responseCode == 401 || http?.responseCode == 403) {
                 PlayerError.ProviderDenied
             } else {
@@ -121,6 +135,7 @@ internal class Media3PlaybackFacade(
         scope.launch {
             sessionStore.available.collect { available ->
                 if (!available && currentRef != null && !released) {
+                    liveFallback.clear()
                     player.stop()
                     player.clearMediaItems()
                     currentError = PlayerError.SessionUnavailable
@@ -146,6 +161,7 @@ internal class Media3PlaybackFacade(
         if (released) return
 
         currentRef = ref
+        liveFallback.reset()
         currentError = null
         requestedStartPositionMs = when (ref) {
             is VodPlaybackRef,
@@ -211,6 +227,7 @@ internal class Media3PlaybackFacade(
         requireMainThread()
         if (released) return
         released = true
+        liveFallback.clear()
         player.removeListener(listener)
         player.stop()
         player.clearMediaItems()
@@ -294,6 +311,20 @@ internal class Media3PlaybackFacade(
         check(Looper.myLooper() == Looper.getMainLooper()) {
             "Player access must occur on the main thread"
         }
+    }
+}
+
+/** One same-origin Xtream live-path compatibility attempt; never a redirect or network retry. */
+internal class LiveSourceFallback {
+    private var consumed = false
+
+    fun reset() { consumed = false }
+    fun clear() { consumed = true }
+
+    fun take(ref: PlaybackRef?, httpStatus: Int?, sessionAvailable: Boolean): Boolean {
+        if (consumed || !sessionAvailable || ref !is LivePlaybackRef || httpStatus !in setOf(401, 404)) return false
+        consumed = true
+        return true
     }
 }
 

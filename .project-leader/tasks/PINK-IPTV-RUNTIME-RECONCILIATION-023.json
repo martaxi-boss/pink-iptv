@@ -1,0 +1,121 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-RUNTIME-RECONCILIATION-023",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-04T03:51:20.881035+00:00",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Continue current authorized PINK preflight after verified native Actions SSH recovery. Reconcile live runtime observations, canonical access capability, installed-source drift and remaining rollback prerequisites. Update current project/stage documents with links to isolated VPS evidence; preserve all historical records and earlier observation017. Repository documentation only; no runtime deployment/network/secret/service/provider/peer changes or real-tunnel certification."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "0bc2b751c77da5702d8cfb24996d046e5f1829fc",
+    "task_branch": "builder/runtime-reconciliation-023"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "PROJECT_STATE.md",
+    "docs/IMPLEMENTATION_PLAN.md",
+    "docs/ROADMAP.md",
+    "docs/WIREGUARD_PREFLIGHT.md",
+    "docs/OVH_RUNTIME_AUDIT_023.md",
+    ".project-leader/tasks/PINK-IPTV-RUNTIME-RECONCILIATION-023.json",
+    ".project-leader/results/PINK-IPTV-RUNTIME-RECONCILIATION-023.json",
+    ".project-leader/recovery-events/PINK-IPTV-RUNTIME-RECONCILIATION-023/**",
+    ".project-leader/transitions/PINK-IPTV-RUNTIME-RECONCILIATION-023-*"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "change_ci_workflows",
+    "remove_or_broaden_secret_detection",
+    "modify_historical_records",
+    "real_tunnel_or_peer_activation",
+    "cross_project_mutation",
+    "force_push"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Observation provenance and limits",
+    "Runtime drift and canonical access reconciliation",
+    "Rollback prerequisite audit"
+  ],
+  "required_ci": [
+    "Android CI",
+    "Backend CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "05225695684b54ce5becbb89cf0e5b6dc88dcafa"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Bounded reconciliation documents pass exactSHA required CI and canonical evidence audit; promote through standing exact transition after supervisor acceptance, then continue separately bounded runtime safety remediation. No assumed deployment parity, provider/physicalTV/restore/tunnel proof.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

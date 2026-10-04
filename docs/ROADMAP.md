@@ -33,7 +33,7 @@ Stage 004A dependency/compliance foundation: COMPLETE / MERGED.
 
 Stage 004A pins the official released Android tunnel dependency, intentionally raises the Android minimum to API 24, verifies the released native payload and proves GoBackend native loadability without creating a real tunnel. Approved head: `6d6611d8fd0cc784770fb9ec56d025bd87963b0a`; merge: `84fe2dfffd4d381f45bd9b88a0983c122ba42ee4`.
 
-Stage 004B identity/permission/adapter: ACTIVE.
+Stage 004B identity/permission/adapter: COMPLETE / MERGED.
 
 004B creates/reuses only device-install local identity after explicit Android VPN authorization, protects private key material with a dedicated Keystore/DataStore boundary, adds preparation-state/UI/permission plumbing, keeps always-on disabled and closes the API24 lower-bound runtime smoke. No real WireGuard Config, tunnel activation, peer, VPN server, OVH, routing, firewall or NAT mutation is authorized.
 

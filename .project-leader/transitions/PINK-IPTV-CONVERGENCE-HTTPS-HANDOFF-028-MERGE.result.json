@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028-MERGE",
+  "task_id": "PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-CONVERGENCE-HTTPS-HANDOFF-028-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "31",
+    "revision": "3afcfcb44b2fd187510728e08e31c791ae9d9594",
+    "base_revision": "cb842e86aa1f547d721231e366fbcb0fc50f7ad1",
+    "environment": null
+  },
+  "observed_at": "2026-10-04T04:26:44.471Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "4761a56f600176e0ffc02ee638acb36b9fc89342"
+  },
+  "evidence": [
+    "PR31 observed closed/merged at exact authorized final head 3afcfcb44b2fd187510728e08e31c791ae9d9594",
+    "Canonical native-transport verifier passed original exactSHA Backend37176868921 and sameSHA consistency, immutable auth and task-local evidence descendant.",
+    "Exact authority 6b7e6eb64b25b42f982b833006285b53fe70193e persisted before merge; next uncovered hostname/DNS gate remains NOT_EXECUTED."
+  ],
+  "residual_blockers": []
+}

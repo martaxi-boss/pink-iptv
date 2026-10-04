@@ -1,0 +1,14 @@
+{
+  "task_id": "PINK-IPTV-RUNTIME-CONVERGENCE-036",
+  "repository": "martaxi-boss/pink-iptv",
+  "status": "WAITING_EXTERNAL_CI",
+  "implementation_head_sha": "707e2deb71e6e495cf942110f719fb6df1fd89e1",
+  "required_ci": "Backend CI",
+  "bound_run_ids": [
+    37212931830,
+    37212929643
+  ],
+  "observed_at": "2026-10-04T15:26:05.952Z",
+  "next_check_after_seconds": 300,
+  "note": "Documentation-only task requires BackendCI. Incidental Android runs are not task-certifying and do not authorize reruns. Preserve PRhead while requiredCI active."
+}

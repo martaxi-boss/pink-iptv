@@ -1,8 +1,16 @@
 # PINK IPTV - PROJECT STATE
 
-Date: 2026-10-03
+Date: 2026-10-04
 Phase: Phase 4 — WireGuard Stage 004B — COMPLETE / MERGED; runtime preflight preparation
 Public launch: NO
+
+## Current runtime continuation 023
+
+Current control source: Project Leader05225695684b54ce5becbb89cf0e5b6dc88dcafa (skill0.6.2). Starting PINK main:0bc2b751c77da5702d8cfb24996d046e5f1829fc. The older audit sections below preserve historical acceptance evidence.
+
+Separately bounded VPS tasks021/022 recovered native Actions SSH execution and identified runtime Git HEAD ccccaf1eb25ca80936763f7d6a17e4dd00347e8a, the proof unit as a headless Android emulator, and zero WireGuard interfaces. Task024 corrected the observed staging validation-input echo using only the already merged backend privacy handler; protected source backup, generic422/no-store response, OpenAPI200, PostgreSQL readiness and existing active services were verified. Runtime Git HEAD remains historical with a documented single-file source overlay; this is not full-main deployment or real-tunnel proof.
+
+See [runtime audit023](docs/OVH_RUNTIME_AUDIT_023.md) for exact runs/hashes/provenance and remaining network/rollback work. Direct session SSH absence no longer blocks continuation: use separate bounded VPS operations tasks through repository-return diagnostics. Stage004B is COMPLETE/MERGED. Current docs require their own exact CI/result and promotion evidence; this section does not predict acceptance. Physical-TV/provider proof, real tunnel and capacity remain unverified. Public launch:NO.
 
 ## Current canonical audit / continuation 014
 

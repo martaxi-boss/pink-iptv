@@ -2,7 +2,7 @@
 
 Project Leader reconstructs live GitHub state, bounds one task and routes it through Supervisor/Builder/audit under the canonical contract. The order descriptions below preserve stage boundaries; completed stages are not instructions to rebuild them.
 
-Current merged stages: Foundation 001, Android Shell 002, Android Catalog/Player 003A–003F and WireGuard dependency/compliance 004A. Open PR #13 holds the combined 004B and Android/backend remediation work. Windows has not started. Public launch remains NO.
+Current merged stages: Foundation 001, Android Shell 002, Android Catalog/Player 003A–003F and WireGuard dependency/compliance 004A/004B. PR13 was merged; its Android/backend remediation is integrated. Native OVH observation and a scoped staging privacy correction are recorded in [runtime audit023](OVH_RUNTIME_AUDIT_023.md). Windows has not started. Public launch remains NO.
 
 ## Order 001 - Foundation / Mega Proof
 Allowed:
@@ -37,7 +37,7 @@ Allowed:
 
 ## Order 004 - staged WireGuard work
 - 004A dependency/compliance: COMPLETE / MERGED
-- 004B identity/permission/read-only adapter: open PR #13, not merged
+- 004B identity/permission/read-only adapter: COMPLETE / MERGED
 - later real-tunnel work retains the prerequisites below
 - snapshot/rollback first
 - server WireGuard

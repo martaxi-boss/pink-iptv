@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-05T14:30:17.837Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-source-scan-workflow-label",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "dd5c1113d6d638b2ba6b8bcdc1423a7fd4073fcbc12d8c6da531174b0e8f93a6",
+  "detail": "Supervisor authorizes correcting the non-secret workflow step label without weakening the source detector. Retain the immutable Task053 grant and append-only causal journal. Publish a material descendant and reuse its automatic CI; do not rerun any already-active exact-SHA run."
+}

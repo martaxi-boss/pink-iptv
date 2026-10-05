@@ -14,7 +14,8 @@ object PinkWebBridge {
     private val main = Handler(Looper.getMainLooper())
     private val workers = Executors.newSingleThreadExecutor()
     fun attach(context: Context, webView: WebView) {
-        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
+            throw IllegalStateException("Connection unavailable")
         val app = context.applicationContext
         val vault = PinkVault(app)
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
@@ -41,7 +42,11 @@ object PinkWebBridge {
                     }
                     response.put("ok", true).put("result", result)
                 } catch (_: Exception) { response.put("ok", false) }
-                main.post { try { reply.postMessage(response.toString()) } catch (_: Exception) { } }
+                main.post {
+                    if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+                        try { reply.postMessage(response.toString()) } catch (_: Exception) { }
+                    }
+                }
             }
         }
     }

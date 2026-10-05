@@ -57,13 +57,16 @@ class PinkVpnLiveTest {
         val fixture = JSONObject(fixtureFile.readText())
         check(fixtureFile.delete())
         var enrolled = false
+        val retainForRestart = InstrumentationRegistry.getArguments().getString("pinkRetainGrant") == "true"
+        var completed = false
         try {
             ActivityScenario.launch(MainActivity::class.java).let { activity ->
                 phase = "normal-consent"
                 val device = UiDevice.getInstance(instrumentation)
                 val consentDeadline = System.currentTimeMillis()+60000
                 while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
-                    if (device.hasObject(By.pkg("com.android.vpndialogs"))) {
+                    if (device.hasObject(By.pkg("com.android.vpndialogs")) ||
+                        device.hasObject(By.text("Connection request"))) {
                         device.findObject(By.res("android","button1"))?.click()
                     }
                     Thread.sleep(100)
@@ -78,6 +81,7 @@ class PinkVpnLiveTest {
                 val publicIdentity = runBlocking { SecureVpnIdentityStore(AndroidKeystoreVpnIdentityCipher(),
                     DataStoreVpnIdentityPersistence(context)).loadIdentity() as VpnIdentityResult.Available }
                 context.filesDir.resolve("pink055-peer-public.txt").writeText(publicIdentity.identity.publicKey)
+                context.filesDir.resolve("pink055-process-public.txt").writeText(android.os.Process.myPid().toString())
                 phase = "protected-login-enrollment"
                 val reply = runtime.resolve(fixture.getString("username"),fixture.getString("password"))
                 check(reply.getString("code") == "SUCCESS")
@@ -140,12 +144,13 @@ class PinkVpnLiveTest {
                     DataStoreVpnIdentityPersistence(context)).loadIdentity() }
                 check(identity == reloaded)
                 report("NATIVE_LIVE_AUDIO_VIDEO_DECODE_AND_SAME_INSTALLATION_RECREATION=PASS")
+                completed = true
             }
         } catch (_: Throwable) {
             // Provider exceptions can contain credential-bearing URLs: never chain them.
             throw AssertionError("Protected real Android flow unavailable at "+phase)
         } finally {
-            if (enrolled) {
+            if (enrolled && !(completed && retainForRestart)) {
                 try {
                     val prefs = context.getSharedPreferences("pink_vpn_grant_v1",0)
                     val saved = JSONObject(AndroidKeystoreVpnIdentityCipher().decrypt(VpnEncryptedPayload(

@@ -1,6 +1,7 @@
 """Native WireGuard integration for the pinned generated Extreme Android host."""
 from pathlib import Path
 import shutil
+import xml.etree.ElementTree as ET
 
 
 def apply(root, dest, replace):
@@ -64,11 +65,8 @@ def apply(root, dest, replace):
   private val pinkPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
     PinkVpnRuntime.get(applicationContext).permissionResult(it.resultCode == android.app.Activity.RESULT_OK)
   }''')
-    replace(native + 'MainActivity.kt', '    hostedWebView = webView', '''    hostedWebView = webView
-    PinkVpnRuntime.get(applicationContext).startup(this, pinkPermission)
-''')
     replace(native + 'MainActivity.kt', '    super.onResume()',
-            '    super.onResume()\n    PinkVpnRuntime.get(applicationContext).resume()')
+            '    super.onResume()\n    PinkVpnRuntime.get(applicationContext).startup(this, pinkPermission)\n    PinkVpnRuntime.get(applicationContext).resume()')
     replace(native + 'MainActivity.kt',
             '''  override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
     delegate.shouldInterceptRequest(view, request)''',
@@ -89,6 +87,54 @@ def apply(root, dest, replace):
             '    super.onCreate(savedInstanceState)\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
     replace(native + 'VideoActivity.kt', 'put("message", error.message ?: "")',
             'put("message", "Reprodução temporariamente indisponível")', count=2)
+    # Opt in at the implementation boundary instead of propagating an unstable
+    # API requirement to callers of the application's own Activity/constants.
+    replace(native + 'VideoActivity.kt', '@UnstableApi\nclass VideoActivity',
+            '@androidx.annotation.OptIn(UnstableApi::class)\nclass VideoActivity')
+    # Preserve the existing TV back hierarchy while supporting Android gestures.
+    replace(native + 'VideoActivity.kt', '    setupCustomControls()', '''    setupCustomControls()
+    onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        when {
+          volumeAdjustActive -> setVolumeAdjustActive(false)
+          overlayVisible -> hideChannelOverlay()
+          controllerVisible -> playerView?.hideController()
+          else -> {
+            isEnabled = false
+            onBackPressedDispatcher.onBackPressed()
+            isEnabled = true
+          }
+        }
+      }
+    })''')
+    replace(native + 'VideoActivity.kt', '''        KeyEvent.KEYCODE_BACK -> {
+          if (!volumeAdjustActive) return@setOnKeyListener false
+          if (pressed) setVolumeAdjustActive(false)
+          true
+        }
+''', '')
+    replace(native + 'VideoActivity.kt', '''      if (keyCode == KeyEvent.KEYCODE_BACK) {
+        hideChannelOverlay()
+        return true
+      }
+''', '')
+    replace(native + 'VideoActivity.kt', '''      if (keyCode == KeyEvent.KEYCODE_BACK) {
+        playerView?.hideController()
+        return true
+      }
+''', '')
+    # Upstream explicitly ships these English-only native fallbacks. Keep every
+    # existing locale value and fallback unchanged, and declare that intention.
+    resources = dest / 'src-tauri/gen/android/app/src/main/res'
+    locales = [ET.parse(path).getroot() for path in resources.glob('values-*/strings.xml')]
+    untranslated = {node.attrib['name'] for node in ET.parse(resources / 'values/strings.xml').getroot()
+                    if not any(any(item.attrib.get('name') == node.attrib['name'] for item in locale)
+                               for locale in locales)}
+    strings = resources / 'values/strings.xml'
+    value = strings.read_text()
+    for name in sorted(untranslated):
+        value = value.replace('<string name="'+name+'">', '<string name="'+name+'" translatable="false">')
+    strings.write_text(value)
     replace(native + 'XtreamDreamService.kt', '    super.onAttachedToWindow()',
             '    super.onAttachedToWindow()\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
 

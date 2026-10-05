@@ -29,7 +29,8 @@ class PinkVpnStartupTest {
         ActivityScenario.launch(MainActivity::class.java).let { activity ->
             val consentDeadline = System.currentTimeMillis()+60000
             while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
-                if (device.hasObject(By.pkg("com.android.vpndialogs"))) {
+                if (device.hasObject(By.pkg("com.android.vpndialogs")) ||
+                    device.hasObject(By.text("Connection request"))) {
                     val accept = device.findObject(By.res("android", "button1"))
                     if (accept != null) {
                         report("NORMAL_ANDROID_PERMISSION_DIALOG=OBSERVED")
@@ -40,6 +41,11 @@ class PinkVpnStartupTest {
             }
             report("NORMAL_ANDROID_PERMISSION_GRANTED="+(VpnService.prepare(context)==null)+
                 ";FOREGROUND_PACKAGE="+device.currentPackageName)
+            if (VpnService.prepare(context) != null) {
+                val window = java.io.ByteArrayOutputStream()
+                device.dumpWindowHierarchy(window)
+                report("FIRST_CONSENT_PUBLIC_WINDOW="+window.toString("UTF-8").take(18000))
+            }
             assertNull(VpnService.prepare(context))
             val runtime = PinkVpnRuntime.get(context)
             val deadline = System.currentTimeMillis()+60000

@@ -4,6 +4,9 @@ import shutil
 
 
 def apply(root, dest, replace):
+    replace('src-tauri/gen/android/build.gradle.kts',
+            'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25',
+            'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0')
     native = 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/'
     for source in (root / 'overlay/vpn').glob('*.kt'):
         shutil.copyfile(source, dest / native / source.name)

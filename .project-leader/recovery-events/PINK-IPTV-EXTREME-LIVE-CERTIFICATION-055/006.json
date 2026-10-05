@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 6,
+  "recorded_at": "2026-10-05T16:20:34.211Z",
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "action_fingerprint": "055-hosted-consent-and-route-measurement",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "14d9810efc3738d065e88432504f6d95f97c8e51bddb2696416575d76868a959",
+  "detail": "Change to a bounded hosted diagnosis strategy after observing a separate cold-start consent race and unavailable local shell. Validate immutable events with exact canonical control revision in Actions before publishing them. Wait up to60seconds for either normal dialog or observed authorization; retain normal OS permission and every route assertion. Measure network handle, source address, per-family sockets and public kernel rules inside the live offline test before assertion teardown; preserve provider gates and accepted gateway. No old-SHA rerun, no system consent bypass or live fixture. Production routing changes require the resulting evidence."
+}

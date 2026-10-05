@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T23:00:58.526Z",
+  "previous_event_sha256": "f3aa6ef8dee45c5a1d0f1048702d66dda7e949329228801766708096c785ee25",
+  "sequence": 16,
+  "event": "REPLAN",
+  "strategy_generation": 5,
+  "action_fingerprint": "055-fixed-fail-closure-observer-network-restart-proof",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "detail": "Live R6/VPS37385506766 on unchanged PINK6d766914 positively certifies cold same-key authorized tunnel without credentials after real login/catalog/native audio-video/recreation PASS. New distinct restore PID exits SIGNALED status9 in network-change section, with no native crash records. Do not diagnose old destroyed-mutex evidence or weaken fail closure. Bounded E1 material diagnostic adds an unset-by-default instrumentation observer for fixed VPN_LOST/GRANT_EXPIRED/RECOVERY_EXHAUSTED categories and exact PID; observer failure cannot suppress kill. Test writes fixed network phases and can independently certify same-key restart after connectivity returns. Normal product lifecycle, routing, credentials and termination decisions preserved. Fresh exact Android/Backend CI and new source-bound 056 preparation/proof required. Unclassified exits remain failures."
+}

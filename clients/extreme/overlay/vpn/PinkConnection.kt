@@ -50,6 +50,15 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private var nextAttempt = 0L
     @Volatile private var startupStage = "awaiting_consent"
     @Volatile private var failureCategory = "none"
+    // Inactive outside instrumentation; only fixed lifecycle categories are observed.
+    @Volatile internal var failClosureObserverForTests: ((String) -> Unit)? = null
+
+    private fun terminateForFailClosure(reason: String) {
+        admitted = false
+        try { failClosureObserverForTests?.invoke(reason) } catch (_: Exception) {
+            // A diagnostic failure must never prevent fail closure.
+        } finally { Process.killProcess(Process.myPid()) }
+    }
 
     override fun getName(): String = "pink"
     override fun onStateChange(state: Tunnel.State) {
@@ -57,8 +66,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         if (!live && admitted) {
             // Service revocation/replacement must stop Rust, WebView and native player
             // networking together. No direct retry survives this process boundary.
-            admitted = false
-            Process.killProcess(Process.myPid())
+            terminateForFailClosure("VPN_LOST")
         }
     }
 
@@ -269,7 +277,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 return
             }
             if (!Instant.parse(saved.getString("expires_at")).isAfter(Instant.now())) {
-                if (admitted) { admitted = false; Process.killProcess(Process.myPid()) }
+                if (admitted) terminateForFailClosure("GRANT_EXPIRED")
                 return
             }
             if (live && !sealed) {
@@ -285,8 +293,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             failureCategory = failure.javaClass.simpleName
             failures = (failures + 1).coerceAtMost(6)
             if (failures == 6 && admitted) {
-                admitted = false
-                Process.killProcess(Process.myPid())
+                terminateForFailClosure("RECOVERY_EXHAUSTED")
             }
             nextAttempt = System.currentTimeMillis() + (5_000L shl failures).coerceAtMost(300_000L)
         }

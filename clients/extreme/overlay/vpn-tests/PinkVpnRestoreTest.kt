@@ -24,6 +24,14 @@ class PinkVpnRestoreTest {
         check(previousPid != Process.myPid())
         check(!context.filesDir.resolve("pink055-test-account.json").exists())
         check(VpnService.prepare(context) == null)
+        val runtime = PinkVpnRuntime.get(context)
+        val exitRecord = context.filesDir.resolve("pink055-fail-closure-public.txt")
+        exitRecord.delete()
+        runtime.failClosureObserverForTests = { reason ->
+            check(reason in setOf("VPN_LOST", "GRANT_EXPIRED", "RECOVERY_EXHAUSTED"))
+            exitRecord.writeText(Process.myPid().toString()+":"+reason)
+        }
+        context.filesDir.resolve("pink055-restore-phase-public.txt").writeText("COLD_START")
         ActivityScenario.launch(MainActivity::class.java).let {
             fun health(): Boolean = try {
                 val request = URL("http://10.66.0.1:51821/health").openConnection() as HttpURLConnection
@@ -44,6 +52,10 @@ class PinkVpnRestoreTest {
                 DataStoreVpnIdentityPersistence(context)).loadIdentity() as VpnIdentityResult.Available }
             check(stored.identity.publicKey == expectedKey)
             report("COLD_PROCESS_SAME_KEY_NO_CREDENTIALS_AUTHORIZED_TUNNEL=PASS")
+            if (InstrumentationRegistry.getArguments().getString("pinkNetworkChange") == "false") {
+                report("POST_NETWORK_RESTART_SAME_KEY_AUTHORIZED_TUNNEL=PASS")
+                return
+            }
             val cm = context.getSystemService(ConnectivityManager::class.java)
             val wifi = cm.allNetworks.firstOrNull { network -> cm.getNetworkCapabilities(network)?.let { caps ->
                 caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
@@ -58,7 +70,9 @@ class PinkVpnRestoreTest {
                     }
                 }
                 try {
+                    context.filesDir.resolve("pink055-restore-phase-public.txt").writeText("WIFI_DISABLING")
                     command("svc wifi disable")
+                    context.filesDir.resolve("pink055-restore-phase-public.txt").writeText("WIFI_DISABLED")
                     val deadline = System.currentTimeMillis()+30000
                     while (cm.allNetworks.any { it == wifi } && System.currentTimeMillis()<deadline) Thread.sleep(250)
                     check(cm.allNetworks.none { it == wifi })
@@ -70,7 +84,10 @@ class PinkVpnRestoreTest {
                         ready()
                         report("SAME_PROCESS_WIFI_TO_CELLULAR_WIREGUARD_ROAM=PASS")
                     } else report("EMULATOR_CELLULAR_ROAM_UNAVAILABLE")
-                } finally { command("svc wifi enable") }
+                } finally {
+                    context.filesDir.resolve("pink055-restore-phase-public.txt").writeText("WIFI_ENABLING")
+                    command("svc wifi enable")
+                }
                 ready()
                 check(PinkVpnRuntime.get(context).hasCapturedRouteForTests())
                 report("WIFI_RECONNECT_CAPTURE_AND_DEFAULT_TUNNEL_HEALTH=PASS")

@@ -29,3 +29,12 @@ visible. Physical device image/sound and platform revocation behavior remain
 explicit validation boundaries; no public launch is certified.
 
 Native real-flow harness recovery: AndroidX InstrumentationActivityInvoker.startActivity unconditionally adds NEW_TASK|CLEAR_TASK. A nested ActivityScenario.launch(VideoActivity) therefore destroys the Tauri root rather than exercising the production player transition. The proof now opens VideoActivity from the existing MainActivity on its UI thread, observes it using an instrumentation monitor, closes only the player, and asserts the root remains alive. Product UI/player/VPN behavior is unchanged; fresh compilation and real decoded-playback proof remain required.
+
+Cold restoration proof R6 established same-key authorization without credentials,
+then exited with signal 9 during the network-change section. The earlier mutex
+diagnostic selected the stopped prior PID and is not a certified restore cause.
+An instrumentation-only observer now records fixed fail-closure categories and
+the current PID; it is unset in production and cannot suppress process termination.
+Fixed network phases distinguish outage from restart. A process-loss recovery
+must prove its exact fail-closure cause, then restore the same authorized identity
+after connectivity returns. Unclassified crashes remain failures.

@@ -28,6 +28,7 @@ import org.json.JSONObject
 
 /** Only attached to the local Tauri app WebView. No configuration/key API is exposed. */
 class PinkConnection(private val context: Context) {
+    @JavascriptInterface fun ready(): Boolean = PinkVpnRuntime.isReady()
     @JavascriptInterface fun resolve(username: String, password: String): String = try {
         PinkVpnRuntime.get(context).resolve(username, password).toString()
     } catch (_: Exception) { JSONObject().put("code", "VPN_UNAVAILABLE").toString() }

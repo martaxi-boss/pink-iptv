@@ -7,6 +7,13 @@ def apply(root, dest, replace):
     replace('src-tauri/gen/android/build.gradle.kts',
             'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25',
             'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0')
+    shutil.copyfile(root / 'overlay/pink-network.js', dest / 'src/scripts/lib/pink-network.js')
+    shutil.copyfile(root / 'overlay/pink-network.test.ts', dest / 'tests/pink-network.test.ts')
+    replace('src/scripts/lib/provider-fetch.js',
+            'export async function providerFetch(url, init = {}) {',
+            '''export async function providerFetch(url, init = {}) {
+  const { waitPinkConnection } = await import("./pink-network.js")
+  await waitPinkConnection(init.signal)''')
     native = 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/'
     for source in (root / 'overlay/vpn').glob('*.kt'):
         shutil.copyfile(source, dest / native / source.name)
@@ -56,6 +63,16 @@ def apply(root, dest, replace):
     webView.addJavascriptInterface(PinkConnection(applicationContext), "PinkConnection")''')
     replace(native + 'MainActivity.kt', '    super.onResume()',
             '    super.onResume()\n    PinkVpnRuntime.get(applicationContext).resume()')
+    replace(native + 'MainActivity.kt',
+            '''  override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
+    delegate.shouldInterceptRequest(view, request)''',
+            '''  override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+    val remote = request.url.scheme in setOf("http", "https") && request.url.host != "tauri.localhost"
+    if (remote && !PinkVpnRuntime.isReady()) return WebResourceResponse(
+      "text/plain", "UTF-8", 503, "Connection unavailable", emptyMap(),
+      java.io.ByteArrayInputStream(ByteArray(0)))
+    return delegate.shouldInterceptRequest(view, request)
+  }''')
     replace(native + 'MainActivity.kt', '    val uri = parseUri(url) ?: return false',
             '    if (true) return false // App-scoped PINK cannot protect another player package.\n    val uri = parseUri(url) ?: return false', count=3)
     replace(native + 'MainActivity.kt', '    val uri = parseUri(url) ?: return "[]"',

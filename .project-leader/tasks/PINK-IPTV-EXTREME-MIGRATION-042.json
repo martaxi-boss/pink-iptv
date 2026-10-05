@@ -33,7 +33,7 @@
     "edit_project_files",
     "create_commits",
     "run_ci",
-    "open_or_update_pull_request",
+    "open_or_update_pr",
     "change_project_governance",
     "reconcile_project_architecture"
   ],

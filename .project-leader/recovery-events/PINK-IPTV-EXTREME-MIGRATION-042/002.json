@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-MIGRATION-042",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-05T09:23:35.421612+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "action_fingerprint": "042-pinned-full-client-build",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "8ff6bcb747754a0e255cc589686748c4ac3f1c942fcb1abdb881643789d66a62",
+  "detail": "Use the upstream-pinned pnpm10.31.0 in isolated GitHub Actions. Preserve frozen lockfile and use full source build. No repeated local installation."
+}

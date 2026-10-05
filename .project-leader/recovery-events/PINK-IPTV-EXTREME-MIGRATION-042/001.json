@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-MIGRATION-042",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-05T09:23:35.421254+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "042-pinned-full-client-build",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": null,
+  "detail": "Local package installation used host pnpm11 and terminated with ignored esbuild lifecycle policy after installing dependencies. No remote runtime effects. Local binary checks are advisory; exact-SHA CI is the acceptance gate."
+}

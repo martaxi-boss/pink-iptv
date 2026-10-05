@@ -3,7 +3,7 @@
 import { fetch as nativeFetch } from "@tauri-apps/plugin-http"
 const ORIGIN = "https://pink-iptv.duckdns.org"
 const MESSAGES = {
-  INVALID_CREDENTIALS: "Utilizador ou palavra-passe incorretos.",
+  INVALID_CREDENTIALS: "Utilizador ou palavra-passe incorretos. Use os dados da sua conta PINK IPTV.",
   EXPIRED: "A sua conta expirou.",
   DISABLED: "A sua conta está desativada.",
 }

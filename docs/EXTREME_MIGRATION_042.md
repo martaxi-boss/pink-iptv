@@ -1,5 +1,19 @@
 # Complete Extreme client migration
 
+## Startup refinement045
+
+Physical feedback confirms PINK login renders, but the upstream first-launch
+release popup still displayed the Infinity name, artwork and community links.
+Task045 removes that automatic popup and upstream community/donation promotions;
+optional release/support links now target the PINK repository. GPL notices and
+upstream attribution remain in the corresponding source.
+
+Login uses the same PINK service and existing account credentials as the earlier
+client. `INVALID_CREDENTIALS` is a backend response, not an Infinity account
+request. The UI now clarifies this; authentication and mapping are unchanged.
+No real-account authentication or physical playback success is inferred from
+this change. Source recipes exclude generated Python caches.
+
 Owner-selected base: complete Extreme InfiniTV 1.9.0, pinned to
 `1efcc1b4ab3468db04aedd1c466228c52ef001b7`. This is the new client foundation,
 not a visual mockup or a recreation of its layout. Catalogs, artwork, search,

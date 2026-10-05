@@ -1,5 +1,14 @@
 # PINK IPTV - PROJECT STATE
 
+## Current startup refinement045
+
+New-client physical feedback identified upstream first-launch news and login
+ambiguity. The bounded overlay removes the automatic Infinity release popup
+and original community/donation promotions, retargets customer-facing support
+to PINK, and explicitly identifies the existing PINK account login. Backend
+authentication is unchanged. APK, CI and physical acceptance remain separate
+evidence; see Task045 and docs/EXTREME_MIGRATION_042.md.
+
 ## Current whole-client replacement042
 
 Owner-selected new foundation: complete Extreme InfiniTV1.9.0 at

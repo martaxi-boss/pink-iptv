@@ -1,0 +1,79 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-VPN-ENROLLMENT-051",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-VPN-ENROLLMENT-051.json",
+  "authorization_commit_sha": "92e2c7995784b26e10892b3e5022d4f57a212de7",
+  "authorization_sha256": "457666f885908246b84f25b2db297f4a96bd40d6a898b7a5e6ac47750b24ffcd",
+  "implementation_head_sha": "ad35e32536f6616818f37d43b2b912a9afb1e0a9",
+  "branch": "builder/vpn-enrollment-051",
+  "pr_number": 40,
+  "recorded_at": "2026-10-05T14:12:26.857Z",
+  "state_observed_at": "2026-10-05T14:12:26.857Z",
+  "changes": [
+    "Add authenticated per-install public-key-only VPN enrollment, unique addresses, digest-only credentials and expiring leases.",
+    "Add durable peer revocation and strict restricted Unix socket transport.",
+    "Preserve Task050 resolver and scope to new Extreme/PINK architecture."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "New Extreme/PINK enrollment is backend-only and disabled by default. Existing Mega/Xtream resolver and old Compose UI unchanged."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Exact implementation diff has only eight scoped backend/doc files plus immutable Task051. Scope validator passed."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Exact implementation ad35e32536f6616818f37d43b2b912a9afb1e0a9; Backend CI push37322415537 and pull_request37322444858 both terminal success. No project-local trusted gate exists; canonical external Supervisor audit performed."
+    },
+    {
+      "name": "Authenticated unique installation enrollment",
+      "status": "PASS",
+      "evidence": "Tests verify current PINK JWT, issuer/expiry, unique addresses, account cap, lost-response same-account recovery and no unauthenticated peer."
+    },
+    {
+      "name": "Device credential isolation and expiry",
+      "status": "PASS",
+      "evidence": "Tests verify device/key credential matching, token digest-only persistence, session expiry and refresh that does not extend grant."
+    },
+    {
+      "name": "Peer revocation fails closed",
+      "status": "PASS",
+      "evidence": "Tests verify durable idempotent revocation, rejected reenrollment/refresh and generic503 on gateway removal failure."
+    },
+    {
+      "name": "Gateway transport failure fails closed",
+      "status": "PASS",
+      "evidence": "Tests verify unavailable gateway/socket never releases lease or credential; expiry remains independently bounded to five minutes at gateway."
+    },
+    {
+      "name": "Mega authoritative login regression",
+      "status": "PASS",
+      "evidence": "All existing Task050/backend regression tests pass; mapping schema and provider-origin contract unchanged."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37322444858
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37322444858",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37322415537"
+  ],
+  "material_non_effects": [
+    "No staging deploy or gateway mutation; VPN API remains disabled by default.",
+    "No old Compose changes or client/server private keys.",
+    "No public launch."
+  ],
+  "residual_blockers": []
+}

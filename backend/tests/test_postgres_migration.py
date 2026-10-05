@@ -36,3 +36,21 @@ def test_alembic_schema_on_real_postgres() -> None:
     }
     assert ("mega_subscription_id",) in unique_sets
     assert ("username",) in unique_sets
+
+    vpn_columns = {column["name"] for column in inspect(engine).get_columns("vpn_installations")}
+    assert vpn_columns == {
+        "id",
+        "mapping_id",
+        "public_key",
+        "address",
+        "token_sha256",
+        "expires_at",
+        "revoked_at",
+    }
+    assert not {"password", "private_key", "device_token"}.intersection(vpn_columns)
+    vpn_unique = {
+        tuple(constraint["column_names"])
+        for constraint in inspect(engine).get_unique_constraints("vpn_installations")
+    }
+    assert ("public_key",) in vpn_unique
+    assert ("address",) in vpn_unique

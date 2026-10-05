@@ -1,9 +1,21 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Integer, Text, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
+
+
+class VpnInstallation(Base):
+    __tablename__ = "vpn_installations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    mapping_id: Mapped[int] = mapped_column(ForeignKey("subscription_mappings.id"), nullable=False)
+    public_key: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    address: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    token_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class SubscriptionMapping(Base):

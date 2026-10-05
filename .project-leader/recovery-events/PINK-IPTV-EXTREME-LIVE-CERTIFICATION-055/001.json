@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-05T15:47:12.271Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "055-player-error-overlay-cardinality",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": null,
+  "detail": "Exact Android run37333601796 SHAbee8b401 failed deterministically before build: upstream VideoActivity contains two credential-bearing error.message event sites; privacy overlay expected one match. Backend run37333601670 passed. Audit verified both source sites; replace both with generic text, validate pristine overlay locally before fresh CI. No live runtime effect."
+}

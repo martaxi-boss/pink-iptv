@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 6,
+  "recorded_at": "2026-10-05T12:45:50Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 2,
+  "action_fingerprint": "050-backend-ci-secret-scan",
+  "attempt_count": 3,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "9e8906538112c3c246a7593b2c2bd69c1373469e299980cc5b8cc64d6921fc4e",
+  "detail": "Backend CI run 37311682483 passed Ruff lint, Ruff format, PostgreSQL migration and all 99 backend tests, then failed only at credential leak scan. Sanitized scanner output identifies three synthetic password fields in tests/test_mega_client.py as Secret Keyword findings. No production/runtime effect occurred."
+}

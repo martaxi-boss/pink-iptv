@@ -157,6 +157,28 @@ def apply(root, dest, replace):
     lib.write_text(text[:start] + region + text[end:])
 
     # Existing upstream logs sometimes contain stream URLs. Android logs remain generic.
+    # Managed provider origins are never customer-facing, including diagnostics.
+    replace('src/scripts/lib/log.ts', 'const isDev = Boolean(import.meta.env?.DEV)',
+            'import { pinkDiagnosticText } from "./pink-presentation.js"\n\nconst isDev = Boolean(import.meta.env?.DEV)')
+    replace('src/scripts/lib/log.ts', 'const text = typeof input === "string" ? input : String(input)',
+            'const text = pinkDiagnosticText(typeof input === "string" ? input : String(input))')
+    replace('src/scripts/lib/playlist-rows.js', 'const COMPACT_ICON_ACTION_CLASS =',
+            'import { pinkAccountSubtitle } from "./pink-presentation.js"\n\nconst COMPACT_ICON_ACTION_CLASS =')
+    replace('src/scripts/lib/playlist-rows.js', '''  const subtitle = isCompact
+    ? ""
+    : entry.type === "xtream"
+    ? `${entry.serverUrl} · ${entry.username}`
+    : entry.type === "local-m3u"
+    ? entry.sourceName || ""
+    : entry.url || ""''', '  const subtitle = isCompact ? "" : pinkAccountSubtitle(entry)')
+    replace('src/scripts/lib/playlist-rows.js', 'async function exportEntryM3U(entry) {',
+            'async function exportEntryM3U(entry) {\n  if (entry?.type === "xtream") return')
+    replace('src/scripts/lib/playlist-rows.js', '  btn.addEventListener("click", async (ev) => {',
+            '  if (entry?.type === "xtream") { btn.hidden = true; btn.disabled = true; btn.style.display = "none"; return btn }\n  btn.addEventListener("click", async (ev) => {')
+    replace('src/scripts/lib/export-m3u.ts', 'export async function buildM3UEntriesForEntry(entry: any): Promise<BuildM3UResult> {',
+            'export async function buildM3UEntriesForEntry(entry: any): Promise<BuildM3UResult> {\n  if (entry?.type === "xtream") return { entries: [], skippedCount: 0 }')
+    replace('src/scripts/lib/net-log.ts', '    store.entries = validEntries',
+            '    store.entries = validEntries.map(entry => ({ ...entry, url: redactUrl(entry.url), ...(entry.error ? { error: redactUrl(entry.error) } : {}) }))')
     for source in (dest / native).glob('*.kt'):
         text = source.read_text()
         if source.name != 'PinkSafeLog.kt':

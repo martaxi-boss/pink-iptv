@@ -28,6 +28,7 @@ class PinkVpnStartupTest {
         // CI force-stops this disposable app after the strict result check.
         ActivityScenario.launch(MainActivity::class.java).let { activity ->
             val consentDeadline = System.currentTimeMillis()+60000
+            var launcherDialogs = 0
             while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
                 if (device.hasObject(By.pkg("com.android.vpndialogs")) ||
                     device.hasObject(By.text("Connection request"))) {
@@ -35,6 +36,14 @@ class PinkVpnStartupTest {
                     if (accept != null) {
                         report("NORMAL_ANDROID_PERMISSION_DIALOG=OBSERVED")
                         accept.click()
+                    }
+                } else if (launcherDialogs < 2 && device.hasObject(By.text("Pixel Launcher isn't responding"))) {
+                    // Emulator-only launcher ANR can cover the normal permission Activity.
+                    // Never close a PINK ANR or grant VPN permission outside its system UI.
+                    device.findObject(By.res("android", "aerr_close"))?.let {
+                        it.click()
+                        launcherDialogs++
+                        report("EMULATOR_LAUNCHER_ANR_NORMAL_CLOSE=OBSERVED")
                     }
                 }
                 Thread.sleep(100)

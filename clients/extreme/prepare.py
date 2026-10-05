@@ -68,6 +68,7 @@ for src, dst in {
     'login.astro': 'src/pages/login.astro',
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
     'pink-bridge.js': 'src/scripts/lib/pink-bridge.js',
+    'pink-presentation.js': 'src/scripts/lib/pink-presentation.js',
     'PinkWebBridge.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkWebBridge.kt',
     'PinkVault.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVault.kt',
 }.items():
@@ -75,6 +76,7 @@ for src, dst in {
 shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-session.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storage.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
 
 replace('src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/MainActivity.kt',
         'webView.addJavascriptInterface(PipBridge(this), "AndroidPip")',

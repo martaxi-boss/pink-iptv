@@ -64,10 +64,17 @@ class PinkVpnLiveTest {
                 phase = "normal-consent"
                 val device = UiDevice.getInstance(instrumentation)
                 val consentDeadline = System.currentTimeMillis()+60000
+                var launcherDialogs = 0
                 while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
                     if (device.hasObject(By.pkg("com.android.vpndialogs")) ||
                         device.hasObject(By.text("Connection request"))) {
                         device.findObject(By.res("android","button1"))?.click()
+                    } else if (launcherDialogs < 2 && device.hasObject(By.text("Pixel Launcher isn't responding"))) {
+                        device.findObject(By.res("android", "aerr_close"))?.let {
+                            it.click()
+                            launcherDialogs++
+                            report("EMULATOR_LAUNCHER_ANR_NORMAL_CLOSE=OBSERVED")
+                        }
                     }
                     Thread.sleep(100)
                 }

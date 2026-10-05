@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 7,
+  "recorded_at": "2026-10-05T12:46:00Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 2,
+  "action_fingerprint": "050-allowlist-synthetic-test-passwords",
+  "attempt_count": 3,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "137736a077c10ac6d337fbf187ad06a474f0a7ddb41286b548ba07096646a02a",
+  "detail": "Supervisor authorizes a test-only retry: mark the three fixed synthetic Mega password literals with the repository's existing pragma allowlist convention. No real credential, scanner weakening, production code behavior or runtime scope changes."
+}

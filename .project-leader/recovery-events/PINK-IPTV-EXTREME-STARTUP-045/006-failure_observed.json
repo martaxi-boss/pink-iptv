@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 6,
+  "recorded_at": "2026-10-05T10:27:34.352Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 2,
+  "action_fingerprint": "045-disposable-checkout-preparation",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "d1f859139bf4e3c7a713cfa994517d65bb24bfe8c59e6f92db1c63725bf56b13",
+  "detail": "Reapplying the overlay after git reset found untracked generated package directories from the disposable prior overlay, so directory rename refused safely. Target repository has no implementation commit. Reuse of a patched working tree is unsuitable."
+}

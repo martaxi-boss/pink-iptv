@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 7,
+  "recorded_at": "2026-10-05T10:27:34.352Z",
+  "event": "REPLAN",
+  "strategy_generation": 3,
+  "action_fingerprint": "045-disposable-checkout-preparation",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "fd8fe16e95ec027a5758dd2b7eb721bb2dc9ff86eeb4d5e3aba8e45cce284664",
+  "detail": "Use a completely fresh pinned checkout rather than resetting an overlaid checkout; preserve original release build strategy and direct Node validation. This is local validation setup only."
+}

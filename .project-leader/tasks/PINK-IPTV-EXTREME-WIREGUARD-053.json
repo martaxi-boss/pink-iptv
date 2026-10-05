@@ -1,0 +1,128 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T14:15:45.223Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner requires official non-root WireGuard natively integrated into the new pinned Extreme/PINK Android host without VPN buttons/settings or old Compose UI. Reuse certified installation identity/Keystore foundations, normal Android first-use consent, secure native backend enrollment, startup restoration, application-only full IPv4/IPv6 capture, bounded network recovery, app-layer failure closure and blocking external player/cast bypass. Build/test exact deterministic overlay and corresponding source."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "2f228c6800cddee8944e1a2eedd7e8ae3a78d879",
+    "task_branch": "builder/extreme-wireguard-053"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "clients/extreme/**",
+    ".github/workflows/pink-extreme-042.yml",
+    "docs/VPN_EXTREME_053.md",
+    ".project-leader/tasks/PINK-IPTV-EXTREME-WIREGUARD-053.json",
+    ".project-leader/results/PINK-IPTV-EXTREME-WIREGUARD-053.json",
+    ".project-leader/transitions/PINK-IPTV-EXTREME-WIREGUARD-053-*",
+    ".project-leader/recovery-events/PINK-IPTV-EXTREME-WIREGUARD-053/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "client_dns_input",
+    "provider_hostname_guessing",
+    "password_persistence",
+    "mega_token_exposure",
+    "third_project_mutation",
+    "force_push",
+    "device_private_key_persistence",
+    "global_apk_secret",
+    "old_compose_product_mutation",
+    "system_vpn_consent_bypass",
+    "external_player_unprotected_handoff",
+    "unrelated_device_routing",
+    "live_gateway_mutation"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Installation identity and Keystore isolation",
+    "Android consent and startup lifecycle",
+    "Native authenticated enrollment",
+    "App-scoped dual-family capture and fail closure",
+    "No VPN customer controls or technical configuration",
+    "Extreme login and playback regression"
+  ],
+  "required_ci": [
+    "PINK Extreme Android 042"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "c42ed27cc6c520bfd63015097c8c60ee42392ba5"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Deterministic overlay builds the complete Extreme/PINK Android app with official GoBackend, device-owned encrypted identity, native backend-only enrollment and first-use Android permission, automatic bounded startup/reconnect, app-scoped required routes, app traffic guards and no silent bypass via external players/casting. Exact Android CI, source package and protected APK artifact pass; independent real gateway/device proof is required before final physical handoff.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

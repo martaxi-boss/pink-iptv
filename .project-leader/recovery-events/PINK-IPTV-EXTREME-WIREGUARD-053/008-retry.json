@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 8,
+  "recorded_at": "2026-10-05T15:05:27.436Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-explicit-tauri-test-variant",
+  "attempt_count": 4,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "8cac48fa255c056734b386b16b9c8c055007435e7f731f18764527de0a89cdd9",
+  "detail": "Supervisor authorizes explicit Universal test tasks with only completed native Rust rebuilds excluded. Extend exact CI to compiled/executed 004B identity JVM regression, native Keystore instrumentation and a real x86_64 Android emulator using the normal consent window and bounded offline routing/activity recreation checks. Preserve login contract, old product read-only, no runtime provider credentials or new APK secrets. Certify a fresh material descendant; current Android run is terminal."
+}

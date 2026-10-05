@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 4,
+  "recorded_at": "2026-10-05T12:42:40Z",
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "action_fingerprint": "050-ruff-diagnostic-bridge",
+  "attempt_count": 2,
+  "identical_failure_count": 2,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "04851151c04d071ea0ec17635df0998087eaed80ec3b6761ff449423b52d2d3b",
+  "detail": "After repeated format-only failure, Recovery changed strategy: use a separately bounded self-provisioned GitHub Actions diagnostic bridge to run the pinned Ruff 0.12.12 formatter and return the exact diff without pushing source. Diagnostic run 37311392718 succeeded and returned only two deterministic formatting edits."
+}

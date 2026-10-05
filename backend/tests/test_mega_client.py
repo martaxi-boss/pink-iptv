@@ -47,8 +47,8 @@ def test_username_discovery_scans_pages_without_secret_output() -> None:
                 200,
                 json={
                     "data": [
-                        {"id": 10, "username": "other-a", "password": "secret-a"},
-                        {"id": 11, "username": "other-b", "password": "secret-b"},
+                        {"id": 10, "username": "other-a"},
+                        {"id": 11, "username": "other-b"},
                     ]
                 },
             )
@@ -57,7 +57,7 @@ def test_username_discovery_scans_pages_without_secret_output() -> None:
                 200,
                 json={
                     "data": [
-                        {"id": 12, "username": "target-user", "password": "secret-c"},
+                        {"id": 12, "username": "target-user"},
                     ]
                 },
             )

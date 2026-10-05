@@ -3,6 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from app.clients.mega import MegaOTTClient
 from app.clients.xtream import XtreamClient
 from app.config import Settings, get_settings
 from app.db import build_session_factory, get_db
@@ -19,6 +20,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = runtime_settings
     app.state.session_factory = build_session_factory(runtime_settings.database_url)
     app.state.xtream_client_factory = XtreamClient
+    app.state.mega_client_factory = lambda: MegaOTTClient(
+        base_url=runtime_settings.mega_ott_api_base,
+        token=runtime_settings.require_mega_token(),
+    )
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(_request: Request, _error: RequestValidationError) -> JSONResponse:
@@ -44,6 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 session,
                 xtream_client,
                 runtime_settings,
+                mega_client_factory=request.app.state.mega_client_factory,
             ).resolve(
                 username=payload.username,
                 password=payload.password.get_secret_value(),

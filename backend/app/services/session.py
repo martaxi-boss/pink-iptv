@@ -1,8 +1,10 @@
+from collections.abc import Callable
 from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.clients.mega import MegaClientError, MegaOTTClient
 from app.clients.xtream import (
     XtreamClient,
     XtreamDNSUnreachable,
@@ -12,6 +14,7 @@ from app.config import Settings
 from app.models import SubscriptionMapping
 from app.schemas import ResolveCode, ResolveResponse
 from app.security import issue_session_token
+from app.services.mappings import MappingConflictError, discover_and_import_subscription
 
 
 class SessionResolver:
@@ -20,15 +23,33 @@ class SessionResolver:
         session: Session,
         xtream_client: XtreamClient,
         settings: Settings,
+        mega_client_factory: Callable[[], MegaOTTClient] | None = None,
     ) -> None:
         self._session = session
         self._xtream_client = xtream_client
         self._settings = settings
+        self._mega_client_factory = mega_client_factory
 
     def resolve(self, *, username: str, password: str) -> ResolveResponse:
         mapping = self._session.scalar(
             select(SubscriptionMapping).where(SubscriptionMapping.username == username)
         )
+        if mapping is None and self._mega_client_factory is not None:
+            try:
+                mega_client = self._mega_client_factory()
+                try:
+                    mapping = discover_and_import_subscription(
+                        self._session,
+                        mega_client,
+                        username,
+                    )
+                finally:
+                    close = getattr(mega_client, "close", None)
+                    if callable(close):
+                        close()
+            except (MegaClientError, MappingConflictError, RuntimeError, ValueError):
+                return ResolveResponse(code=ResolveCode.UPSTREAM_ERROR)
+
         if mapping is None:
             return ResolveResponse(code=ResolveCode.INVALID_CREDENTIALS)
 

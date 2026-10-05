@@ -36,6 +36,65 @@ def test_retrieve_by_id_applies_bearer_without_logging_secret(
     assert mega_payload["password"] not in caplog.text
 
 
+def test_username_discovery_scans_pages_without_secret_output() -> None:
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        page = int(request.url.params["page"])
+        if page == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {"id": 10, "username": "other-a"},
+                        {"id": 11, "username": "other-b"},
+                    ]
+                },
+            )
+        if page == 2:
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {"id": 12, "username": "target-user"},
+                    ]
+                },
+            )
+        return httpx.Response(200, json={"data": []})
+
+    with MegaOTTClient(
+        base_url="https://megaott.net/api",
+        token="test-token",  # pragma: allowlist secret
+        transport=httpx.MockTransport(handler),
+    ) as client:
+        subscription_id = client.find_subscription_id_by_username(
+            "target-user",
+            per_page=2,
+        )
+
+    assert subscription_id == 12
+    assert len(seen) == 2
+    assert all("target-user" not in url for url in seen)
+
+
+def test_username_discovery_rejects_duplicate_matches() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        page = int(request.url.params["page"])
+        payload = (
+            [{"id": 10, "username": "same"}, {"id": 11, "username": "same"}] if page == 1 else []
+        )
+        return httpx.Response(200, json=payload)
+
+    with MegaOTTClient(
+        base_url="https://megaott.net/api",
+        token="test-token",  # pragma: allowlist secret
+        transport=httpx.MockTransport(handler),
+    ) as client:
+        with pytest.raises(MegaProtocolError, match="multiple"):
+            client.find_subscription_id_by_username("same", per_page=2)
+
+
 def test_client_rejects_non_https_base() -> None:
     token = "test-token"  # pragma: allowlist secret
     with pytest.raises(ValueError, match="must be HTTPS"):

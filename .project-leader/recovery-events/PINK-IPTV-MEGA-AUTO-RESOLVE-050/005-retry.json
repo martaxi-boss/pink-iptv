@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 5,
+  "recorded_at": "2026-10-05T12:42:50Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 2,
+  "action_fingerprint": "050-apply-exact-ruff-diff",
+  "attempt_count": 2,
+  "identical_failure_count": 2,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "8cd11a72a8e51a851480c00acef154e8952d1f2f210fa7f6df52fbf7e5e4fe84",
+  "detail": "Supervisor authorizes one bounded retry applying exactly the Ruff 0.12.12 diff returned by diagnostic run 37311392718: collapse the conditional payload expression in test_mega_client.py and the db.scalar select expression in test_session_resolve.py. Then run fresh exact-head Backend CI."
+}

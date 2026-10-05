@@ -38,3 +38,5 @@ the current PID; it is unset in production and cannot suppress process terminati
 Fixed network phases distinguish outage from restart. A process-loss recovery
 must prove its exact fail-closure cause, then restore the same authorized identity
 after connectivity returns. Unclassified crashes remain failures.
+
+R7 real proof37387640470 failed at protected-login-enrollment. Read-only control diagnostic37389403851 confirms both R7 resolve/enroll HTTP200 and current authoritative origin match. Instrumentation now reports fixed login and activation stages, caught exception class and structural capture/grant booleans on protected activation failure. It excludes exception messages, URLs, credentials, keys and grants. Accepted routing and fail-closure decisions remain unchanged; real056 certification stays pending.

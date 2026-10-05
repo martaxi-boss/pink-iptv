@@ -173,6 +173,7 @@ class PinkVpnLiveTest {
                 completed = true
             }
         } catch (_: Throwable) {
+            if (phase == "protected-login-enrollment") report("PROTECTED_ACTIVATION_DIAGNOSTIC="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
             // Provider exceptions can contain credential-bearing URLs: never chain them.
             throw AssertionError("Protected real Android flow unavailable at "+phase)
         } finally {

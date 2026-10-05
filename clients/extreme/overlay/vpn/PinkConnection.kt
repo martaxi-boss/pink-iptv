@@ -50,6 +50,10 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private var nextAttempt = 0L
     @Volatile private var startupStage = "awaiting_consent"
     @Volatile private var failureCategory = "none"
+    @Volatile private var protectedStage = "not_started"
+    @Volatile private var protectedFailure = "none"
+    @Volatile private var activationStage = "not_started"
+    @Volatile private var protectedActivation = "not_started"
     // Inactive outside instrumentation; only fixed lifecycle categories are observed.
     @Volatile internal var failClosureObserverForTests: ((String) -> Unit)? = null
 
@@ -91,6 +95,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     // grants, account data or provider origins may enter diagnostic output.
     internal fun startupDiagnosticForTests(): String =
         "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
+    internal fun protectedDiagnosticForTests(): String =
+        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=${prefs.contains(\"ciphertext\")}"
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes
@@ -141,19 +147,32 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         require(username.isNotBlank() && username.length <= 256 && password.length <= 4096)
         check(permission.await(45, TimeUnit.SECONDS) && accepting)
         return work.submit<JSONObject> {
-            ensureIdentity()
-            val reply = control("/v1/session/resolve", JSONObject()
-                .put("username", username).put("password", password))
-            if (reply.optString("code") != "SUCCESS") return@submit reply
-            val payload = JSONObject().put("public_key", pair().publicKey.toBase64())
-            readGrant()?.optString("device_token")?.takeIf { it.isNotBlank() }?.let {
-                payload.put("device_token", it)
+            try {
+                protectedStage = "identity"
+                protectedFailure = "none"
+                ensureIdentity()
+                protectedStage = "session_resolve"
+                val reply = control("/v1/session/resolve", JSONObject()
+                    .put("username", username).put("password", password))
+                if (reply.optString("code") != "SUCCESS") return@submit reply
+                val payload = JSONObject().put("public_key", pair().publicKey.toBase64())
+                readGrant()?.optString("device_token")?.takeIf { it.isNotBlank() }?.let {
+                    payload.put("device_token", it)
+                }
+                protectedStage = "vpn_enroll"
+                val grant = control("/v1/vpn/enroll", payload, reply.getString("session_token"))
+                protectedStage = "save_grant"
+                saveGrant(grant)
+                protectedStage = "activate_tunnel"
+                connect(grant)
+                protectedStage = "ready"
+                // Session/enrollment bearer never enters JavaScript or account storage.
+                JSONObject().put("code", "SUCCESS").put("xtream_base_url", reply.getString("xtream_base_url"))
+            } catch (failure: Exception) {
+                protectedActivation = activationStage
+                protectedFailure = failure.javaClass.simpleName
+                throw failure
             }
-            val grant = control("/v1/vpn/enroll", payload, reply.getString("session_token"))
-            saveGrant(grant)
-            connect(grant)
-            // Session/enrollment bearer never enters JavaScript or account storage.
-            JSONObject().put("code", "SUCCESS").put("xtream_base_url", reply.getString("xtream_base_url"))
         }.get(90, TimeUnit.SECONDS)
     }
 
@@ -215,6 +234,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     private fun connect(grant: JSONObject) {
+        activationStage = "validate_grant"
         check(accepting && VpnService.prepare(app) == null)
         check(Instant.parse(grant.getString("expires_at")).isAfter(Instant.now()))
         check(grant.getString("endpoint") == "146.59.145.3:51820")
@@ -238,15 +258,20 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             check(!admitted)
             // Initial peer replacement precedes every admitted provider socket.
             // Never clear this binding after admission or when its VPN is lost.
+            activationStage = "clear_initial_binding"
             check(cm.bindProcessToNetwork(null))
             boundVpn = null
+            activationStage = "authorized_backend_up"
             check(backend.setState(this, Tunnel.State.UP, config) == Tunnel.State.UP)
+            activationStage = "bind_authorized_route"
             bindCapturedNetwork()
             sealed = false
         }
         if (boundVpn == null) bindCapturedNetwork()
+        activationStage = "protected_health"
         check(probe())
         admitted = true
+        activationStage = "ready"
         failures = 0
     }
 

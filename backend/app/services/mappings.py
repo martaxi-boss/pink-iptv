@@ -69,6 +69,35 @@ def import_subscription(
     return mapping
 
 
+def discover_and_import_subscription(
+    session: Session,
+    mega_client: MegaOTTClient,
+    username: str,
+) -> SubscriptionMapping | None:
+    existing = session.scalar(
+        select(SubscriptionMapping).where(SubscriptionMapping.username == username)
+    )
+    if existing is not None:
+        return existing
+
+    mega_subscription_id = mega_client.find_subscription_id_by_username(username)
+    if mega_subscription_id is None:
+        return None
+
+    try:
+        return import_subscription(session, mega_client, mega_subscription_id)
+    except MappingConflictError:
+        session.rollback()
+        # Concurrent first-login discovery may have inserted the same username.
+        # Accept only the exact resulting username mapping; never choose another line.
+        existing = session.scalar(
+            select(SubscriptionMapping).where(SubscriptionMapping.username == username)
+        )
+        if existing is not None:
+            return existing
+        raise
+
+
 def build_import_evidence(mapping: SubscriptionMapping) -> ImportEvidence:
     return ImportEvidence(
         mega_subscription_id=mapping.mega_subscription_id,

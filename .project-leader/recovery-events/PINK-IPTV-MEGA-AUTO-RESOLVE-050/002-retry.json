@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-05T12:35:40Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "050-backend-ci-format",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "e3e72298be50b4a8cc3207aada11afb9224180760721badfb5ce8c71e5128b2a",
+  "detail": "Supervisor verified the failure is formatting-only and the previous writes are durable. Retry is limited to Ruff-compatible formatting of the authorized Task050 backend test files, followed by fresh exact-head Backend CI. No behavior, scope or runtime effect may expand."
+}

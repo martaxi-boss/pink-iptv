@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-057-DELETE-022",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-057",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T18:55:01.609Z",
+  "action": "delete_fully_merged_non_main_branch_ref",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Owner-requested repository hygiene. Read-only run37359388712 proves this exact non-main branch tip is an ancestor of main2f228 and has no open PR/active workflow. Delete only this redundant ref; preserve all commits, records and artifacts. Recheck exact ref, ancestry, active work and unchanged main immediately before deletion, then verify absence."
+  },
+  "target": {
+    "kind": "repository_branch",
+    "identifier": "builder/project-hygiene-012",
+    "revision": "2885d6851d9ac79e67d6a9ed87d4682877514793",
+    "base_revision": "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"
+  }
+}

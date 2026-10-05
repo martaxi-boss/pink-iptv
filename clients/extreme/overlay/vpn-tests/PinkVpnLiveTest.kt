@@ -65,6 +65,12 @@ class PinkVpnLiveTest {
                     accept.click()
                 }
                 val runtime = PinkVpnRuntime.get(context)
+                val deadline = System.currentTimeMillis()+20000
+                while (!runtime.hasCapturedRouteForTests() && System.currentTimeMillis()<deadline) Thread.sleep(100)
+                check(runtime.hasCapturedRouteForTests())
+                val publicIdentity = runBlocking { SecureVpnIdentityStore(AndroidKeystoreVpnIdentityCipher(),
+                    DataStoreVpnIdentityPersistence(context)).loadIdentity() as VpnIdentityResult.Available }
+                context.filesDir.resolve("pink055-peer-public.txt").writeText(publicIdentity.identity.publicKey)
                 val reply = runtime.resolve(fixture.getString("username"),fixture.getString("password"))
                 check(reply.getString("code") == "SUCCESS")
                 enrolled = true

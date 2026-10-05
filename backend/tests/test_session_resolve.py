@@ -122,9 +122,7 @@ def test_unmapped_username_is_discovered_imported_and_authenticated(
         }
     ]
 
-    mapping = db.scalar(
-        select(SubscriptionMapping).where(SubscriptionMapping.username == username)
-    )
+    mapping = db.scalar(select(SubscriptionMapping).where(SubscriptionMapping.username == username))
     assert mapping is not None
     assert mapping.mega_subscription_id == 9040240
     assert mapping.dns_link == authoritative_dns

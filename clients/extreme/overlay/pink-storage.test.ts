@@ -16,7 +16,7 @@ describe('protected PINK account restore', () => {
     vi.stubGlobal('localStorage', { setItem: mirror })
   })
   it('restores credentials only after backend resolution and takes its current origin', async () => {
-    resolve.mockResolvedValue({ serverUrl: 'https://current.example', username: 'fixture-user', password: 'fixture-password' })
+    resolve.mockResolvedValue({ serverUrl: 'https://current.example', username: 'fixture-user', password: 'fixture-password' }) // pragma: allowlist secret — synthetic test fixture
     const { getState } = await import('../src/scripts/lib/creds.js')
     const state = await getState()
     expect(resolve).toHaveBeenCalledWith('fixture-user', 'fixture-password')

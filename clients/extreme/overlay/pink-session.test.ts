@@ -10,7 +10,7 @@ describe('PINK managed account contract', () => {
     expect(endpoint).toBe('https://pink-iptv.duckdns.org/v1/session/resolve')
     expect(request.redirect).toBe('error')
     expect(request.maxRedirections).toBe(0)
-    expect(JSON.parse(request.body)).toEqual({ username: 'fixture-user', password: 'fixture-password' })
+    expect(JSON.parse(request.body)).toEqual({ username: 'fixture-user', password: 'fixture-password' }) // pragma: allowlist secret — synthetic test fixture
   })
   it.each(['INVALID_CREDENTIALS', 'EXPIRED', 'DISABLED', 'UPSTREAM_ERROR'])('does not accept %s', async code => {
     await expect(resolvePinkSession('fixture-user', 'fixture-password', reply({ code }))).rejects.toThrow()

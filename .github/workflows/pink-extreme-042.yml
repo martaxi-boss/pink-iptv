@@ -132,6 +132,7 @@ jobs:
           detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.pytest_cache|\.ruff_cache|.*egg-info)/' > /tmp/pink-extreme-scan.json
           python .github/scripts/filter_scan_findings.py /tmp/pink-extreme-scan.json
       - name: Audit complete Android lint report
+        if: ${{ always() && !cancelled() }}
         working-directory: ${{ runner.temp }}/pink-extreme/src-tauri/gen/android
         run: |
           set +e

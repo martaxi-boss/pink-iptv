@@ -1,6 +1,8 @@
 package com.pinkiptv.extreme
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.webkit.WebView
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -9,13 +11,14 @@ import org.json.JSONObject
 
 /** The account vault and protected login are exposed only to the local main document. */
 object PinkWebBridge {
+    private val main = Handler(Looper.getMainLooper())
     private val workers = Executors.newSingleThreadExecutor()
     fun attach(context: Context, webView: WebView) {
         check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
         val app = context.applicationContext
         val vault = PinkVault(app)
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
-            setOf("http://tauri.localhost", "https://tauri.localhost")) { view, message, sourceOrigin, mainFrame, reply ->
+            setOf("http://tauri.localhost", "https://tauri.localhost")) { _, message, sourceOrigin, mainFrame, reply ->
             if (!mainFrame || sourceOrigin.host != "tauri.localhost" ||
                 sourceOrigin.scheme !in setOf("http", "https")) return@addWebMessageListener
             val request = try {
@@ -38,7 +41,7 @@ object PinkWebBridge {
                     }
                     response.put("ok", true).put("result", result)
                 } catch (_: Exception) { response.put("ok", false) }
-                view.post { try { reply.postMessage(response.toString()) } catch (_: Exception) { } }
+                main.post { try { reply.postMessage(response.toString()) } catch (_: Exception) { } }
             }
         }
     }

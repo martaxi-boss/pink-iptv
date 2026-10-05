@@ -22,4 +22,22 @@ describe('PINK managed account contract', () => {
     const transport = vi.fn().mockResolvedValue({ ok: false, json: () => { throw new Error('private detail') } })
     await expect(resolvePinkSession('fixture-user', 'fixture-password', transport)).rejects.toThrow('Não foi possível contactar')
   })
+  it('uses only the native protected startup path in production', async () => {
+    const native = { resolve: vi.fn(() => JSON.stringify({ code: 'SUCCESS', xtream_base_url: 'http://provider.example:8080' })) }
+    vi.stubGlobal('window', { PinkConnection: native })
+    try {
+      expect((await resolvePinkSession('fixture-user', 'fixture-password')).serverUrl).toBe('http://provider.example:8080')
+      expect(native.resolve).toHaveBeenCalledWith('fixture-user', 'fixture-password')
+    } finally { vi.unstubAllGlobals() }
+  })
+  it('cannot silently use a direct transport without the native bridge', async () => {
+    vi.stubGlobal('window', {})
+    try { await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.toThrow('Serviço PINK indisponível') }
+    finally { vi.unstubAllGlobals() }
+  })
+  it('does not release a provider account when native tunnel preparation fails', async () => {
+    vi.stubGlobal('window', { PinkConnection: { resolve: () => JSON.stringify({ code: 'VPN_UNAVAILABLE' }) } })
+    try { await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.toThrow('Serviço temporariamente') }
+    finally { vi.unstubAllGlobals() }
+  })
 })

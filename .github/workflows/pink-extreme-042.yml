@@ -1,7 +1,7 @@
 name: PINK Extreme Android 042
 on:
   push:
-    branches: ["builder/extreme-startup-045"]
+    branches: ["builder/extreme-wireguard-053"]
     paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml"]
   workflow_dispatch:
 permissions:
@@ -57,6 +57,30 @@ jobs:
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/29.0.13846066
         run: pnpm tauri android build --debug --apk --target aarch64 --target armv7
+      - name: Compile instrumentation and verify Android native payload
+        working-directory: ${{ runner.temp }}/pink-extreme/src-tauri/gen/android
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/29.0.13846066
+        run: |
+          ./gradlew --no-daemon app:assembleDebugAndroidTest
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          apks = list(Path('app/build/outputs/apk').rglob('*debug*.apk'))
+          candidates = [p for p in apks if 'androidTest' not in str(p)]
+          assert candidates
+          for path in candidates:
+              with zipfile.ZipFile(path) as apk:
+                  names = apk.namelist()
+                  assert any(n.endswith('/libwg-go.so') for n in names)
+                  assert not any(n.endswith('/libwg.so') or n.endswith('/libwg-quick.so') for n in names)
+          print('OFFICIAL_NON_ROOT_PAYLOAD=PASS')
+          PY
+      - name: Scan PINK source for credential leakage
+        run: |
+          python -m pip install --disable-pip-version-check detect-secrets==1.5.0
+          detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.pytest_cache|\.ruff_cache|.*egg-info)/' > /tmp/pink-extreme-scan.json
+          python .github/scripts/filter_scan_findings.py /tmp/pink-extreme-scan.json
       - name: Package exact source, APK and integrity hashes
         run: |
           set -euo pipefail

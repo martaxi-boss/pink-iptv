@@ -199,4 +199,6 @@ settings.write_text(text)
 
 # Upstream notices + exact patched source are distributed alongside the APK.
 shutil.copyfile(ROOT / 'NOTICE.md', DEST / 'PINK-NOTICE.md')
+from vpn_overlay import apply as apply_vpn
+apply_vpn(ROOT, DEST, replace)
 print('Applied PINK overlay to pinned complete Extreme application')

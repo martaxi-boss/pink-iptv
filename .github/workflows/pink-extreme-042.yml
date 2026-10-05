@@ -95,6 +95,12 @@ jobs:
           grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink053-identity.txt"
           adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVpnStartupTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink053-startup.txt"
           cat "$RUNNER_TEMP/pink053-startup.txt"
+          if ! grep -q 'OK (1 test)' "$RUNNER_TEMP/pink053-startup.txt"; then
+            adb shell ip -4 rule
+            adb shell ip -6 rule
+            adb shell ip -4 route show table all
+            adb shell ip -6 route show table all
+          fi
           grep -q 'OK (1 test)' "$RUNNER_TEMP/pink053-startup.txt"
           echo KEYSTORE_NORMAL_CONSENT_OFFLINE_FAIL_CLOSED_RECREATION=PASS
           SCRIPT

@@ -40,13 +40,21 @@ class PinkVpnStartupTest {
             assertTrue(connectivity.getNetworkCapabilities(captured!!)!!
                 .hasTransport(NetworkCapabilities.TRANSPORT_VPN))
             val routes = connectivity.getLinkProperties(captured)!!.routes
+            println("OFFLINE_DIAGNOSTIC_UID="+android.os.Process.myUid()+";NETWORK="+captured+
+                ";INTERFACE="+connectivity.getLinkProperties(captured)!!.interfaceName)
             assertTrue(routes.any { it.destination.toString() == "0.0.0.0/0" })
             assertTrue(routes.any { it.destination.prefixLength == 0 && it.destination.address is java.net.Inet6Address })
             for (address in listOf("1.1.1.1", "2606:4700:4700::1111")) {
                 var blockedIp = false
                 Socket().use { socket ->
-                    try { socket.connect(InetSocketAddress(address, 443), 2000) }
-                    catch (_: java.io.IOException) { blockedIp = true }
+                    try {
+                        socket.connect(InetSocketAddress(address, 443), 2000)
+                        println("OFFLINE_IP_CONNECT="+address+";LOCAL="+socket.localAddress.hostAddress+
+                            ";BOUND="+connectivity.boundNetworkForProcess)
+                    } catch (_: java.io.IOException) {
+                        blockedIp = true
+                        println("OFFLINE_IP_BLOCKED="+address)
+                    }
                 }
                 assertTrue("Unadmitted IP traffic escaped its capture", blockedIp)
             }

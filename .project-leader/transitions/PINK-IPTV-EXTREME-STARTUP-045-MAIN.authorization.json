@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-EXTREME-STARTUP-045-MAIN",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T10:53:48.079Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Bounded startup/support correction is covered. Canonical immutable authorization/policy/scope and recovery journal verification PASS; all required exact-SHA latest CI contexts SUCCESS. Final PR descendant changes only task-local result/recovered evidence. Fresh exact PR/main audit confirms mergeable target/base. Persist prior authority on task audit branch to avoid material product drift. Normal merge only; no release/production effect or real-account AV claim."
+  },
+  "target": {
+    "kind": "github_pull_request",
+    "identifier": "38",
+    "revision": "8f4e247f57f9eb420d179cf00a354303ca7f3d01",
+    "base_revision": "55c0d0dafe31bc58f648fb1881291a2e1b220d71",
+    "environment": "martaxi-boss/pink-iptv main"
+  }
+}

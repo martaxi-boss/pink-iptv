@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-057",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T18:52:38.688Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner requests concurrent and retrospective repository hygiene while Extreme/PINK certification continues. Prepare a bounded read-only inventory and exact-revision branch-ref cleanup of already merged branches only. Protect main, open PR heads, active work and evidence not reachable from main. Preserve all commit history, immutable task/result/recovery records, APK artifacts, credentials and runtime services. Each deletion requires a separate exact-revision transition and post-write read."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "2f228c6800cddee8944e1a2eedd7e8ae3a78d879",
+    "task_branch": "builder/repository-hygiene-057"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    ".github/workflows/pink-hygiene-057.yml",
+    "ops/pink_hygiene_057.py",
+    ".project-leader/tasks/PINK-IPTV-REPOSITORY-HYGIENE-057.json",
+    ".project-leader/results/PINK-IPTV-REPOSITORY-HYGIENE-057.json",
+    ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-057-*",
+    ".project-leader/recovery-events/PINK-IPTV-REPOSITORY-HYGIENE-057/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "main_branch_deletion",
+    "unmerged_branch_deletion",
+    "open_pr_head_deletion",
+    "commit_history_rewrite",
+    "application_runtime_mutation",
+    "artifact_or_audit_record_deletion"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Live exact branch ancestry and open PR protection",
+    "Post-write ref absence with unchanged main and active task head"
+  ],
+  "required_ci": [
+    "PINK repository hygiene 057"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "8efecaccfb5708d3689f9fcd0ad3bb77ec8e40db"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Only exact independently authorized non-main refs whose commits are proven reachable from main may be removed; preserve active and divergent refs, historical evidence and immutable commit history. Verify post-write effects.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

@@ -1,12 +1,16 @@
 package com.pinkiptv.extreme
 
 import android.net.VpnService
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import java.net.URL
+import java.net.Socket
+import java.net.InetSocketAddress
 import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -30,6 +34,22 @@ class PinkVpnStartupTest {
             assertNull(VpnService.prepare(context))
             assertTrue(runtime.hasCapturedRouteForTests())
             assertFalse(PinkVpnRuntime.isReady())
+            val connectivity = context.getSystemService(ConnectivityManager::class.java)
+            val captured = connectivity.boundNetworkForProcess
+            assertNotNull(captured)
+            assertTrue(connectivity.getNetworkCapabilities(captured!!)!!
+                .hasTransport(NetworkCapabilities.TRANSPORT_VPN))
+            val routes = connectivity.getLinkProperties(captured)!!.routes
+            assertTrue(routes.any { it.destination.toString() == "0.0.0.0/0" })
+            assertTrue(routes.any { it.destination.prefixLength == 0 && it.destination.address is java.net.Inet6Address })
+            for (address in listOf("1.1.1.1", "2606:4700:4700::1111")) {
+                var blockedIp = false
+                Socket().use { socket ->
+                    try { socket.connect(InetSocketAddress(address, 443), 2000) }
+                    catch (_: java.io.IOException) { blockedIp = true }
+                }
+                assertTrue("Unadmitted IP traffic escaped its capture", blockedIp)
+            }
             val store = SecureVpnIdentityStore(AndroidKeystoreVpnIdentityCipher(), DataStoreVpnIdentityPersistence(context))
             val identity = runBlocking { store.loadIdentity() }
             assertTrue(identity is VpnIdentityResult.Available)

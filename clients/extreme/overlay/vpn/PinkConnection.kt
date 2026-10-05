@@ -46,6 +46,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private val permission = CountDownLatch(1)
     private val backend by lazy { GoBackend(app) }
     @Volatile private var live = false
+    @Volatile private var boundVpn: Network? = null
     @Volatile private var admitted = false
     @Volatile private var accepting = false
     @Volatile private var consentRequested = false
@@ -87,7 +88,25 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     fun resume() { work.execute { nextAttempt = 0; maintain() } }
-    internal fun hasCapturedRouteForTests(): Boolean = live
+    internal fun hasCapturedRouteForTests(): Boolean = live && boundVpn != null
+
+    private fun bindCapturedNetwork() {
+        // Binding also covers future native sockets and DNS. If Android removes
+        // this network, they fail rather than select a physical default route.
+        // Only the fixed control calls explicitly use a physical Network.
+        repeat(200) {
+            val network = cm.allNetworks.firstOrNull {
+                cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true &&
+                    cm.getLinkProperties(it)?.interfaceName?.isNotBlank() == true
+            }
+            if (network != null && cm.bindProcessToNetwork(network)) {
+                boundVpn = network
+                return
+            }
+            Thread.sleep(100)
+        }
+        throw IllegalStateException("Connection unavailable")
+    }
 
     init {
         // The official GoBackend keeps the TUN established and its UDP socket roams.
@@ -137,6 +156,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             "MTU = 1380\nIncludedApplications = ${app.packageName}\n" +
             "[Peer]\nPublicKey = $sink\nAllowedIPs = 0.0.0.0/0, ::/0\n").byteInputStream())
         check(backend.setState(this, Tunnel.State.UP, offline) == Tunnel.State.UP)
+        bindCapturedNetwork()
         sealed = true
     }
 
@@ -191,7 +211,12 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         if (!live || sealed) {
             // No application flow is admitted during the initial offline->authorized change.
             check(!admitted)
+            // Initial peer replacement precedes every admitted provider socket.
+            // Never clear this binding after admission or when its VPN is lost.
+            check(cm.bindProcessToNetwork(null))
+            boundVpn = null
             check(backend.setState(this, Tunnel.State.UP, config) == Tunnel.State.UP)
+            bindCapturedNetwork()
             sealed = false
         }
         check(probe())
@@ -274,6 +299,6 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     companion object {
         @Volatile private var instance: PinkVpnRuntime? = null
         @Synchronized fun get(context: Context): PinkVpnRuntime = instance ?: PinkVpnRuntime(context).also { instance = it }
-        fun isReady(): Boolean = instance?.let { it.live && it.admitted && it.accepting } == true
+        fun isReady(): Boolean = instance?.let { it.live && it.admitted && it.accepting && it.boundVpn != null } == true
     }
 }

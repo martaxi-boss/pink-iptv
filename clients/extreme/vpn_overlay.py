@@ -88,7 +88,7 @@ def apply(root, dest, replace):
     replace(native + 'VideoActivity.kt', '    super.onCreate(savedInstanceState)',
             '    super.onCreate(savedInstanceState)\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
     replace(native + 'VideoActivity.kt', 'put("message", error.message ?: "")',
-            'put("message", "Reprodução temporariamente indisponível")')
+            'put("message", "Reprodução temporariamente indisponível")', count=2)
     replace(native + 'XtreamDreamService.kt', '    super.onAttachedToWindow()',
             '    super.onAttachedToWindow()\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
 

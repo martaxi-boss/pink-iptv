@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/infinitel8p/Extreme-InfiniTV.git",
+  "version": "1.9.0",
+  "license": "GPL-3.0-or-later",
+  "applicationId": "com.pinkiptv.extreme",
+  "backendOrigin": "https://pink-iptv.duckdns.org",
+  "revisionFile": "upstream.py"
+}

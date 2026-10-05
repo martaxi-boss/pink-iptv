@@ -1,5 +1,17 @@
 # System Architecture
 
+## Owner-selected client foundation — Extreme migration042
+
+The complete pinned Extreme InfiniTV application replaces the earlier PINK
+client as the product foundation. Its full Astro/Svelte/Tauri UI and Android
+native playback are reused; it is not merely a layout reference. The PINK
+adapter owns phone/TV username/password login, backend origin resolution and
+Keystore-protected saved accounts. Backend, Mega, PostgreSQL and provider
+trust boundaries below remain authoritative. Public launch remains NO.
+
+Reproducible source and integration boundaries: [migration042](EXTREME_MIGRATION_042.md).
+
+
 ## Components
 
 1. Android client

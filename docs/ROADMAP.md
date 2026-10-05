@@ -1,5 +1,19 @@
 # Roadmap
 
+## Current client migration042
+
+Owner selected the complete Extreme InfiniTV client as the new application
+foundation. Current build covers PINK identity/launcher, PINK-only managed login,
+protected account restore and reuse of all upstream catalogs/player/layout.
+The earlier native-client implementation history remains valid for that client;
+it does not certify the replacement Tauri host.
+
+Next acceptance: phone/TV installation, restored account, real Live/VOD/Series
+playback and navigation responsiveness. Then port the approved WireGuard client
+contract into the new host. Public launch remains NO. Exact status and source:
+[migration042](EXTREME_MIGRATION_042.md).
+
+
 ## Phase 0 — Architecture
 
 Architecture baseline and Supervisor-controlled builder orders. Public launch: NO.

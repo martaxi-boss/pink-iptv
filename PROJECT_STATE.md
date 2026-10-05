@@ -1,5 +1,18 @@
 # PINK IPTV - PROJECT STATE
 
+## Current whole-client replacement042
+
+Owner-selected new foundation: complete Extreme InfiniTV1.9.0 at
+1efcc1b4ab3468db04aedd1c466228c52ef001b7. PINK login replaces upstream login/demo,
+with backend-owned provider resolution and encrypted Android saved account.
+PINK P/play identity covers launcher and loading screen. See
+[scope, build and acceptance](docs/EXTREME_MIGRATION_042.md).
+
+Implementation/CI/device acceptance are recorded separately; this section does
+not assert successful build, corrected playback, no freezes, VPN or public launch.
+The earlier client remains recovery history during replacement validation.
+
+
 Date: 2026-10-04
 Phase: Phase4 — 004B merged; temporary external network proof passed, Android tunnel pending
 Public launch: NO

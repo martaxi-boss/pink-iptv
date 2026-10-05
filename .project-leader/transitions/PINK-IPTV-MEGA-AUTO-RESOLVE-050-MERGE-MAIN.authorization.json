@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050-MERGE-MAIN",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T12:52:10Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "summary": "Owner requires autonomous Project Leader execution and has explicitly set the new PINK login contract to username/password only with automatic Mega per-line subdomain discovery. Supervisor verified PR39 exact head 54cc6f41a0251affc48d7b484c65c4c151d80552 contains only Task050-authorized implementation/evidence descendants, exact implementation 15665ce2dd63f3c9c4c4309c936c9b44e345127a passed Backend CI 37312008186, and final PR-head push/PR Backend CI 37312379944/37312407672 are both SUCCESS. Merge to main is covered; no deploy or VPN effect is authorized by this transition.",
+    "binding_mode": "EXACT_REVISION_BOUND"
+  },
+  "target": {
+    "kind": "pull_request",
+    "identifier": "39",
+    "revision": "54cc6f41a0251affc48d7b484c65c4c151d80552",
+    "base_revision": "b963afd678e4ef8eb1e28266088ba88ad59f551c",
+    "environment": "martaxi-boss/pink-iptv main"
+  }
+}

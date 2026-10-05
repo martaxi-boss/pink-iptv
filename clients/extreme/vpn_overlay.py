@@ -87,6 +87,8 @@ def apply(root, dest, replace):
             '  private fun tryLaunch(mode: String, configure: (android.content.Intent) -> Unit): Boolean {\n    if (!PinkVpnRuntime.isReady()) return false')
     replace(native + 'VideoActivity.kt', '    super.onCreate(savedInstanceState)',
             '    super.onCreate(savedInstanceState)\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
+    replace(native + 'VideoActivity.kt', 'put("message", error.message ?: "")',
+            'put("message", "Reprodução temporariamente indisponível")')
     replace(native + 'XtreamDreamService.kt', '    super.onAttachedToWindow()',
             '    super.onAttachedToWindow()\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
 

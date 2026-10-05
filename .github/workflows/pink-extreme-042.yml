@@ -1,7 +1,7 @@
 name: PINK Extreme Android 042
 on:
   push:
-    branches: ["builder/extreme-wireguard-053"]
+    branches: ["builder/extreme-live-certification-055"]
     paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml"]
   workflow_dispatch:
 permissions:

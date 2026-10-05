@@ -1,0 +1,125 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T10:21:59.111Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner reports upstream Infinity startup news and requests its removal, with PINK-only managed login clarification. Remove upstream startup popup and provider community/update promotions, retain GPL attribution, add precise PINK login guidance without changing backend authority or credentials, repair download presentation, build and deliver tested APK with corresponding source. No backend/runtime/provider changes or physical playback claim."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "55c0d0dafe31bc58f648fb1881291a2e1b220d71",
+    "task_branch": "builder/extreme-startup-045"
+  },
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "mutation_scope": [
+    "clients/extreme/**",
+    ".github/workflows/pink-extreme-042.yml",
+    "docs/EXTREME_MIGRATION_042.md",
+    "PROJECT_STATE.md",
+    ".project-leader/tasks/PINK-IPTV-EXTREME-STARTUP-045.json",
+    ".project-leader/results/PINK-IPTV-EXTREME-STARTUP-045.json",
+    ".project-leader/transitions/PINK-IPTV-EXTREME-STARTUP-045-*",
+    ".project-leader/recovery-events/PINK-IPTV-EXTREME-STARTUP-045/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request",
+    "change_project_governance",
+    "reconcile_project_architecture"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "backend_runtime_write",
+    "provider_mutation",
+    "secret_value_disclosure",
+    "third_project_mutation",
+    "force_push"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Consequential transition readiness audit",
+    "PINK-only startup and support",
+    "Managed login contract preservation",
+    "Protected saved-account storage",
+    "GPL source and attribution compliance",
+    "Scoped hygiene"
+  ],
+  "required_ci": [
+    "PINK Extreme Android 042",
+    "Backend CI",
+    "Android CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "c42ed27cc6c520bfd63015097c8c60ee42392ba5"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "PINK startup no longer invokes upstream news or promotions; managed backend authentication unchanged and clarified. Exact-SHA build/tests/required CI pass; APK and corresponding source made downloadable; physical AV remains device validation.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

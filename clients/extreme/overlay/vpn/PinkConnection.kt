@@ -50,6 +50,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     @Volatile private var accepting = false
     @Volatile private var consentRequested = false
     private var config: Config? = null
+    private var sealed = false
     private var failures = 0
     private var nextAttempt = 0L
 
@@ -79,6 +80,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         work.execute {
             try {
                 ensureIdentity()
+                sealBeforeEnrollment()
                 readGrant()?.let { restore(it) }
             } catch (_: Exception) { /* Login stays closed; never log identity or grant. */ }
         }
@@ -120,6 +122,21 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
 
     private fun ensureIdentity() = runBlocking {
         check(identity.ensureIdentity() is VpnIdentityResult.Available)
+    }
+
+    private fun sealBeforeEnrollment() {
+        if (live) return
+        // A fresh installation has no authenticated peer yet. Capture its own UID
+        // into an offline official TUN while the fixed native HTTPS control path
+        // obtains authorization. No IPTV packet can use a direct startup route.
+        val keys = pair()
+        val sink = KeyPair().publicKey.toBase64()
+        val offline = Config.parse(("[Interface]\nPrivateKey = ${keys.privateKey.toBase64()}\n" +
+            "Address = 10.66.0.254/32, fd66:7069:6e6b::fe/128\nDNS = 1.1.1.1\n" +
+            "MTU = 1380\nIncludedApplications = ${app.packageName}\n" +
+            "[Peer]\nPublicKey = $sink\nAllowedIPs = 0.0.0.0/0, ::/0\n").byteInputStream())
+        check(backend.setState(this, Tunnel.State.UP, offline) == Tunnel.State.UP)
+        sealed = true
     }
 
     private fun pair(): KeyPair = runBlocking {
@@ -170,7 +187,12 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             check(config!!.peers.single().publicKey == server)
             check(config!!.`interface`.addresses.any { it.toString() == address })
         }
-        if (!live) check(backend.setState(this, Tunnel.State.UP, config) == Tunnel.State.UP)
+        if (!live || sealed) {
+            // No application flow is admitted during the initial offline->authorized change.
+            check(!admitted)
+            check(backend.setState(this, Tunnel.State.UP, config) == Tunnel.State.UP)
+            sealed = false
+        }
         check(probe())
         admitted = true
         failures = 0
@@ -195,7 +217,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 if (admitted) { admitted = false; Process.killProcess(Process.myPid()) }
                 return
             }
-            if (live) {
+            if (live && !sealed) {
                 val renewed = control("/v1/vpn/refresh", deviceRequest(saved))
                 renewed.put("device_token", saved.getString("device_token"))
                 saveGrant(renewed)

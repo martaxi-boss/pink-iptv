@@ -12,8 +12,12 @@ login, enrolls the installation, confirms the application-only full-route tunnel
 and gateway probe, then releases the authoritative Xtream origin. No VPN button,
 configuration page, endpoint/key display or manual server selection exists.
 
-First-ever enrollment follows account authentication; later starts restore the
-encrypted installation grant before returning the saved account. A physical
+After normal Android permission, a first installation captures its own UID in
+an official offline TUN with both default routes and no remote endpoint. Provider
+requests wait for native admission; remote WebView requests are rejected until
+ready. Account authentication authorizes the real peer. The initial configuration
+change admits no IPTV flow; an admitted live tunnel is never cycled on refresh.
+Later starts restore the encrypted grant before returning the saved account. A physical
 network-bound HTTPS channel is restricted to three fixed PINK control endpoints;
 provider/catalog/playback traffic never uses it. Both IP families are captured.
 GoBackend keeps the interface established across transport failure/network

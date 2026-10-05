@@ -76,7 +76,7 @@ def apply(root, dest, replace):
     replace(native + 'MainActivity.kt', '    val uri = parseUri(url) ?: return false',
             '    if (true) return false // App-scoped PINK cannot protect another player package.\n    val uri = parseUri(url) ?: return false', count=3)
     replace(native + 'MainActivity.kt', '    val uri = parseUri(url) ?: return "[]"',
-            '    return "[]" // No unprotected external player handoff.')
+            '    if (true) return "[]" // No unprotected external player handoff.\n    val uri = parseUri(url) ?: return "[]"')
     replace(native + 'MainActivity.kt', '  private fun tryLaunch(mode: String, configure: (android.content.Intent) -> Unit): Boolean {',
             '  private fun tryLaunch(mode: String, configure: (android.content.Intent) -> Unit): Boolean {\n    if (!PinkVpnRuntime.isReady()) return false')
     replace(native + 'VideoActivity.kt', '    super.onCreate(savedInstanceState)',

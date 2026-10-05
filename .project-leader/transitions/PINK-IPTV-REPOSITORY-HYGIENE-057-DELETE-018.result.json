@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-057-DELETE-018",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-057",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-057-DELETE-018.authorization.json",
+  "action": "delete_fully_merged_non_main_branch_ref",
+  "target": {
+    "kind": "repository_branch",
+    "identifier": "builder/extreme-startup-045",
+    "revision": "8f4e247f57f9eb420d179cf00a354303ca7f3d01",
+    "base_revision": "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"
+  },
+  "observed_at": "2026-10-05T19:07:52.524Z",
+  "final_state": {
+    "status": "REF_ABSENT_COMMIT_HISTORY_PRESERVED",
+    "revision": null
+  },
+  "evidence": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37359623859",
+    "Independent live GitHub branch inventory confirms absence; main2f228 and active05574785 remained unchanged during the sweep. The exact deleted commit remains reachable from main."
+  ],
+  "residual_blockers": []
+}

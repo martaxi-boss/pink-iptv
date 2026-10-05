@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 4,
+  "recorded_at": "2026-10-05T14:40:22.744Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-kotlin-metadata-and-scan-scaffold",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "c7f60962a1eb546f254c762276f454980ca76c3ccf0b69d72bb428f0a2bfbe4b",
+  "detail": "Supervisor authorizes deterministic generated-host Kotlin plugin alignment to2.1.0 and a line-local allowlist pragma for the proven non-secret scan run scaffold. Keep scanner active over all actual source/config, official tunnel/non-root implementation, immutable grant and same product. Publish a new descendant; reuse fresh automatic push CI, never duplicate an active workflow."
+}

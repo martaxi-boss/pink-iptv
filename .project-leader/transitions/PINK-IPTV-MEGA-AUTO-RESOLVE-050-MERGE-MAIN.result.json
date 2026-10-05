@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050-MERGE-MAIN",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-MEGA-AUTO-RESOLVE-050-MERGE-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "39",
+    "revision": "54cc6f41a0251affc48d7b484c65c4c151d80552",
+    "base_revision": "b963afd678e4ef8eb1e28266088ba88ad59f551c",
+    "environment": "martaxi-boss/pink-iptv main"
+  },
+  "observed_at": "2026-10-05T12:53:16Z",
+  "final_state": {
+    "status": "MERGED_TO_MAIN",
+    "revision": "9f66ab8c1d03473d28ec1c2d47e14ee095c021b7"
+  },
+  "evidence": [
+    "GitHub reports PR39 closed and merged at 2026-10-05T12:53:16Z with merge commit 9f66ab8c1d03473d28ec1c2d47e14ee095c021b7.",
+    "Main re-read confirms exact merge commit 9f66ab8c1d03473d28ec1c2d47e14ee095c021b7.",
+    "Exact implementation 15665ce2dd63f3c9c4c4309c936c9b44e345127a passed Backend CI 37312008186; final PR head 54cc6f41a0251affc48d7b484c65c4c151d80552 passed push/PR Backend CI 37312379944 and 37312407672."
+  ],
+  "residual_blockers": [
+    "Staging backend deployment is a separate consequential operations task.",
+    "Invisible WireGuard integration is a separate task and is not part of Task050."
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-MEGA-AUTO-RESOLVE-050",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-MEGA-AUTO-RESOLVE-050.json",
+  "authorization_commit_sha": "6f994db3849ae2dcd83f23eab1618ee75e9132e9",
+  "authorization_sha256": "5c872a391967ff282a4cb6cd588fa913c89fa018855dbb91c00afd9ce4981cb3",
+  "implementation_head_sha": "15665ce2dd63f3c9c4c4309c936c9b44e345127a",
+  "branch": "builder/mega-auto-resolve-050",
+  "pr_number": null,
+  "recorded_at": "2026-10-05T12:49:00Z",
+  "state_observed_at": "2026-10-05T12:48:21Z",
+  "changes": [
+    "Added bounded Mega subscription-list discovery by exact username using the existing backend-only Mega token.",
+    "On an unmapped login, the backend now discovers exactly one matching Mega subscription, retrieves that subscription by ID and persists the provider-supplied per-line dns_link before Xtream authentication.",
+    "Existing mapped users continue directly through their stored authoritative dns_link without a Mega scan.",
+    "The new Extreme client contract remains username/password only and continues to accept only the backend-resolved exact origin."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Implementation stays inside the existing PINK backend-owned provider resolution architecture. The client does not accept DNS input and no provider host is inferred from a shared root domain."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Compare b963afd678e4ef8eb1e28266088ba88ad59f551c..15665ce2dd63f3c9c4c4309c936c9b44e345127a changes only Task050-authorized backend code/tests and Task050 recovery/task records."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Backend CI run 37312008186 on exact implementation head 15665ce2dd63f3c9c4c4309c936c9b44e345127a completed SUCCESS; Ruff, migration, 99 backend tests and credential leak scan all passed."
+    },
+    {
+      "name": "Automatic unknown-user Mega discovery",
+      "status": "PASS",
+      "evidence": "Tests cover a previously unmapped username being found through the Mega collection, imported by exact subscription ID and authenticated successfully."
+    },
+    {
+      "name": "Exact authoritative dns_link preservation",
+      "status": "PASS",
+      "evidence": "The discovered subscription is re-read by ID and its exact Mega dns_link is stored and returned as xtream_base_url; no root-domain derivation exists."
+    },
+    {
+      "name": "No DNS guessing or client DNS input",
+      "status": "PASS",
+      "evidence": "Session request schema remains username/password only; provider origin comes exclusively from the Mega subscription record."
+    },
+    {
+      "name": "No password persistence",
+      "status": "PASS",
+      "evidence": "SubscriptionMapping schema is unchanged and contains no password column; first-login tests assert the database stores only mapping metadata."
+    },
+    {
+      "name": "Existing mapped-login regression",
+      "status": "PASS",
+      "evidence": "Existing mapped-login tests pass and a dedicated test proves mapped users do not scan Mega."
+    }
+  ],
+  "ci": [
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37312008186
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37312008186",
+    "Recovery journal PINK-IPTV-MEGA-AUTO-RESOLVE-050 sequences 001-008, including formatter diagnostic bridge evidence."
+  ],
+  "material_non_effects": [
+    "No VPN or WireGuard implementation change.",
+    "No runtime deploy in this task.",
+    "No provider subscription create/extend/activate operation.",
+    "No customer password or Mega token persisted or emitted.",
+    "No client-visible DNS field or provider-host guessing."
+  ],
+  "residual_blockers": []
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 5,
+  "recorded_at": "2026-10-05T16:20:34.211Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "055-normal-consent-startup-race",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "4cc1a292b8197440db8bc2b57e10e1b3bd2f42ab9d028fe620dca099139ec413",
+  "detail": "Exact diagnostic SHA1b7ba52d run37337826906 passed all native compilation/JVM and two Keystore tests, then normal Android consent dialog wait timed out at PinkVpnStartupTest26 before any IP diagnostic. No provider fixture or peer was involved. Prior IP-route failure remains unresolved; no delivery. Local exec_command read-only date/pwd and login=false fallback became nonresponsive, so preserve ongoing scope and validate subsequent append-only records with canonical pinned validator in hosted Actions rather than fabricate certification."
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-05T14:39:53.108Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-kotlin-metadata-and-scan-scaffold",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "0eb10aeb211104de824a80fb50c813be090acd891808f04df435cd49089b7692",
+  "detail": "Exact material head 4a02ecd7dc7acefd71429cfbfe85eeefdd776b45 is terminal non-success. Android run37325247625 job111814211903 failed compileUniversalDebugKotlin: upstream Kotlin1.9.25 cannot read Kotlin2.1 dependency metadata. Backend run37325247622 job111814212139 passed application tests/migration but scanner flagged workflow line80 run-block scaffold because detect-secrets== appears below it. No real credential at that line. No runtime write or CI rerun performed. Correct toolchain alignment and narrowly annotate only that proven non-secret YAML scaffold."
+}

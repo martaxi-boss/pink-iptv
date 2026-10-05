@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 9,
+  "recorded_at": "2026-10-05T10:52:08.082Z",
+  "event": "RECOVERED",
+  "strategy_generation": 3,
+  "action_fingerprint": "045-disposable-checkout-preparation",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "d7d9ed62baffe819928594dca0c7b178366893a30bbab9cdba89917239885db1",
+  "detail": "Local setup/selector failures resolved on a fresh pinned checkout.32tests and27routes passed; actual artifact source verifies no automatic Infinity startup popup, no original community/donation promotions, GPL retained and no Python caches. Exact implementation e0c0f8847214496b980cdb60205ca389689dd0cc all5latest required workflow contexts are terminalSUCCESS. Native build37296805370 artifact11340666466 verified by SHA256/provenance. Physical real-account AV remains a separate gate."
+}

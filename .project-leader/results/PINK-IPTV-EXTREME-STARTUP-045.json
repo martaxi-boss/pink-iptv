@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-EXTREME-STARTUP-045.json",
+  "authorization_commit_sha": "2d20b545cd055f72ca1c2c9bf17684c62adf640a",
+  "authorization_sha256": "9cde7e2f8474382bc3d94734853512caba76c3fff78530284c94df1500cd18df",
+  "implementation_head_sha": "e0c0f8847214496b980cdb60205ca389689dd0cc",
+  "branch": "builder/extreme-startup-045",
+  "pr_number": 38,
+  "recorded_at": "2026-10-05T10:52:08.083Z",
+  "state_observed_at": "2026-10-05T10:52:08.083Z",
+  "changes": [
+    "Remove automatic Infinity release popup and original community/donation promotion.",
+    "Retarget optional support/releases to PINK and clarify existing PINK account login.",
+    "Preserve managed authentication and GPL; remove generated Python caches from corresponding-source delivery."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "PINK-only startup/support correction and login guidance preserve backend session/resolve, authoritative origin, protected account and entire upstream player/catalog. No backend/runtime/provider mutation."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Exact main55c0d0da to e0c0f884 comparison contains15allowed files; canonical Task/scope and central policy validation PASS. Recovery journal is normalized hash-chained and committed before implementation."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Fresh native GitHub exact-SHA run reads confirm required build/backend/Android workflows and all latest push/PR contexts SUCCESS; canonical immutable authority, scope, CI and recovery verifier required before final acceptance."
+    },
+    {
+      "name": "Consequential transition readiness audit",
+      "status": "PASS",
+      "evidence": "Covered merge resolved only after exact CI/canonical evidence and final-head/base audits; separate durable exact authorization/result on task audit branch. No public release or production activation."
+    },
+    {
+      "name": "PINK-only startup and support",
+      "status": "PASS",
+      "evidence": "Removed Layout first-launch news initialization; optional changelog targets PINK with new cache namespace. Actual corresponding source contains no original Discord/donation promotions; GPL retained."
+    },
+    {
+      "name": "Managed login contract preservation",
+      "status": "PASS",
+      "evidence": "Identical HTTPS backend, JSONusername/password payload and authoritative origin validation. UI now identifies existing PINK credentials.32contract/storage/player tests pass; no real account success claimed."
+    },
+    {
+      "name": "Protected saved-account storage",
+      "status": "PASS",
+      "evidence": "Keystore AES-GCM and revalidated restore remain unchanged, no plaintext fallback or backup export/import of accounts."
+    },
+    {
+      "name": "GPL source and attribution compliance",
+      "status": "PASS",
+      "evidence": "Full corresponding source includes upstream LICENSE and PINK-NOTICE/recipe. APK/source hashes and exact implementation/upstream provenance independently verified."
+    },
+    {
+      "name": "Scoped hygiene",
+      "status": "PASS",
+      "evidence": "Original promotional settings rows removed; remaining settings preserved using precise heading selector. Source and recipe exclude generated Python caches. No data/secrets/history cleanup."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK Extreme Android 042",
+      "status": "SUCCESS",
+      "run_id": 37296805370
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37296809653
+    },
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37296809854
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/38",
+    "GitHubartifact11340666466 build37296805370 exact e0c0f8847214496b980cdb60205ca389689dd0cc.",
+    "APK SHA256c81296df3cf152f86fd4bc7607d503154dcae7df553c62655d98d20c64a358ac; corresponding source8c17e023f121d80be3c8a8d950ecc3e89ab132de80108cff941b15fd20dd992c."
+  ],
+  "material_non_effects": [
+    "No backend/runtime/provider/VPN/network mutation, public release or production signing.",
+    "Physical real-account login/playback and new-host VPN acceptance remain next roadmap gates.",
+    "Debug signer differs from prior044 APK; replacement test install requires removing prior test package, which clears its local account/data. Original native PINK package is a different application ID."
+  ],
+  "residual_blockers": []
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-MIGRATION-044",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-EXTREME-MIGRATION-044.json",
+  "authorization_commit_sha": "c9ef1cb8e8aa63dd595a834229a604ed8e96e6ea",
+  "authorization_sha256": "75a5a7ebfd6679d627c8d74761588d0a7abc539b894020fff7042a88361534ec",
+  "implementation_head_sha": "088824e99a5a237d15be42cd8e394145127d6460",
+  "branch": "builder/extreme-migration-044",
+  "pr_number": 37,
+  "recorded_at": "2026-10-05T10:03:08.820Z",
+  "state_observed_at": "2026-10-05T10:03:08.820Z",
+  "changes": [
+    "Adopt complete Extreme InfiniTV1.9.0 as PINK Android/Android TV client with reproducible pinned build.",
+    "Replace original login/demo with managed PINK login, encrypted saved account and phone/TV PINK identity.",
+    "Reconcile architecture/roadmap and perform scoped hygiene while preserving original player/catalog features."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Complete pinned upstream application is the new client; backend-only username/password resolves authoritative HTTP(S) origin. Existing backend/runtime and historic Android client remain untouched; VPN porting and physical playback remain roadmap gates."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Fresh native GitHub main-to-implementation comparison contains exactly21allowed paths; canonical Task scope validator PASS. Immutable Task044 bytes and policy binding retained."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "Exact implementation SHA required workflows and every latest same-SHA event context verified through fresh native GitHub transport with canonical Project Leader verifier before acceptance."
+    },
+    {
+      "name": "Consequential transition readiness audit",
+      "status": "PASS",
+      "evidence": "Standing authority resolves covered executable actions after exact CI, immutable authority, scope and target audits; normal merge only, no release or production activation."
+    },
+    {
+      "name": "Full upstream application preservation",
+      "status": "PASS",
+      "evidence": "Entire Extreme1.9.0 pinned source built,27routes and native Android player retained. Reproducible fetch+overlay rather than replacement scaffold."
+    },
+    {
+      "name": "Backend-only username/password login",
+      "status": "PASS",
+      "evidence": "Phone/TV upstream login and demo CTAs replaced; no provider selection or embedded credentials.32scoped contract/storage/player regression tests and complete frontend build pass."
+    },
+    {
+      "name": "Protected saved-account storage",
+      "status": "PASS",
+      "evidence": "Android Keystore AES-GCM vault, backups disabled, no credential plaintext storage/export/restore fallback; saved account revalidates through PINK backend on reopen."
+    },
+    {
+      "name": "GPL source and attribution compliance",
+      "status": "PASS",
+      "evidence": "Corresponding full patched source with upstream LICENSE and copyright, PINK-NOTICE plus pinned recipe distributed alongside APK; exact source and APK SHA256 verified."
+    },
+    {
+      "name": "Scoped hygiene",
+      "status": "PASS",
+      "evidence": "Removed obsolete plaintext credential migration, upstream updater endpoint/demo login and themed launcher artwork. PINK icon, loading identity and all TV banner densities verified in packaged source; synthetic secret scan false positives locally annotated, scanner retained."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK Extreme Android 042",
+      "status": "SUCCESS",
+      "run_id": 37292350325
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37292354890
+    },
+    {
+      "name": "Android CI",
+      "status": "SUCCESS",
+      "run_id": 37292355079
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/37",
+    "GitHub artifact11336929131, implementation088824e99a5a237d15be42cd8e394145127d6460; APK SHA2561fbb9e141af31c96bfa2b62e775393b7bb3b450a6a4e85f81c9d12763b00acf2; source83674e6c8cbf55fb40193adaf1b450d83758ac859c2a49f26ab9db7cc8956bb2.",
+    "Persistent APK libfile_e653ae3d6c8c8191b15c5c908e083972 and corresponding source libfile_68dfa2b128c481918a65dfb6fc0b4fbf."
+  ],
+  "material_non_effects": [
+    "Debug test APK only, Android8+ ARM64/ARMv7; no production deployment/public release/signing.",
+    "Physical playback, remote navigation and freeze-free behavior are not certified; new-host WireGuard integration remains pending roadmap work.",
+    "Historical Tasks042/043 remain explicitly non-certifying and are neither rewritten nor used as Task044 evidence."
+  ],
+  "residual_blockers": []
+}

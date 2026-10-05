@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 6,
+  "recorded_at": "2026-10-05T14:56:59.418Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-external-player-guard-local-symbol",
+  "attempt_count": 3,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "fdca3e987ee59323e6f2218f0d6401f1fd529da2e5dde26d2ff05ab4fe1b89c5",
+  "detail": "Supervisor authorizes restoring the upstream local declaration after the unconditional external-player guard, preserving its complete product source. Certify the material descendant with first-start official offline TUN capture, explicit no-admission transition into authenticated peer configuration, provider/WebView guards and bounded restoration. Both prior exact Android runs are terminal; use the next push CI and do not rerun old SHAs."
+}

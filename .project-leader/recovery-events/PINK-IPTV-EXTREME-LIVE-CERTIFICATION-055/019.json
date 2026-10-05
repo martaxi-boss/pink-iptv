@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T23:51:11.623Z",
+  "previous_event_sha256": "f55a935210ec47a351a1c123d992d11259b3dcf0013197b143d9edda3e53616c",
+  "sequence": 19,
+  "event": "REPLAN",
+  "strategy_generation": 7,
+  "action_fingerprint": "055-correct-kotlin-protected-diagnostic-concatenation",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "detail": "Correct exact compiler fault: use explicit string concatenation for the fixed saved-grant boolean instead of incorrectly escaped Kotlin template expression. No behavioral change to login, activation, credentials, admission, routing or fail closure. Preserve stage snapshot and fixed exception-class evidence. Fresh native/source CI and compiled056 preparation required; never retry failed64da0c81 unchanged."
+}

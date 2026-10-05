@@ -96,7 +96,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     internal fun startupDiagnosticForTests(): String =
         "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
     internal fun protectedDiagnosticForTests(): String =
-        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=${prefs.contains(\"ciphertext\")}"
+        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext")
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes

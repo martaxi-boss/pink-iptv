@@ -13,6 +13,10 @@ authorized tunnel and gateway probe. No PINK VPN controls/configuration exist.
 
 Unit and real emulator tests cover protected identity, corrupt-key closure,
 account independence, normal consent, offline traffic blocking and recreation.
+Initial capture failures use the same bounded recovery as an enrolled device.
+An established offline TUN is rebound after delayed Android route registration;
+it is never silently treated as an authorized peer. Test diagnostics expose only
+fixed lifecycle stages and exception class names, with no configuration or account data.
 The separate bounded operational proof supplies the already authorized test
 account transiently to the instrumentation sandbox, verifies authoritative
 login/catalog and real native live audio/video decode through WireGuard, then

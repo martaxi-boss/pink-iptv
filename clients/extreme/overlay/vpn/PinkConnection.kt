@@ -48,6 +48,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private var sealed = false
     private var failures = 0
     private var nextAttempt = 0L
+    @Volatile private var startupStage = "awaiting_consent"
+    @Volatile private var failureCategory = "none"
 
     override fun getName(): String = "pink"
     override fun onStateChange(state: Tunnel.State) {
@@ -72,17 +74,15 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         permission.countDown()
         if (!accepting) return
         ContextCompat.startForegroundService(app, Intent(app, PinkVpnRuntimeService::class.java))
-        work.execute {
-            try {
-                ensureIdentity()
-                sealBeforeEnrollment()
-                readGrant()?.let { restore(it) }
-            } catch (_: Exception) { /* Login stays closed; never log identity or grant. */ }
-        }
+        work.execute { maintain() }
     }
 
     fun resume() { work.execute { failures = 0; nextAttempt = 0; maintain() } }
     internal fun hasCapturedRouteForTests(): Boolean = live && boundVpn != null
+    // Only fixed stages and exception class names; no exception messages, keys,
+    // grants, account data or provider origins may enter diagnostic output.
+    internal fun startupDiagnosticForTests(): String =
+        "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes
@@ -154,7 +154,10 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     private fun sealBeforeEnrollment() {
-        if (live) return
+        if (live) {
+            if (boundVpn == null) bindCapturedNetwork()
+            return
+        }
         // A fresh installation has no authenticated peer yet. Capture its own UID
         // into an offline official TUN while the fixed native HTTPS control path
         // obtains authorization. No IPTV packet can use a direct startup route.
@@ -164,9 +167,14 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             "Address = 10.66.0.254/32, fd66:7069:6e6b::fe/128\nDNS = 1.1.1.1\n" +
             "MTU = 1380\nIncludedApplications = ${app.packageName}\n" +
             "[Peer]\nPublicKey = $sink\nAllowedIPs = 0.0.0.0/0, ::/0\n").byteInputStream())
+        startupStage = "offline_backend"
         check(backend.setState(this, Tunnel.State.UP, offline) == Tunnel.State.UP)
-        bindCapturedNetwork()
+        // Remember the installed offline configuration even if Android's route
+        // registration is delayed. Recovery must bind it, not replace or admit it.
         sealed = true
+        startupStage = "offline_binding"
+        bindCapturedNetwork()
+        startupStage = "offline_captured"
     }
 
     private fun pair(): KeyPair = runBlocking {
@@ -228,6 +236,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             bindCapturedNetwork()
             sealed = false
         }
+        if (boundVpn == null) bindCapturedNetwork()
         check(probe())
         admitted = true
         failures = 0
@@ -247,7 +256,18 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private fun maintain() {
         if (!accepting || failures >= 6 || System.currentTimeMillis() < nextAttempt) return
         try {
-            val saved = readGrant() ?: return
+            startupStage = "identity"
+            ensureIdentity()
+            // Fresh installations also recover bounded startup failures. There
+            // need not be a saved account/grant to establish the offline capture.
+            if (!live || boundVpn == null) sealBeforeEnrollment()
+            startupStage = if (sealed) "offline_captured" else "authorized_capture"
+            failureCategory = "none"
+            val saved = readGrant() ?: run {
+                failures = 0
+                nextAttempt = 0
+                return
+            }
             if (!Instant.parse(saved.getString("expires_at")).isAfter(Instant.now())) {
                 if (admitted) { admitted = false; Process.killProcess(Process.myPid()) }
                 return
@@ -261,7 +281,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 admitted = true
             } else restore(saved)
             failures = 0
-        } catch (_: Exception) {
+        } catch (failure: Exception) {
+            failureCategory = failure.javaClass.simpleName
             failures = (failures + 1).coerceAtMost(6)
             if (failures == 6 && admitted) {
                 admitted = false

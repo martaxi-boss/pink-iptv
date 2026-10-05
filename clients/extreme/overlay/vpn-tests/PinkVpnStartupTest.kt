@@ -61,6 +61,7 @@ class PinkVpnStartupTest {
             while (!runtime.hasCapturedRouteForTests() && System.currentTimeMillis()<deadline) Thread.sleep(100)
             assertNull(VpnService.prepare(context))
             report("OFFLINE_CAPTURE="+runtime.hasCapturedRouteForTests())
+            report("OFFLINE_STARTUP="+runtime.startupDiagnosticForTests())
             assertTrue(runtime.hasCapturedRouteForTests())
             assertFalse(PinkVpnRuntime.isReady())
             val connectivity = context.getSystemService(ConnectivityManager::class.java)

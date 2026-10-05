@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-MIGRATION-043",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-05T09:39:15.674Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "043-specific-public-fixture-scan-remediation",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "5ad0eea56a2ee411f46c0023e221052a2c236e434a3f10157156e2649106b037",
+  "detail": "Authorize bounded correction of explicit synthetic fixture annotations and public immutable upstream revision provenance annotation, preserving detector thresholds/filter/workflow. Fresh descendant implementation SHA must pass all required CI. No old-SHA rerun is certifying."
+}

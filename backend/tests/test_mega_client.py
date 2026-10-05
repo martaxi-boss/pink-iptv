@@ -36,7 +36,7 @@ def test_retrieve_by_id_applies_bearer_without_logging_secret(
     assert mega_payload["password"] not in caplog.text
 
 
-def test_find_subscription_id_by_username_scans_pages_without_exposing_password() -> None:
+def test_username_discovery_scans_pages_without_secret_output() -> None:
     seen = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -78,7 +78,7 @@ def test_find_subscription_id_by_username_scans_pages_without_exposing_password(
     assert all("target-user" not in url for url in seen)
 
 
-def test_find_subscription_id_by_username_fails_closed_on_duplicate_username() -> None:
+def test_username_discovery_rejects_duplicate_matches() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         page = int(request.url.params["page"])
         payload = (

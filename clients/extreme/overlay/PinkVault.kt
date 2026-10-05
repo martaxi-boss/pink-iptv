@@ -4,7 +4,6 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import android.webkit.JavascriptInterface
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -24,7 +23,7 @@ class PinkVault(private val context: Context) {
       .setRandomizedEncryptionRequired(true).build())
     return generator.generateKey()
   }
-  @JavascriptInterface @Synchronized fun read(): String {
+  @Synchronized fun read(): String {
     val encoded = prefs.getString("account", null) ?: return ""
     return try {
       val bytes = Base64.decode(encoded, Base64.NO_WRAP)
@@ -34,7 +33,7 @@ class PinkVault(private val context: Context) {
       String(cipher.doFinal(bytes.copyOfRange(12, bytes.size)), Charsets.UTF_8)
     } catch (_: Exception) { throw IllegalStateException("Saved account unavailable") }
   }
-  @JavascriptInterface @Synchronized fun write(value: String): Boolean {
+  @Synchronized fun write(value: String): Boolean {
     require(value.length <= 131072)
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
     cipher.init(Cipher.ENCRYPT_MODE, key())

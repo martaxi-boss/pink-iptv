@@ -9,7 +9,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.VpnService
 import android.os.Process
-import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import com.wireguard.android.backend.GoBackend
@@ -28,14 +27,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-
-/** Only attached to the local Tauri app WebView. No configuration/key API is exposed. */
-class PinkConnection(private val context: Context) {
-    @JavascriptInterface fun ready(): Boolean = PinkVpnRuntime.isReady()
-    @JavascriptInterface fun resolve(username: String, password: String): String = try {
-        PinkVpnRuntime.get(context).resolve(username, password).toString()
-    } catch (_: Exception) { JSONObject().put("code", "VPN_UNAVAILABLE").toString() }
-}
 
 /** Process-wide installation lifecycle, independent of IPTV login/logout or Activity recreation. */
 class PinkVpnRuntime private constructor(context: Context) : Tunnel {

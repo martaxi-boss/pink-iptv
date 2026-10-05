@@ -67,24 +67,28 @@ for src, dst in {
     'pink-login.js': 'src/scripts/lib/pink-login.js',
     'login.astro': 'src/pages/login.astro',
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
+    'pink-bridge.js': 'src/scripts/lib/pink-bridge.js',
+    'PinkWebBridge.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkWebBridge.kt',
     'PinkVault.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVault.kt',
 }.items():
     shutil.copyfile(ROOT / 'overlay' / src, DEST / dst)
 shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-session.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storage.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
 
 replace('src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/MainActivity.kt',
         'webView.addJavascriptInterface(PipBridge(this), "AndroidPip")',
-        'webView.addJavascriptInterface(PinkVault(this), "PinkAccountVault")\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
+        'PinkWebBridge.attach(this, webView)\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
 replace('src-tauri/gen/android/app/src/main/AndroidManifest.xml', '<application', '<application android:allowBackup="false"')
 
 # Strict Android credential storage: no plaintext cookie/localStorage/store fallback.
 p = DEST / 'src/scripts/lib/creds.js'
-text = p.read_text()
+text = 'import { installPinkBridge } from "./pink-bridge.js"\n' + p.read_text()
 begin = text.index('async function readRaw() {')
 end = text.index('// ---------------------------------------------------------------------------\n// Migration from the legacy flat keys', begin)
 text = text[:begin] + '''let pinkValidatedBlob = null
 function pinkVault() {
+  installPinkBridge()
   const vault = typeof window !== "undefined" && window.PinkAccountVault
   if (!vault) throw new Error("Protected account storage unavailable")
   return vault
@@ -92,7 +96,7 @@ function pinkVault() {
 async function readRaw() {
   if (!pinkValidatedBlob) {
     pinkValidatedBlob = (async () => {
-      const raw = pinkVault().read()
+      const raw = await pinkVault().read()
       if (!raw) return null
       const data = JSON.parse(raw)
       const entry = data.entries?.find(e => e._id === data.selectedId)
@@ -109,7 +113,7 @@ async function readRaw() {
   return await pinkValidatedBlob
 }
 async function writeRaw(data) {
-  if (!pinkVault().write(JSON.stringify(data))) throw new Error("Protected account save failed")
+  if (!await pinkVault().write(JSON.stringify(data))) throw new Error("Protected account save failed")
   // Existing player/cast connection-limit readers need the selected ID synchronously.
   // Publish metadata only; credentials and provider origins never leave the vault.
   localStorage.setItem("xt_playlists", JSON.stringify({ selectedId: data.selectedId || "", entries: [] }))

@@ -66,7 +66,7 @@ def apply(root, dest, replace):
   }''')
     replace(native + 'MainActivity.kt', '    hostedWebView = webView', '''    hostedWebView = webView
     PinkVpnRuntime.get(applicationContext).startup(this, pinkPermission)
-    webView.addJavascriptInterface(PinkConnection(applicationContext), "PinkConnection")''')
+''')
     replace(native + 'MainActivity.kt', '    super.onResume()',
             '    super.onResume()\n    PinkVpnRuntime.get(applicationContext).resume()')
     replace(native + 'MainActivity.kt',

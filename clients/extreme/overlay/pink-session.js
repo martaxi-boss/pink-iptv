@@ -1,3 +1,4 @@
+import { installPinkBridge } from "./pink-bridge.js"
 // PINK authenticates the exact mapped provider through the existing backend.
 // The client neither guesses hosts nor upgrades their returned HTTP scheme.
 const ORIGIN = "https://pink-iptv.duckdns.org"
@@ -7,11 +8,12 @@ const MESSAGES = {
   DISABLED: "A sua conta está desativada.",
 }
 export async function resolvePinkSession(username, password, transport = null) {
+  installPinkBridge()
   let data
   if (!transport) {
     const native = typeof window !== 'undefined' && window.PinkConnection
     if (!native) throw new Error("Serviço PINK indisponível neste dispositivo.")
-    data = JSON.parse(native.resolve(username, password))
+    data = JSON.parse(await native.resolve(username, password))
   } else {
     // Explicit transport injection is for deterministic tests; production has no fallback.
     const response = await transport(`${ORIGIN}/v1/session/resolve`, {

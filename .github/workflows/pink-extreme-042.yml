@@ -26,8 +26,8 @@ jobs:
           sys.path.insert(0,str(Path(os.environ['RUNNER_TEMP'])/'pink055-canonical'))
           from control.validate_records import validate_recovery_journal,canonical_sha256
           base=Path('.project-leader/recovery-events/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055')
-          records=[json.loads((base/f'{i:03d}.json').read_text()) for i in range(1,7)]
-          pending=json.loads(r'''[{"schema_version":"1.0","task_id":"PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055","repository":"martaxi-boss/pink-iptv","sequence":7,"recorded_at":"2026-10-05T16:23:17.859Z","event":"RETRY_AUTHORIZED","strategy_generation":2,"action_fingerprint":"055-hosted-consent-and-route-measurement","attempt_count":1,"identical_failure_count":0,"no_progress_iterations":0,"previous_event_sha256":null,"detail":"Supervisor authorizes only the new hosted measurement strategy: robust60second normal consent observation, live offline route/UID/socket diagnostics via Instrumentation.sendStatus rather than uncollected app stdout, strict IPv4/IPv6 assertions and bounded capture wait. Emit sanitized phase labels for later real-flow diagnostics; no provider credentials yet. Preserve every production routing gate and accepted gateway. Native execution follows canonical validation and durable publication of this exact event; attempt1 in strategy generation2."}]''')
+          records=[json.loads((base/f'{i:03d}.json').read_text()) for i in range(1,8)]
+          pending=json.loads(r'''[{"schema_version":"1.0","task_id":"PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055","repository":"martaxi-boss/pink-iptv","recorded_at":"2026-10-05T16:41:42.366Z","previous_event_sha256":null,"sequence":8,"event":"FAILURE_OBSERVED","strategy_generation":2,"action_fingerprint":"055-instrumentation-final-activity-exit","attempt_count":1,"identical_failure_count":1,"no_progress_iterations":0,"detail":"Exact sourceb65839ef run37340735398 measured normal Android permission, ownUID10209 rules to tun0, offline IPv4 and IPv6 blocked, HTTPS fail closure and same-identity activity recreation, then emitted successful test status0 but process-crashed instead of final runner OK. This is positive diagnostic progress, not an accepted CI result. Earlier immediate IP failures remain uncertified until startup waits for effective routing. No private fixture or live peer used. Do not rerun unchanged diagnostics."},{"schema_version":"1.0","task_id":"PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055","repository":"martaxi-boss/pink-iptv","recorded_at":"2026-10-05T16:41:42.366Z","previous_event_sha256":null,"sequence":9,"event":"REPLAN","strategy_generation":3,"action_fingerprint":"055-effective-route-admission-and-runner-lifecycle","attempt_count":1,"identical_failure_count":0,"no_progress_iterations":0,"detail":"Change strategy from measurement to effective route admission. Before marking capture ready, bind the official app VPN and verify default UDP sockets select both of its local addresses without sending packets; retry bounded while Android completes perUID rules. Move numeric TCP assertions before diagnostic shell commands so added diagnostic latency cannot conceal a readiness race. Keep final Tauri activity alive until instrumentation result publication, then force-stop disposable app in CI; retain activity recreation and every strict negative check. Add lint, exact main APK packaging and failure cache. Stop unchanged-condition recovery after six failures, resetting only on resume/new physical network. Live test gets normal-consent robustness and sanitized public phase reporting, without private fixtures yet."},{"schema_version":"1.0","task_id":"PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055","repository":"martaxi-boss/pink-iptv","recorded_at":"2026-10-05T16:41:42.366Z","previous_event_sha256":null,"sequence":10,"event":"RETRY_AUTHORIZED","strategy_generation":3,"action_fingerprint":"055-effective-route-admission-and-runner-lifecycle","attempt_count":1,"identical_failure_count":0,"no_progress_iterations":0,"detail":"Authorize one exact new material implementation of the preceding bounded strategy. Preserve official non-root GoBackend, normal OS consent, per-installation Keystore identity, fixed protected HTTPS control path, strict own-app IPv4/IPv6 capture assertions and no provider admission until tunnel health passes. Do not change accepted gateway or Task050 login logic. Require complete Android and Backend CI plus separately authorized real flow before merge or handoff."}]''')
           for record in pending:
               record['previous_event_sha256']=canonical_sha256(records[-1])
               records.append(record)
@@ -73,6 +73,7 @@ jobs:
         with:
           workspaces: "${{ runner.temp }}/pink-extreme/src-tauri -> target"
           key: pink-extreme-043
+          cache-on-failure: "true"
       - name: Install and verify login contract
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
@@ -93,7 +94,7 @@ jobs:
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/29.0.13846066
         run: |
-          ./gradlew --no-daemon app:assembleUniversalDebugAndroidTest app:testUniversalDebugUnitTest -x app:rustBuildUniversalDebug
+          ./gradlew --no-daemon app:assembleUniversalDebugAndroidTest app:testUniversalDebugUnitTest app:lintUniversalDebug -x app:rustBuildUniversalDebug
           python - <<'PY'
           from pathlib import Path
           import zipfile
@@ -159,11 +160,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/pink-deliverable"
-          APK=$(find "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk" -name '*universal*debug*.apk' -print -quit)
-          if [ -z "$APK" ]; then
-            APK=$(find "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk" -name '*debug*.apk' -print -quit)
-          fi
-          test -n "$APK"
+          APK="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          test -s "$APK"
           cp "$APK" "$RUNNER_TEMP/pink-deliverable/PINK-IPTV-Extreme-1.9.0-debug.apk"
           tar --exclude='.git' --exclude='node_modules' --exclude='target' --exclude='build' --exclude='.gradle' --exclude='dist' --exclude='__pycache__' -czf "$RUNNER_TEMP/pink-deliverable/PINK-IPTV-Extreme-source.tar.gz" -C "$RUNNER_TEMP" pink-extreme
           cp -r clients/extreme "$RUNNER_TEMP/pink-deliverable/rebuild-recipe"

@@ -1,0 +1,127 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-MIGRATION-044",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T09:45:26.874Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner selects the complete pinned Extreme InfiniTV application as new PINK client base. Reproducible full upstream build with PINK branding/launcher icon, username/password-only backend-resolved login, protected saved account, original catalogs/native player/layout. Update migration architecture/roadmap and perform scoped hygiene. Preserve backend, mapping, provider authority and VPN roadmap. No production activation or playback-success claim without evidence."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "0daf81aa603949e98a9cb1c2d607509f1e5d3e4e",
+    "task_branch": "builder/extreme-migration-044"
+  },
+  "effect_class": "E3_DESTRUCTIVE_EXTERNAL_PRIVILEGED",
+  "mutation_scope": [
+    "clients/extreme/**",
+    ".github/workflows/pink-extreme-042.yml",
+    "docs/ARCHITECTURE.md",
+    "docs/ROADMAP.md",
+    "docs/EXTREME_MIGRATION_042.md",
+    "PROJECT_STATE.md",
+    ".project-leader/tasks/PINK-IPTV-EXTREME-MIGRATION-044.json",
+    ".project-leader/results/PINK-IPTV-EXTREME-MIGRATION-044.json",
+    ".project-leader/transitions/PINK-IPTV-EXTREME-MIGRATION-044-*",
+    ".project-leader/recovery-events/PINK-IPTV-EXTREME-MIGRATION-044/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request",
+    "change_project_governance",
+    "reconcile_project_architecture"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "backend_runtime_write",
+    "provider_mutation",
+    "secret_value_disclosure",
+    "third_project_mutation",
+    "force_push"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Consequential transition readiness audit",
+    "Full upstream application preservation",
+    "Backend-only username/password login",
+    "Protected saved-account storage",
+    "GPL source and attribution compliance",
+    "Scoped hygiene"
+  ],
+  "required_ci": [
+    "PINK Extreme Android 042",
+    "Backend CI",
+    "Android CI"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "c42ed27cc6c520bfd63015097c8c60ee42392ba5"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Pinned full upstream PINK Android build and contract checks pass exact-SHA CI; source, APK, immutable authority and scope independently audited. Physical playback remains a device gate.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

@@ -1,0 +1,11 @@
+---
+import Layout from '@/layouts/Layout.astro'
+---
+<Layout title="Entrar"><main id="pink-login-root"></main></Layout>
+<script>
+  import { mountPinkLogin } from '@/scripts/lib/pink-login.js'
+  import { navigate } from 'astro:transitions/client'
+  const root = document.getElementById('pink-login-root')!
+  const cleanup = mountPinkLogin(root, () => navigate('/'))
+  document.addEventListener('astro:before-swap', cleanup, { once: true })
+</script>

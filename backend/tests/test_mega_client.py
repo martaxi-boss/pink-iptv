@@ -82,9 +82,7 @@ def test_username_discovery_rejects_duplicate_matches() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         page = int(request.url.params["page"])
         payload = (
-            [{"id": 10, "username": "same"}, {"id": 11, "username": "same"}]
-            if page == 1
-            else []
+            [{"id": 10, "username": "same"}, {"id": 11, "username": "same"}] if page == 1 else []
         )
         return httpx.Response(200, json=payload)
 

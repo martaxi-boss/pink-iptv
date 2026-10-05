@@ -7,7 +7,7 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 REPO = "martaxi-boss/pink-iptv"
-BASE = "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"
+BASE = "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"  # pragma: allowlist secret -- public Git commit identifier
 TASK = "PINK-IPTV-REPOSITORY-HYGIENE-057"
 
 

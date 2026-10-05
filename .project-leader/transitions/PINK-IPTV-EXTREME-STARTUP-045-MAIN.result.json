@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-EXTREME-STARTUP-045-MAIN",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-EXTREME-STARTUP-045-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "github_pull_request",
+    "identifier": "38",
+    "revision": "8f4e247f57f9eb420d179cf00a354303ca7f3d01",
+    "base_revision": "55c0d0dafe31bc58f648fb1881291a2e1b220d71",
+    "environment": "martaxi-boss/pink-iptv main"
+  },
+  "observed_at": "2026-10-05T10:54:39.335Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "b963afd678e4ef8eb1e28266088ba88ad59f551c"
+  },
+  "evidence": [
+    "Native expected-head merge returned merged=true; fresh PR38/main/mergecommit reads agree exactly.",
+    "Verified parents include certified result head8f4e247f57f9eb420d179cf00a354303ca7f3d01 and prior main55c0d0dafe31bc58f648fb1881291a2e1b220d71.",
+    "Prior exact authority persisted atf3dacbcda7479810a14ac069e292cc785dd43c51 on audit/extreme-startup-045 before effect; canonical transition controls PASS.",
+    "Exact implementation e0c0f8847214496b980cdb60205ca389689dd0cc all5latest required workflow contexts SUCCESS; immutable authorization and append-only journal independently verified.",
+    "APK persisted libfile_b2bf4dd103bc8191b1ff83fe8c7a684a; full corresponding source libfile_eb0c411ba9d081918223da7bb08b6aca. Physical real-account playback remains next acceptance."
+  ],
+  "residual_blockers": []
+}

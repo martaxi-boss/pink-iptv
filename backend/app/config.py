@@ -14,6 +14,35 @@ class Settings(BaseSettings):
     mega_ott_api_base: str = "https://megaott.net/api"
     mega_ott_api_token: SecretStr | None = None
     session_ttl_seconds: int = Field(default=300, ge=30, le=300)
+    vpn_enabled: bool = False
+    vpn_control_socket: str = "/run/pink-vpn/control.sock"
+    vpn_server_public_key: str | None = None
+    vpn_endpoint: str | None = None
+    vpn_lease_seconds: int = Field(default=86400, ge=300, le=86400)
+    vpn_max_installations_per_account: int = Field(default=5, ge=1, le=10)
+
+    @field_validator("vpn_server_public_key")
+    @classmethod
+    def valid_vpn_public_key(cls, value: str | None) -> str | None:
+        if value is not None:
+            import base64
+
+            raw = base64.b64decode(value, validate=True)
+            if len(raw) != 32 or not any(raw):
+                raise ValueError("Invalid VPN public key")
+        return value
+
+    @field_validator("vpn_endpoint")
+    @classmethod
+    def valid_vpn_endpoint(cls, value: str | None) -> str | None:
+        if value is not None:
+            import ipaddress
+
+            host, port = value.rsplit(":", 1)
+            address = ipaddress.ip_address(host)
+            if address.version != 4 or not address.is_global or not 1 <= int(port) <= 65535:
+                raise ValueError("Invalid VPN endpoint")
+        return value
 
     @field_validator("mega_ott_api_base")
     @classmethod

@@ -10,6 +10,7 @@ from app.db import build_session_factory, get_db
 from app.logging_config import configure_logging
 from app.schemas import ResolveRequest, ResolveResponse
 from app.services.session import SessionResolver
+from app.vpn import router as vpn_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -18,6 +19,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="PINK IPTV Backend", version="0.1.0")
     app.state.settings = runtime_settings
+    app.include_router(vpn_router)
     app.state.session_factory = build_session_factory(runtime_settings.database_url)
     app.state.xtream_client_factory = XtreamClient
     app.state.mega_client_factory = lambda: MegaOTTClient(

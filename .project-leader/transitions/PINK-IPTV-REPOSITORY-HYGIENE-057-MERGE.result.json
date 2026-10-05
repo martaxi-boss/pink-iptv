@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-057-MERGE",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-057",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-057-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "43",
+    "revision": "8f1cc9144b327c3b42f79209d59d19c26975627b",
+    "base_revision": "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"
+  },
+  "observed_at": "2026-10-05T19:12:38.775Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "307ae82d18d3eb87fcc0e6c444cb395c889c242b"
+  },
+  "evidence": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/43",
+    "Live PR43 merged=true, closed; live main exact307ae82d. Exacthead8f1cc accepted. Active055 remains independent and no product/gateway mutation occurred."
+  ],
+  "residual_blockers": []
+}

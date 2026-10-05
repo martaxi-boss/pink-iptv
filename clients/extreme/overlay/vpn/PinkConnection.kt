@@ -17,6 +17,9 @@ import com.wireguard.android.backend.Tunnel
 import com.wireguard.config.Config
 import com.wireguard.crypto.Key
 import com.wireguard.crypto.KeyPair
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.Instant
@@ -87,7 +90,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         }
     }
 
-    fun resume() { work.execute { nextAttempt = 0; maintain() } }
+    fun resume() { work.execute { failures = 0; nextAttempt = 0; maintain() } }
     internal fun hasCapturedRouteForTests(): Boolean = live && boundVpn != null
 
     private fun bindCapturedNetwork() {
@@ -99,13 +102,28 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true &&
                     cm.getLinkProperties(it)?.interfaceName?.isNotBlank() == true
             }
-            if (network != null && cm.bindProcessToNetwork(network)) {
+            if (network != null && cm.bindProcessToNetwork(network) && defaultRoutesSelect(network)) {
                 boundVpn = network
                 return
             }
             Thread.sleep(100)
         }
         throw IllegalStateException("Connection unavailable")
+    }
+
+    private fun defaultRoutesSelect(network: Network): Boolean {
+        return try {
+        // Network visibility precedes effective UID routing on some Android builds.
+        // UDP connect selects a local source address without sending a datagram.
+        // Never admit sockets merely because VpnService reports the TUN as UP.
+        val expected = cm.getLinkProperties(network)?.linkAddresses?.map { it.address } ?: return false
+        listOf("1.1.1.1", "2606:4700:4700::1111").all { target ->
+            DatagramSocket().use { socket ->
+                socket.connect(InetSocketAddress(InetAddress.getByName(target), 443))
+                expected.any { it == socket.localAddress }
+            }
+        }
+        } catch (_: Exception) { false }
     }
 
     init {
@@ -115,7 +133,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN).build(),
             object : ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(network: Network) { work.execute { nextAttempt = 0 } }
+                override fun onAvailable(network: Network) { work.execute { failures = 0; nextAttempt = 0; maintain() } }
             })
         work.scheduleWithFixedDelay({ maintain() }, 30, 30, TimeUnit.SECONDS)
     }
@@ -236,7 +254,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     } catch (_: Exception) { false }
 
     private fun maintain() {
-        if (!accepting || System.currentTimeMillis() < nextAttempt) return
+        if (!accepting || failures >= 6 || System.currentTimeMillis() < nextAttempt) return
         try {
             val saved = readGrant() ?: return
             if (!Instant.parse(saved.getString("expires_at")).isAfter(Instant.now())) {

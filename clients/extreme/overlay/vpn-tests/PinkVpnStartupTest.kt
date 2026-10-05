@@ -24,7 +24,9 @@ class PinkVpnStartupTest {
         fun report(message: String) = instrumentation.sendStatus(2, android.os.Bundle().apply {
             putString("stream", "\n"+message+"\n")
         })
-        ActivityScenario.launch(MainActivity::class.java).use { activity ->
+        // Keep the final Tauri host alive until the runner publishes its result.
+        // CI force-stops this disposable app after the strict result check.
+        ActivityScenario.launch(MainActivity::class.java).let { activity ->
             val consentDeadline = System.currentTimeMillis()+60000
             while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
                 if (device.hasObject(By.pkg("com.android.vpndialogs"))) {
@@ -52,12 +54,6 @@ class PinkVpnStartupTest {
             assertTrue(connectivity.getNetworkCapabilities(captured!!)!!
                 .hasTransport(NetworkCapabilities.TRANSPORT_VPN))
             val routes = connectivity.getLinkProperties(captured)!!.routes
-            for (command in listOf("ip -4 rule", "ip -6 rule", "ip -4 route show table all", "ip -6 route show table all")) {
-                android.os.ParcelFileDescriptor.AutoCloseInputStream(
-                    instrumentation.uiAutomation.executeShellCommand(command)).bufferedReader().use {
-                    report("OFFLINE_PUBLIC_NETWORK_RULES="+it.readText().take(12000))
-                }
-            }
             report("OFFLINE_DIAGNOSTIC_UID="+android.os.Process.myUid()+";NETWORK="+captured+
                 ";INTERFACE="+connectivity.getLinkProperties(captured)!!.interfaceName)
             assertTrue(routes.any { it.destination.toString() == "0.0.0.0/0" })
@@ -76,6 +72,12 @@ class PinkVpnStartupTest {
                 }
                 assertTrue("Unadmitted IP traffic escaped its capture", blockedIp)
             }
+            for (command in listOf("ip -4 rule", "ip -6 rule", "ip -4 route show table all", "ip -6 route show table all")) {
+                android.os.ParcelFileDescriptor.AutoCloseInputStream(
+                    instrumentation.uiAutomation.executeShellCommand(command)).bufferedReader().use {
+                    report("OFFLINE_PUBLIC_NETWORK_RULES="+it.readText().take(12000))
+                }
+            }
             val store = SecureVpnIdentityStore(AndroidKeystoreVpnIdentityCipher(), DataStoreVpnIdentityPersistence(context))
             val identity = runBlocking { store.loadIdentity() }
             assertTrue(identity is VpnIdentityResult.Available)
@@ -93,6 +95,7 @@ class PinkVpnStartupTest {
             assertTrue(runtime.hasCapturedRouteForTests())
             assertEquals(identity, runBlocking { store.loadIdentity() })
             assertFalse(PinkVpnRuntime.isReady())
+            report("STRICT_OFFLINE_CAPTURE_AND_RECREATION=PASS")
         }
     }
 }

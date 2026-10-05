@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T19:19:41.114Z",
+  "previous_event_sha256": "b93b58580d278ea935afccf9c407064109ad525a1e1b4c12f775d19fd342144e",
+  "sequence": 14,
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 4,
+  "action_fingerprint": "055-ci-47506d8-sdk-emulator-download",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "detail": "Exact Android run37361016202 attempt1 on source47506d8db5621d7ab7a380d17e17bef6097e7af4 compiled all three APK ABIs, JVM and instrumentation successfully; Android lint passed zero errors. Emulator did not launch: sdkmanager Android Emulator download failed with Error on ZipFile unknown archive. No native test in this run executed; previous74785 source had actual Keystore/origin transport success but first consent failure. The native/lint fixes47506 remain unwaived and need real emulator validation. This is the first observed infrastructure download failure for this exact action; do not mutate product code for it."
+}

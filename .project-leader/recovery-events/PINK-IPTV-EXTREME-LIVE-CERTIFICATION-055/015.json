@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T19:19:41.114Z",
+  "previous_event_sha256": "348ab7e33fdc62e6edca7fab60f7a29f6a976366d5d76a119d5aa8c23e314cb9",
+  "sequence": 15,
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 4,
+  "action_fingerprint": "055-ci-47506d8-sdk-emulator-download",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "detail": "Recovery Compaction resolver confirms covered E1 same-workstream recovery without architecture/security/permission changes. A true same-action GitHub run_attempt2 requires append-only causal state. Authorize one bounded failed-job rerun of existing run37361016202 exact source47506d8, only after live terminal-failure/run_attempt1 revalidation and no exact active/successful context. Do not redispatch another workflow or retry deterministic native assertions. Preserve all source gates, lint and privacy checks; classify any new native failure from its actual logs."
+}

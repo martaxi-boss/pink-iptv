@@ -21,6 +21,10 @@ def apply(root, dest, replace):
     tests.mkdir(parents=True, exist_ok=True)
     for source in (root / 'overlay/vpn-tests').glob('*.kt'):
         shutil.copyfile(source, tests / source.name)
+    jvm = dest / 'src-tauri/gen/android/app/src/test/java/com/pinkiptv/extreme'
+    jvm.mkdir(parents=True, exist_ok=True)
+    for source in (root / 'overlay/vpn-jvm').glob('*.kt'):
+        shutil.copyfile(source, jvm / source.name)
 
     replace('src-tauri/gen/android/app/build.gradle.kts',
             '        minSdk = 26',
@@ -32,6 +36,8 @@ def apply(root, dest, replace):
     implementation("com.wireguard.android:tunnel:1.0.20260102")
     implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")''')
     replace('src-tauri/gen/android/app/build.gradle.kts', '    buildFeatures { buildConfig = true }',
             '    packaging { jniLibs.excludes += setOf("**/libwg.so", "**/libwg-quick.so") }\n    buildFeatures { buildConfig = true }')

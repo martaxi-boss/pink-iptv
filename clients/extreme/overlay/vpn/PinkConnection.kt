@@ -87,6 +87,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     fun resume() { work.execute { nextAttempt = 0; maintain() } }
+    internal fun hasCapturedRouteForTests(): Boolean = live
 
     init {
         // The official GoBackend keeps the TUN established and its UDP socket roams.

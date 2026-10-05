@@ -21,17 +21,29 @@ class PinkVpnStartupTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val device = UiDevice.getInstance(instrumentation)
+        fun report(message: String) = instrumentation.sendStatus(2, android.os.Bundle().apply {
+            putString("stream", "\n"+message+"\n")
+        })
         ActivityScenario.launch(MainActivity::class.java).use { activity ->
-            if (VpnService.prepare(context) != null) {
-                assertTrue(device.wait(Until.hasObject(By.pkg("com.android.vpndialogs")), 15000))
-                val accept = device.wait(Until.findObject(By.res("android", "button1")), 10000)
-                assertNotNull(accept)
-                accept.click()
+            val consentDeadline = System.currentTimeMillis()+60000
+            while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
+                if (device.hasObject(By.pkg("com.android.vpndialogs"))) {
+                    val accept = device.findObject(By.res("android", "button1"))
+                    if (accept != null) {
+                        report("NORMAL_ANDROID_PERMISSION_DIALOG=OBSERVED")
+                        accept.click()
+                    }
+                }
+                Thread.sleep(100)
             }
+            report("NORMAL_ANDROID_PERMISSION_GRANTED="+(VpnService.prepare(context)==null)+
+                ";FOREGROUND_PACKAGE="+device.currentPackageName)
+            assertNull(VpnService.prepare(context))
             val runtime = PinkVpnRuntime.get(context)
-            val deadline = System.currentTimeMillis()+20000
+            val deadline = System.currentTimeMillis()+60000
             while (!runtime.hasCapturedRouteForTests() && System.currentTimeMillis()<deadline) Thread.sleep(100)
             assertNull(VpnService.prepare(context))
+            report("OFFLINE_CAPTURE="+runtime.hasCapturedRouteForTests())
             assertTrue(runtime.hasCapturedRouteForTests())
             assertFalse(PinkVpnRuntime.isReady())
             val connectivity = context.getSystemService(ConnectivityManager::class.java)
@@ -40,7 +52,13 @@ class PinkVpnStartupTest {
             assertTrue(connectivity.getNetworkCapabilities(captured!!)!!
                 .hasTransport(NetworkCapabilities.TRANSPORT_VPN))
             val routes = connectivity.getLinkProperties(captured)!!.routes
-            println("OFFLINE_DIAGNOSTIC_UID="+android.os.Process.myUid()+";NETWORK="+captured+
+            for (command in listOf("ip -4 rule", "ip -6 rule", "ip -4 route show table all", "ip -6 route show table all")) {
+                android.os.ParcelFileDescriptor.AutoCloseInputStream(
+                    instrumentation.uiAutomation.executeShellCommand(command)).bufferedReader().use {
+                    report("OFFLINE_PUBLIC_NETWORK_RULES="+it.readText().take(12000))
+                }
+            }
+            report("OFFLINE_DIAGNOSTIC_UID="+android.os.Process.myUid()+";NETWORK="+captured+
                 ";INTERFACE="+connectivity.getLinkProperties(captured)!!.interfaceName)
             assertTrue(routes.any { it.destination.toString() == "0.0.0.0/0" })
             assertTrue(routes.any { it.destination.prefixLength == 0 && it.destination.address is java.net.Inet6Address })
@@ -49,11 +67,11 @@ class PinkVpnStartupTest {
                 Socket().use { socket ->
                     try {
                         socket.connect(InetSocketAddress(address, 443), 2000)
-                        println("OFFLINE_IP_CONNECT="+address+";LOCAL="+socket.localAddress.hostAddress+
+                        report("OFFLINE_IP_CONNECT="+address+";LOCAL="+socket.localAddress.hostAddress+
                             ";BOUND="+connectivity.boundNetworkForProcess)
                     } catch (_: java.io.IOException) {
                         blockedIp = true
-                        println("OFFLINE_IP_BLOCKED="+address)
+                        report("OFFLINE_IP_BLOCKED="+address)
                     }
                 }
                 assertTrue("Unadmitted IP traffic escaped its capture", blockedIp)

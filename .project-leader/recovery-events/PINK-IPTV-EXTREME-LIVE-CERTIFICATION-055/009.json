@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T16:41:42.366Z",
+  "previous_event_sha256": "16ee2bb60fc27007807ff20af360e81ce14d364c004518c9afd4ef0871693547",
+  "sequence": 9,
+  "event": "REPLAN",
+  "strategy_generation": 3,
+  "action_fingerprint": "055-effective-route-admission-and-runner-lifecycle",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "detail": "Change strategy from measurement to effective route admission. Before marking capture ready, bind the official app VPN and verify default UDP sockets select both of its local addresses without sending packets; retry bounded while Android completes perUID rules. Move numeric TCP assertions before diagnostic shell commands so added diagnostic latency cannot conceal a readiness race. Keep final Tauri activity alive until instrumentation result publication, then force-stop disposable app in CI; retain activity recreation and every strict negative check. Add lint, exact main APK packaging and failure cache. Stop unchanged-condition recovery after six failures, resetting only on resume/new physical network. Live test gets normal-consent robustness and sanitized public phase reporting, without private fixtures yet."
+}

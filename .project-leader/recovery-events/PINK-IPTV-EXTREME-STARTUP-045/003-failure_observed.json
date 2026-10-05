@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-STARTUP-045",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-05T10:26:43.172Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "045-local-validation-selector-runtime",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "471fe918355b810c33aa34cc82fb9a142909bc044da2614da9ea1a6080e62c56",
+  "detail": "Local validation exposed an overly broad support-row selector: another row matched before Discord; no implementation committed. pnpm invoked a dependency-status reinstall and stopped on ignored build scripts; no script approvals changed. Source assertions caught the residual Discord link."
+}

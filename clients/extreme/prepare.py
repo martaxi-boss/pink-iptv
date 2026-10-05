@@ -178,6 +178,25 @@ text = text[:start] + '          <img class="xt-app-splash__svg" src="/pink-icon
 text = text.replace('type="image/svg+xml" href="/favicon.svg"', 'type="image/png" href="/pink-icon.png"')
 p.write_text(text)
 
+# PINK owns startup notices and customer-facing support, not upstream releases.
+# Original copyright and LICENSE remain in the corresponding source.
+replace('src/layouts/Layout.astro', '  import { initWhatsNew } from "@/scripts/lib/whats-new"\n', '')
+replace('src/layouts/Layout.astro', '  initWhatsNew()\n', '')
+replace('src/scripts/lib/changelog.ts', 'repoSlug = "infinitel8p/Extreme-InfiniTV"', 'repoSlug = "martaxi-boss/pink-iptv"')
+replace('src/scripts/lib/changelog.ts', 'const CACHE_KEY = "xt_changelog_cache"', 'const CACHE_KEY = "pink_changelog_cache_v1"')
+settings = DEST / 'src/pages/settings.astro'
+text = settings.read_text()
+discord_start = text.rindex('          <div data-settings-item class="settings-row mt-1 border-t border-line-soft pt-4">', 0, text.index('data-i18n="settings.help.discordTitle"'))
+discord_end = text.index('\n        </div>', discord_start)
+text = text[:discord_start] + text[discord_end:]
+support_start = text.index('        <div id="settings-support"')
+support_end = text.index('\n      </div>\n    </section>', support_start)
+text = text[:support_start] + text[support_end:]
+for suffix in ['releases/latest', 'releases', 'issues/new/choose', 'discussions/new/choose']:
+    text = text.replace('https://github.com/infinitel8p/Extreme-InfiniTV/' + suffix,
+                        'https://github.com/martaxi-boss/pink-iptv/' + suffix.replace('/new/choose', '/new'))
+settings.write_text(text)
+
 # Upstream notices + exact patched source are distributed alongside the APK.
 shutil.copyfile(ROOT / 'NOTICE.md', DEST / 'PINK-NOTICE.md')
 print('Applied PINK overlay to pinned complete Extreme application')

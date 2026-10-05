@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-05T16:03:15.195Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "055-android-offline-ip-route",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "32ec18d3f3b688c78b231db019ccd5e16cabe52113ba5f4c544391862238a02d",
+  "detail": "Exact materialc5b36c9d Android run37335900243 built all APKs, passed5identity JVM and2realKeystore tests, and confirmed VPN process binding/default IPv4+IPv6 routes. New numeric-IP Socket test unexpectedly connected while offline. No enrollment/provider credentials or peer were involved. Treat as unresolved routing failure; block delivery and inspect per-family local socket/interface/netd state with sanitized diagnostics before any certification."
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-VPN-ENROLLMENT-051-MAIN",
+  "task_id": "PINK-IPTV-VPN-ENROLLMENT-051",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T14:12:55.194Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "summary": "Owner continuation covers this backend enrollment stage. Exact implementation Backend CI succeeds in both push and PR contexts; schema/scope/authorization checks pass. Final PR head adds only Task051 result metadata. Canonical resolver returns CONTINUE_AUTONOMOUSLY. API remains disabled until separately bounded staging deployment.",
+    "binding_mode": "EXACT_REVISION_BOUND"
+  },
+  "target": {
+    "kind": "pull_request",
+    "identifier": "40",
+    "revision": "38b05f86b089b5ec791fce5bb57a85b2cd1ed894",
+    "base_revision": "9f66ab8c1d03473d28ec1c2d47e14ee095c021b7",
+    "environment": "main"
+  }
+}

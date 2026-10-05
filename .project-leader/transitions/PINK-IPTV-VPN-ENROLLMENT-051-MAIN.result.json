@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-VPN-ENROLLMENT-051-MAIN",
+  "task_id": "PINK-IPTV-VPN-ENROLLMENT-051",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-VPN-ENROLLMENT-051-MAIN.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "40",
+    "revision": "38b05f86b089b5ec791fce5bb57a85b2cd1ed894",
+    "base_revision": "9f66ab8c1d03473d28ec1c2d47e14ee095c021b7",
+    "environment": "main"
+  },
+  "observed_at": "2026-10-05T14:13:45.987Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"
+  },
+  "evidence": [
+    "Live PR40 confirms merged exact final head38b05f86b089b5ec791fce5bb57a85b2cd1ed894; authorization d04e86c9b43f5e2fcd26e19fa2de1611e8b766c8 preceded merge.",
+    "Exact implementation Backend CI push37322415537 and PR37322444858 succeeded including migration, tests and privacy scan."
+  ],
+  "residual_blockers": []
+}

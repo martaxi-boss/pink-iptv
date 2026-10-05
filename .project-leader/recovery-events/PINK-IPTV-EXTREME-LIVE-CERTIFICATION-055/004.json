@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 4,
+  "recorded_at": "2026-10-05T16:03:20.026Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 1,
+  "action_fingerprint": "055-android-offline-ip-route",
+  "attempt_count": 2,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "1f5a40355ba44497653ed33e04a00831f8bc0c61b815d151829546f10931e5ea",
+  "detail": "Supervisor authorizes one bounded diagnostic-only Android test amendment: capture per-family connect result and local source, VPN handle/interface, process UID and public network rule state after startup failure. Preserve failing assertions, all production routing and privacy; do not admit real fixture or gateway writes. Resolve root cause rather than weaken the test. Attempt2 within ceiling3; no duplicated exact-SHA/context execution."
+}

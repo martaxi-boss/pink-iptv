@@ -121,11 +121,24 @@ class PinkVpnLiveTest {
                             .putExtra(VideoActivity.EXTRA_INITIAL_CHANNEL_ID,id)
                             .putExtra(VideoActivity.EXTRA_TITLE,"Teste PINK")
                             .putExtra(VideoActivity.EXTRA_UA,ua)
-                        ActivityScenario.launch<VideoActivity>(intent).use { video ->
+                        // ActivityScenario.launch adds CLEAR_TASK and destroys the Tauri root.
+                        // Exercise the production transition: open the native player from PINK.
+                        val monitor = instrumentation.addMonitor(VideoActivity::class.java.name, null, false)
+                        var video: VideoActivity? = null
+                        try {
+                            activity.onActivity { host ->
+                                check(!host.isFinishing && !host.isDestroyed)
+                                host.startActivity(intent)
+                            }
+                            video = instrumentation.waitForMonitorWithTimeout(monitor, 10000) as? VideoActivity
+                            check(video != null)
+                            instrumentation.waitForIdleSync()
                             val deadline = System.currentTimeMillis()+25000
                             var failed = false
                             while (!decoded && !failed && System.currentTimeMillis()<deadline) {
-                                video.onActivity { host ->
+                                instrumentation.runOnMainSync {
+                                    val host = checkNotNull(video)
+                                    check(!host.isFinishing && !host.isDestroyed)
                                     val field = VideoActivity::class.java.getDeclaredField("exoPlayer")
                                     field.isAccessible = true
                                     val player = field.get(host) as? ExoPlayer
@@ -136,7 +149,13 @@ class PinkVpnLiveTest {
                                 }
                                 Thread.sleep(250)
                             }
+                        } finally {
+                            video?.let { host -> instrumentation.runOnMainSync { host.finish() } }
+                            instrumentation.removeMonitor(monitor)
+                            instrumentation.waitForIdleSync()
                         }
+                        activity.onActivity { host -> check(!host.isFinishing && !host.isDestroyed) }
+                        report("NATIVE_PLAYER_PRESERVES_TAURI_ROOT=PASS")
                         if (decoded) break
                     }
                     if (decoded) break

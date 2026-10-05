@@ -27,3 +27,5 @@ real handshake/NAT/expiry/rekey evidence remains available, while its unusable
 control journal is preserved rather than rewritten. Android system notices remain
 visible. Physical device image/sound and platform revocation behavior remain
 explicit validation boundaries; no public launch is certified.
+
+Native real-flow harness recovery: AndroidX InstrumentationActivityInvoker.startActivity unconditionally adds NEW_TASK|CLEAR_TASK. A nested ActivityScenario.launch(VideoActivity) therefore destroys the Tauri root rather than exercising the production player transition. The proof now opens VideoActivity from the existing MainActivity on its UI thread, observes it using an instrumentation monitor, closes only the player, and asserts the root remains alive. Product UI/player/VPN behavior is unchanged; fresh compilation and real decoded-playback proof remain required.

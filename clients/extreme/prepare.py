@@ -69,6 +69,7 @@ for src, dst in {
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
     'pink-bridge.js': 'src/scripts/lib/pink-bridge.js',
     'pink-presentation.js': 'src/scripts/lib/pink-presentation.js',
+    'pink-runtime-policy.ts': 'src/scripts/lib/pink-runtime-policy.ts',
     'PinkWebBridge.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkWebBridge.kt',
     'PinkVault.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVault.kt',
 }.items():
@@ -77,11 +78,32 @@ shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-sessio
 shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storage.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink-runtime-policy.test.ts')
 
 replace('src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/MainActivity.kt',
         'webView.addJavascriptInterface(PipBridge(this), "AndroidPip")',
         'PinkWebBridge.attach(this, webView)\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
 replace('src-tauri/gen/android/app/src/main/AndroidManifest.xml', '<application', '<application android:allowBackup="false"')
+
+# Native PINK owns actual connectivity state. Generic WebView navigator.onLine can
+# report offline while the protected WireGuard route is healthy, so never show
+# the upstream browser-offline toast from that signal in the native app.
+replace('src/scripts/lib/connectivity.ts',
+        'import { t } from "@/scripts/lib/i18n.js"\n',
+        'import { t } from "@/scripts/lib/i18n.js"\nimport { pinkNativeOwnsConnectivity } from "@/scripts/lib/pink-runtime-policy.ts"\n')
+replace('src/scripts/lib/connectivity.ts',
+        '  if (navigator.onLine === false) showOfflineToast()\n  window.addEventListener("offline", showOfflineToast)\n',
+        '  if (navigator.onLine === false && !pinkNativeOwnsConnectivity()) showOfflineToast()\n  window.addEventListener("offline", () => {\n    if (!pinkNativeOwnsConnectivity()) showOfflineToast()\n  })\n')
+
+# Provider catalog auth and stream auth can advertise different allowed output
+# formats. PINK starts with HLS and then follows the already-cached authoritative
+# user_info formats, rather than forcing MPEG-TS for every Mega line.
+replace('src/scripts/stream/stream.ts',
+        'import { xtreamApiFetch, resolveStreamUrl } from "@/scripts/lib/xtream-api.js"\n',
+        'import { xtreamApiFetch, resolveStreamUrl } from "@/scripts/lib/xtream-api.js"\nimport { getCachedUserInfoSync } from "@/scripts/lib/account-info.js"\nimport { choosePinkLiveContainer } from "@/scripts/lib/pink-runtime-policy.ts"\n')
+replace('src/scripts/stream/stream.ts',
+        'function buildDirectLiveUrl(id, c = creds) {\n  const container = isM3u8ContainerFallbackChannel(id) ? "m3u8" : c?.liveContainer\n  return buildLiveStreamUrl(c, id, container)\n}',
+        'function buildDirectLiveUrl(id, c = creds) {\n  const providerFormats = getCachedUserInfoSync(activePlaylistId)?.user_info?.allowed_output_formats\n  const container = isM3u8ContainerFallbackChannel(id) ? "m3u8" : choosePinkLiveContainer(providerFormats)\n  return buildLiveStreamUrl(c, id, container)\n}')
 
 # Strict Android credential storage: no plaintext cookie/localStorage/store fallback.
 p = DEST / 'src/scripts/lib/creds.js'

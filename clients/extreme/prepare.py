@@ -95,15 +95,39 @@ replace('src/scripts/lib/connectivity.ts',
         '  if (navigator.onLine === false) showOfflineToast()\n  window.addEventListener("offline", showOfflineToast)\n',
         '  if (navigator.onLine === false && !pinkNativeOwnsConnectivity()) showOfflineToast()\n  window.addEventListener("offline", () => {\n    if (!pinkNativeOwnsConnectivity()) showOfflineToast()\n  })\n')
 
-# Provider catalog auth and stream auth can advertise different allowed output
-# formats. PINK starts with HLS and then follows the already-cached authoritative
-# user_info formats, rather than forcing MPEG-TS for every Mega line.
-replace('src/scripts/stream/stream.ts',
-        'import { xtreamApiFetch, resolveStreamUrl } from "@/scripts/lib/xtream-api.js"\n',
-        'import { xtreamApiFetch, resolveStreamUrl } from "@/scripts/lib/xtream-api.js"\nimport { getCachedUserInfoSync } from "@/scripts/lib/account-info.js"\nimport { choosePinkLiveContainer } from "@/scripts/lib/pink-runtime-policy.ts"\n')
-replace('src/scripts/stream/stream.ts',
-        'function buildDirectLiveUrl(id, c = creds) {\n  const container = isM3u8ContainerFallbackChannel(id) ? "m3u8" : c?.liveContainer\n  return buildLiveStreamUrl(c, id, container)\n}',
-        'function buildDirectLiveUrl(id, c = creds) {\n  const providerFormats = getCachedUserInfoSync(activePlaylistId)?.user_info?.allowed_output_formats\n  const container = isM3u8ContainerFallbackChannel(id) ? "m3u8" : choosePinkLiveContainer(providerFormats)\n  return buildLiveStreamUrl(c, id, container)\n}')
+# Mega's authoritative M3U and the physical playback evidence use the legacy
+# extensionless live path. The nominal Xtream /live/... route authenticates the
+# catalog but returns HTTP 401 for media on this provider. Patch the shared live
+# URL builder once so native playback, casting and every existing Extreme caller
+# use the provider-certified path without duplicating routing policy.
+replace('src/scripts/lib/stream-urls.ts',
+        'import { fmtBase } from "@/scripts/lib/creds.js"\n',
+        'import { fmtBase } from "@/scripts/lib/creds.js"\nimport { buildPinkLiveStreamUrl } from "@/scripts/lib/pink-runtime-policy.ts"\n')
+replace('src/scripts/lib/stream-urls.ts',
+        '''export function buildLiveStreamUrl(
+  creds: Creds,
+  streamId: string | number,
+  containerExt: string | null | undefined
+): string {
+  const ext = containerExt === "ts" ? ".ts" : ".m3u8"
+  return (
+    fmtBase(creds.host, creds.port) +
+    "/live/" +
+    encodeURIComponent(creds.user) +
+    "/" +
+    encodeURIComponent(creds.pass) +
+    "/" +
+    encodeURIComponent(streamId) +
+    ext
+  )
+}''',
+        '''export function buildLiveStreamUrl(
+  creds: Creds,
+  streamId: string | number,
+  _containerExt: string | null | undefined
+): string {
+  return buildPinkLiveStreamUrl(creds, streamId)
+}''')
 
 # Strict Android credential storage: no plaintext cookie/localStorage/store fallback.
 p = DEST / 'src/scripts/lib/creds.js'

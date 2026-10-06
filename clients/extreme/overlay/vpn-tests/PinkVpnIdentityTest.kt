@@ -22,11 +22,21 @@ class PinkVpnIdentityTest {
             val plain = cipher.decrypt(VpnEncryptedPayload(record.ivHex, record.ciphertextHex))
             assertFalse(context.filesDir.resolve("datastore/pink_wireguard_identity.preferences_pb")
                 .readBytes().toString(Charsets.ISO_8859_1).contains(plain))
-            PinkVault(context).write("{\"entries\":[],\"selectedId\":\"\"}")
+            val accountBlob = "{\"entries\":[],\"selectedId\":\"fixture-account\"}"
+            val firstVault = PinkVault(context)
+            assertTrue(firstVault.write(accountBlob))
+            assertEquals(accountBlob, firstVault.readValidated())
+            assertEquals(accountBlob, PinkVault(context).readValidated())
             assertEquals(first, store.ensureIdentity())
             cipher.destroyKeyForTests()
             assertTrue(store.ensureIdentity() is VpnIdentityResult.Failure)
-        } finally { persistence.clearForTests(); cipher.destroyKeyForTests() }
+        } finally {
+            PinkVault(context).markValidated("")
+            context.getSharedPreferences("pink_account_v1", android.content.Context.MODE_PRIVATE)
+                .edit().clear().commit()
+            persistence.clearForTests()
+            cipher.destroyKeyForTests()
+        }
     }
 
     @Test fun officialBackendAndMergedVpnServiceAreAvailable() {

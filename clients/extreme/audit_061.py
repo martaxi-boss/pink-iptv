@@ -6,8 +6,8 @@ from pathlib import Path
 import subprocess
 
 TASK = '.project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json'
-AUTH = 'b0aca9850ed55b8be0fc424af553e64fb574956b'
-DIGEST = '65b7f6b86c07a1763c1903c25d04caef02f72e81643d538c6ee093e5adc7149c'
+AUTH = 'b0aca9850ed55b8be0fc424af553e64fb574956b' # pragma: allowlist secret -- public immutable task authorization commit
+DIGEST = '65b7f6b86c07a1763c1903c25d04caef02f72e81643d538c6ee093e5adc7149c' # pragma: allowlist secret -- public task SHA256 integrity checksum
 
 
 def git(*args):

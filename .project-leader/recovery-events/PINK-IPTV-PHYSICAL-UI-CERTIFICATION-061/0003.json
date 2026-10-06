@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 3,
+  "recorded_at": "2026-10-06T15:36:18.604273+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 2,
+  "action_fingerprint": "061;public-task-commit-checksum-specific-allowlist-annotations",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "5a628e489cc79f21f14957869bdd97b7ac396c291f80c858ef85133d7b85ea4e",
+  "detail": "Annotate only the two verified public authority/integrity constants with established detect-secrets inline allowlist comments. Do not broaden scanner exclusions or alter integrity values/authority checks, app source or production routing. Validate exact detector and existing filter locally; then require fresh exact Android/Backend CI and separately authorized actual UI/native AV/recovery proof. Preserve no-progress1 until technical completion advances."
+}

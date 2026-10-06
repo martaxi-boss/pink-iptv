@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-06T15:36:18.604273+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "061;inherited-ea1770a9;immutable-legacy-preservation-with-fresh-independent-certification",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "e6f5d7390235defb79554ff1c54acf8b4960e2b7edfd4f50694507b275a16525",
+  "detail": "Backend37488159732 onfa29ef75 passed116 tests but Credential leak scan flags audit_061.py lines9/10: public authorization commit and public immutable task SHA256. No actual credentials introduced. Source Android37488159790 remains noncertifying after required Backend failure. Local prepublication scan was missing; run exact detector/filter before republishing. Preserve immutable task/history and operational anti-loop state."
+}

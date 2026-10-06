@@ -209,13 +209,26 @@ class PinkVpnLiveTest {
                 } else {
                     decoded = js(activity, """(()=>{
                         const video=document.querySelector('#player-wrap video');
+                        const quality=video?.getVideoPlaybackQuality?.();
                         return !!video && !video.paused && !video.error && video.currentTime>1 &&
-                            (video.getVideoPlaybackQuality?.().totalVideoFrames || 0)>0 &&
+                            ((quality?.totalVideoFrames || 0)-(quality?.droppedVideoFrames || 0))>0 &&
                             (video.webkitAudioDecodedByteCount || 0)>0;
                     })()""") == "true"
                     transport = "webview"
                 }
                 Thread.sleep(250)
+            }
+            if (!decoded && nativeVideo == null) {
+                report("ACTUAL_UI_CHANNEL_MEDIA_FIXED_STATE="+js(activity, """JSON.stringify((()=>{
+                    const video=document.querySelector('#player-wrap video');
+                    const quality=video?.getVideoPlaybackQuality?.();
+                    return {video:!!video,playing:video?.paused===false,clock:(video?.currentTime || 0)>1,
+                        ready:video?.readyState || 0,error:video?.error?.code || 0,
+                        presented:((quality?.totalVideoFrames || 0)-(quality?.droppedVideoFrames || 0))>0,
+                        audio:(video?.webkitAudioDecodedByteCount || 0)>0,
+                        audioMetric:typeof video?.webkitAudioDecodedByteCount==='number',
+                        failurePanel:!!document.querySelector('[data-playback-failure]')};
+                })())"""))
             }
             check(decoded && PinkVpnRuntime.isReady())
             report("ACTUAL_UI_CHANNEL_CLICK_VIDEO_AUDIO_DECODE=PASS;player="+transport)

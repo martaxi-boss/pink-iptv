@@ -78,6 +78,7 @@ describe('actual channel click media evidence', () => {
     expect(observe(playing)).toBe(true)
     expect(observe({ ...playing, webkitAudioDecodedByteCount: 0 })).toBe(false)
     expect(observe({ ...playing, getVideoPlaybackQuality: () => ({ totalVideoFrames: 0 }) })).toBe(false)
+    expect(observe({ ...playing, getVideoPlaybackQuality: () => ({ totalVideoFrames: 10, droppedVideoFrames: 10 }) })).toBe(false)
     expect(observe({ ...playing, paused: true })).toBe(false)
     expect(observe(null)).toBe(false)
   })

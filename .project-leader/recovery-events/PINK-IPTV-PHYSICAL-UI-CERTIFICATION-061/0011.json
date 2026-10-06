@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 11,
+  "recorded_at": "2026-10-06T20:46:54.159753+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 6,
+  "action_fingerprint": "061;body-first-byte-vs-renderer-pulse;no-timeout-increase",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "d43025608ee5bf2a6d166b526858b81f81c6002c76d909617a8b4b6d4724a9ba",
+  "detail": "Instrument exactly the unread-response frontier: same protected Response body reader emits fixed streaming phase only after first nonempty chunk, preserves split UTF-8 and reader release; independent one-way1Hz renderer pulse distinguishes a live JS event loop during callback wait from renderer silence. No new provider transport/URL, timeout increase, login/DNS/cache reopen or bypass. Pulse retired at painted/failed/pagehide. Scope and privacy tests plus native origin test before fresh CI."
+}

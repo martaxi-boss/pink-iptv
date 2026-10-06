@@ -94,7 +94,7 @@ describe('bounded live progress diagnostics', () => {
       documentElement: { dataset: { pinkLivePhase: phase } },
     }))
     expect(observe('categories')).toEqual({ matched: false, phase: 'categories' })
-    for (const phase of ['channels', 'response', 'reading', 'body', 'parsing']) {
+    for (const phase of ['channels', 'response', 'reading', 'streaming', 'body', 'parsing']) {
       expect(observe(phase)).toEqual({ matched: false, phase })
     }
     expect(observe('https://private-sub.example/fixture-user/fixture-pass')).toEqual({ matched: false, phase: 'absent' })
@@ -110,22 +110,51 @@ describe('bounded live progress diagnostics', () => {
     expect(observe('interactive').matched).toBe(false)
     expect(observe('complete').matched).toBe(true)
   })
-  it('relays only a fixed phase and cannot fail the catalog if diagnostics are unavailable', () => {
+  it('keeps an independent renderer pulse while reading and retires it at completion', () => {
+    vi.useFakeTimers()
+    try {
+      const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
+      const probe = live.slice(live.indexOf('let pinkLivePulseTimer'), live.indexOf('async function pinkLiveBody'))
+      const document = { documentElement: { dataset: {} } }
+      const postMessage = vi.fn()
+      const phase = new Function('document', 'window', probe+';return pinkLivePhase')(document, { PinkNative: { postMessage } })
+      phase('reading')
+      expect(JSON.parse(postMessage.mock.calls[0][0])).toEqual({ id: '0', operation: 'livePhase', payload: { phase: 'reading' } })
+      vi.advanceTimersByTime(2000)
+      expect(postMessage.mock.calls.slice(1).map(([message]) => JSON.parse(message))).toEqual([
+        { id: '0', operation: 'livePulse', payload: {} }, { id: '0', operation: 'livePulse', payload: {} },
+      ])
+      phase('painted')
+      postMessage.mockClear()
+      vi.advanceTimersByTime(2000)
+      expect(postMessage).not.toHaveBeenCalled()
+      phase('reading'); phase('failed'); postMessage.mockClear()
+      vi.advanceTimersByTime(2000)
+      expect(postMessage).not.toHaveBeenCalled()
+      const absent = new Function('document', 'window', probe+';return pinkLivePhase')(document, {})
+      expect(() => { absent('reading'); absent('failed') }).not.toThrow()
+    } finally { vi.useRealTimers() }
+  })
+  it('observes body bytes while preserving split UTF-8 and releasing the reader on failure', async () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
-    const marker = live.match(/function pinkLivePhase\(value\) \{([\s\S]*?)\n\}/)?.[1]
-    if (!marker) throw new Error('Live marker missing')
-    const document = { documentElement: { dataset: {} } }
-    const postMessage = vi.fn()
-    const run = new Function('document', 'window', 'value', marker)
-    run(document, { PinkNative: { postMessage } }, 'reading')
-    expect(JSON.parse(postMessage.mock.calls[0][0])).toEqual({ id: '0', operation: 'livePhase', payload: { phase: 'reading' } })
-    expect(() => run(document, {}, 'body')).not.toThrow()
-    expect(() => run(document, { PinkNative: { postMessage: () => { throw new Error('unavailable') } } }, 'body')).not.toThrow()
+    const drain = live.slice(live.indexOf('async function pinkLiveBody'), live.indexOf('async function loadChannels'))
+    const phase = vi.fn()
+    const read = new AsyncFunction('pinkLivePhase', drain+';return pinkLiveBody')(phase)
+    const bytes = new TextEncoder().encode('[{"name":"televisão"}]')
+    const releaseLock = vi.fn()
+    const values = [bytes.slice(0,19), bytes.slice(19)]
+    const reader = { read: vi.fn(async () => values.length ? {done:false,value:values.shift()} : {done:true}), releaseLock }
+    expect(await (await read)({body:{getReader:()=>reader}})).toBe('[{"name":"televisão"}]')
+    expect(phase).toHaveBeenCalledExactlyOnceWith('streaming')
+    expect(releaseLock).toHaveBeenCalledOnce()
+    const failedReader = { read: vi.fn().mockRejectedValue(new Error('synthetic body failure')), releaseLock:vi.fn() }
+    await expect((await read)({body:{getReader:()=>failedReader}})).rejects.toThrow('synthetic body failure')
+    expect(failedReader.releaseLock).toHaveBeenCalledOnce()
   })
   it('marks the generated live fetch and paint boundaries using only fixed values', () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
     const values = [...live.matchAll(/pinkLivePhase\("([^"]+)"\)/g)].map(match => match[1])
-    expect(values).toEqual(['account', 'preferences', 'categories', 'channels', 'response', 'reading', 'body', 'parsing', 'painting', 'painted', 'failed', 'boot'])
+    expect(values).toEqual(['streaming', 'account', 'preferences', 'categories', 'channels', 'response', 'reading', 'body', 'parsing', 'painting', 'painted', 'failed', 'boot'])
     expect(live.indexOf('pinkLivePhase("categories")')).toBeLessThan(live.indexOf('const catMap = await ensureCategoryMap()'))
     expect(live.indexOf('pinkLivePhase("painted")')).toBeGreaterThan(live.indexOf('paintChannels(data, fromCache, age, false)'))
   })

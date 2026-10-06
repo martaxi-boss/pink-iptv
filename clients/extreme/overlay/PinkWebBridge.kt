@@ -14,13 +14,16 @@ object PinkWebBridge {
     private val main = Handler(Looper.getMainLooper())
     private val workers = Executors.newSingleThreadExecutor()
     @Volatile private var livePhase = "absent"
+    @Volatile private var rendererPulse = 0L
+    internal fun rendererPulseForTests(): Long = rendererPulse
     internal fun livePhaseForTests(): String = livePhase
     private val livePhases = setOf("boot", "account", "preferences", "categories", "channels",
-        "response", "reading", "body", "parsing", "painting", "painted", "failed")
+        "response", "reading", "streaming", "body", "parsing", "painting", "painted", "failed")
     fun attach(context: Context, webView: WebView) {
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
             throw IllegalStateException("Connection unavailable")
         livePhase = "absent"
+        rendererPulse = 0L
         val app = context.applicationContext
         val vault = PinkVault(app)
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
@@ -32,6 +35,10 @@ object PinkWebBridge {
                 check(data.length <= 200000)
                 JSONObject(data).also { check(Regex("[0-9]{1,16}").matches(it.getString("id"))) }
             } catch (_: Exception) { return@addWebMessageListener }
+            if (request.optString("operation") == "livePulse") {
+                rendererPulse++
+                return@addWebMessageListener
+            }
             if (request.optString("operation") == "livePhase") {
                 val value = request.optJSONObject("payload")?.optString("phase")
                 livePhase = if (value in livePhases) value!! else "absent"

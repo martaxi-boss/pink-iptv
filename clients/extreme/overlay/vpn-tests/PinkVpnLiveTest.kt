@@ -57,6 +57,7 @@ class PinkVpnLiveTest {
     }
 
     private var uiJsBoundary = "not_started"
+    private var uiPulseAtEvaluation = 0L
     private var uiNativeRoute = "not_started"
     private var uiNativeProgress = -1
     private var uiLivePhase = "not_started"
@@ -70,6 +71,7 @@ class PinkVpnLiveTest {
             val path = try { android.net.Uri.parse(view.url).path } catch (_: Exception) { null }
             uiNativeRoute = if (path in setOf("/", "/login", "/tv", "/tv/login", "/livetv", "/tv/livetv")) path!! else "other"
             uiNativeProgress = view.progress.coerceIn(0, 100)
+            uiPulseAtEvaluation = PinkWebBridge.rendererPulseForTests()
             view.evaluateJavascript(script) {
                 result = it
                 latch.countDown()
@@ -92,7 +94,7 @@ class PinkVpnLiveTest {
             val raw = js(activity, """JSON.stringify({
                 matched:document.readyState==='complete' && Boolean($expression),
                 phase:(()=>{const value=document.documentElement?.dataset.pinkLivePhase;
-                    return ['boot','account','preferences','categories','channels','response','reading','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
+                    return ['boot','account','preferences','categories','channels','response','reading','streaming','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
             })""")
             // A document can be replaced between native readiness and evaluation.
             // WebView's null response is pending, never a successful checkpoint.
@@ -395,6 +397,8 @@ class PinkVpnLiveTest {
                 report("ACTUAL_UI_FAILURE_CHECKPOINT="+uiCheckpoint+";js="+uiJsBoundary+";category="+category)
                 report("ACTUAL_UI_LAST_FIXED_OBSERVATION=route="+uiNativeRoute+";progress="+uiNativeProgress+";livePhase="+uiLivePhase)
                 report("ACTUAL_UI_NATIVE_LIVE_PHASE="+PinkWebBridge.livePhaseForTests())
+                report("ACTUAL_UI_RENDERER_PULSE_DURING_CALLBACK="+
+                    (if (PinkWebBridge.rendererPulseForTests()>uiPulseAtEvaluation) "ADVANCING" else "QUIET"))
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
                 val cacheState = try {
                     val raw = PinkVault(context).readValidated()

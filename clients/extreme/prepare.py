@@ -213,11 +213,41 @@ welcome.write_text('''<div aria-hidden="true"></div>
 # from a catalog stall without recording provider data or JavaScript errors.
 replace('src/scripts/stream/stream.ts',
         'async function loadChannels() {',
-        '''function pinkLivePhase(value) {
+        '''let pinkLivePulseTimer = null
+function pinkLivePulse() {
+  try { window.PinkNative?.postMessage(JSON.stringify({id:"0", operation:"livePulse", payload:{}})) } catch {}
+}
+function pinkLivePhase(value) {
   document.documentElement.dataset.pinkLivePhase = value
   // One-way fixed progress survives a later blocked WebView callback. No URL,
   // account, response body or error text crosses this diagnostic boundary.
   try { window.PinkNative?.postMessage(JSON.stringify({id:"0", operation:"livePhase", payload:{phase:value}})) } catch {}
+  if (value === "painted" || value === "failed") {
+    clearInterval(pinkLivePulseTimer)
+    pinkLivePulseTimer = null
+  } else if (pinkLivePulseTimer === null) {
+    pinkLivePulseTimer = setInterval(pinkLivePulse, 1000)
+    window.addEventListener?.("pagehide", () => clearInterval(pinkLivePulseTimer), {once:true})
+  }
+}
+async function pinkLiveBody(response) {
+  const reader = response.body?.getReader?.()
+  if (!reader) return response.text()
+  const decoder = new TextDecoder("utf-8")
+  const chunks = []
+  let received = false
+  try {
+    while (true) {
+      const {done, value} = await reader.read()
+      if (done) break
+      if (value?.byteLength) {
+        if (!received) { received = true; pinkLivePhase("streaming") }
+        chunks.push(decoder.decode(value, {stream:true}))
+      }
+    }
+    chunks.push(decoder.decode())
+    return chunks.join("")
+  } finally { reader.releaseLock() }
 }
 async function loadChannels() {
   pinkLivePhase("account")''')
@@ -229,7 +259,7 @@ replace('src/scripts/stream/stream.ts',
         '        const r = await xtreamApiFetch("get_live_streams")',
         '        const r = await xtreamApiFetch("get_live_streams")\n        pinkLivePhase("response")')
 replace('src/scripts/stream/stream.ts', '        const body = await r.text()',
-        '        pinkLivePhase("reading")\n        const body = await r.text()\n        pinkLivePhase("body")')
+        '        pinkLivePhase("reading")\n        const body = await pinkLiveBody(r)\n        pinkLivePhase("body")')
 replace('src/scripts/stream/stream.ts', '        const parsed = JSON.parse(body)',
         '        pinkLivePhase("parsing")\n        const parsed = JSON.parse(body)')
 replace('src/scripts/stream/stream.ts', '    paintChannels(data, fromCache, age, false)',

@@ -72,6 +72,11 @@ class PinkWebBridgeTest {
             val loaded = JSONObject(waitValue(view,"window.result||''"))
             assertTrue(loaded.getBoolean("ok"))
             assertEquals("synthetic-account-blob",loaded.getString("result"))
+            val beforePulse = PinkWebBridge.rendererPulseForTests()
+            evaluate(view, "PinkNative.postMessage(JSON.stringify({id:'0',operation:'livePulse',payload:{}}));true")
+            val pulseDeadline = System.currentTimeMillis()+2000
+            while (PinkWebBridge.rendererPulseForTests() == beforePulse && System.currentTimeMillis()<pulseDeadline) Thread.sleep(50)
+            assertTrue(PinkWebBridge.rendererPulseForTests()>beforePulse)
             instrumentation.runOnMainSync {
                 view.loadDataWithBaseURL("https://tauri.localhost.foreign.example",
                     "<script>window.marker=String(typeof window.PinkNative)</script>",

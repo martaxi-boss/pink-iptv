@@ -1,6 +1,5 @@
 import { addEntry, getEntries, removeEntry } from "@/scripts/lib/creds.js"
 import { resolvePinkSession } from "@/scripts/lib/pink-session.js"
-import { choosePinkLiveContainer } from "@/scripts/lib/pink-runtime-policy.ts"
 export const loginMarkup = `
   <section class="mx-auto w-full max-w-md px-6 py-10">
     <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-8 w-64" />
@@ -33,7 +32,7 @@ export function mountPinkLogin(root, navigate) {
       if (!alive) return
       // Keep a single managed account, rather than accumulating duplicate logins.
       for (const entry of await getEntries()) await removeEntry(entry._id)
-      await addEntry({ ...account, type: 'xtream', title: username, accent: 'fuchsia', liveContainer: choosePinkLiveContainer(null) })
+      await addEntry({ ...account, type: 'xtream', title: username, accent: 'fuchsia', liveContainer: 'ts' })
       if (alive) await navigate()
     } catch (error) {
       if (alive) status.textContent = error instanceof Error && error.message.startsWith('A sua') ? error.message :

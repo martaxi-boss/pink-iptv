@@ -37,6 +37,8 @@ export function installPinkBridge() {
   }
   window.PinkAccountVault = {
     read: () => call("vaultRead"),
+    readValidated: () => call("vaultReadValidated"),
+    markValidated: (value) => call("vaultMarkValidated", { value }),
     write: (value) => call("vaultWrite", { value }),
   }
   return true

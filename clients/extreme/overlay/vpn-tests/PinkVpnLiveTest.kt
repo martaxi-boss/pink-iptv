@@ -168,6 +168,10 @@ class PinkVpnLiveTest {
                 check(reply.getString("code") == "SUCCESS")
                 enrolled = true
                 check(PinkVpnRuntime.isReady())
+                check(runtime.initialServiceStopAcknowledgedForTests())
+                val initialReplacementCount = runtime.initialPeerReplacementCountForTests()
+                check(initialReplacementCount >= 1)
+                report("INITIAL_OFFLINE_SERVICE_RETIRED_BEFORE_AUTHORIZED_TUNNEL=PASS")
                 val origin = reply.getString("xtream_base_url").trimEnd('/')
                 check(origin == fixture.getString("expected_origin").trimEnd('/'))
                 val identity = runBlocking { SecureVpnIdentityStore(AndroidKeystoreVpnIdentityCipher(),
@@ -181,6 +185,8 @@ class PinkVpnLiveTest {
                 report("AUTHORITATIVE_USERNAME_PASSWORD_LOGIN_AND_CATALOG_VIA_WIREGUARD=PASS")
                 advance("webview-login-catalog")
                 uiLoginAndCatalog(activity, fixture, ::report)
+                check(runtime.initialPeerReplacementCountForTests() == initialReplacementCount)
+                report("ACTUAL_UI_REAUTH_PRESERVES_ADMITTED_TUNNEL=PASS")
                 check(context.getSharedPreferences("pink_account_v1",0).edit().clear().commit())
                 report("UI_FIXTURE_VAULT_CLEARED_BEFORE_NO_CREDENTIAL_COLD_PROOF=PASS")
                 advance("native-audio-video")

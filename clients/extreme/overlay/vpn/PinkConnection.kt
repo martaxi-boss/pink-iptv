@@ -1,6 +1,7 @@
 package com.pinkiptv.extreme
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -9,6 +10,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.VpnService
 import android.os.Process
+import android.os.Build
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import com.wireguard.android.backend.GoBackend
@@ -25,6 +27,7 @@ import java.time.Instant
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 
@@ -54,6 +57,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     @Volatile private var protectedFailure = "none"
     @Volatile private var activationStage = "not_started"
     @Volatile private var protectedActivation = "not_started"
+    @Volatile private var initialServiceStopAcknowledged = false
+    @Volatile private var initialPeerReplacements = 0
     // Inactive outside instrumentation; only fixed lifecycle categories are observed.
     @Volatile internal var failClosureObserverForTests: ((String) -> Unit)? = null
 
@@ -91,12 +96,14 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
 
     fun resume() { work.execute { failures = 0; nextAttempt = 0; maintain() } }
     internal fun hasCapturedRouteForTests(): Boolean = live && boundVpn != null
+    internal fun initialServiceStopAcknowledgedForTests(): Boolean = initialServiceStopAcknowledged
+    internal fun initialPeerReplacementCountForTests(): Int = initialPeerReplacements
     // Only fixed stages and exception class names; no exception messages, keys,
     // grants, account data or provider origins may enter diagnostic output.
     internal fun startupDiagnosticForTests(): String =
         "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
     internal fun protectedDiagnosticForTests(): String =
-        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext")
+        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements"
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes
@@ -233,6 +240,32 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         connect(renewed)
     }
 
+    @Suppress("DEPRECATION")
+    private fun awaitRetiredBackendService() {
+        // GoBackend1.0.20260102 stops the previous service asynchronously.
+        // Its onDestroy resets the SDK service future only after retiring the
+        // old tunnel. Never attach a new tunnel to that retiring service.
+        repeat(100) {
+            val stopped = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                try {
+                    backend.isAlwaysOn() // Status query only; never enables always-on.
+                    false
+                } catch (_: TimeoutException) { true }
+            } else {
+                // Android26-28 retain this documented query for our own services.
+                app.getSystemService(ActivityManager::class.java).getRunningServices(Int.MAX_VALUE)
+                    .none { it.service.packageName == app.packageName &&
+                        it.service.className == GoBackend.VpnService::class.java.name }
+            }
+            if (stopped) {
+                initialServiceStopAcknowledged = true
+                return
+            }
+            Thread.sleep(100)
+        }
+        throw IllegalStateException("Connection unavailable")
+    }
+
     private fun connect(grant: JSONObject) {
         activationStage = "validate_grant"
         check(accepting && VpnService.prepare(app) == null)
@@ -256,7 +289,14 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         if (!live || sealed) {
             // No application flow is admitted during the initial offline->authorized change.
             check(!admitted)
-            // Initial peer replacement precedes every admitted provider socket.
+            // Keep the old (then dead) captured binding while the SDK retires
+            // its service. No application flow is admitted during this boundary.
+            activationStage = "retire_offline_backend"
+            check(backend.setState(this, Tunnel.State.DOWN, null) == Tunnel.State.DOWN)
+            activationStage = "await_offline_service_shutdown"
+            awaitRetiredBackendService()
+            initialPeerReplacements++
+            // The existing initial binding transition remains before admission.
             // Never clear this binding after admission or when its VPN is lost.
             activationStage = "clear_initial_binding"
             check(cm.bindProcessToNetwork(null))

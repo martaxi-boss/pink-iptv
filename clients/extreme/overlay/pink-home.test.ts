@@ -70,14 +70,26 @@ describe('actual Android proof navigation boundary', () => {
 
 describe('bounded live progress diagnostics', () => {
   it('executes the actual Android observation without returning account data', () => {
-    const observation = harness.match(/val observation = JSONObject\(js\(activity, """([\s\S]*?)"""\)\)/)?.[1]
+    const observation = harness.match(/val raw = js\(activity, """([\s\S]*?)"""\)/)?.[1]
     if (!observation) throw new Error('Live observation missing')
     const script = observation.replace('$expression', 'false')
     const observe = (phase: string) => JSON.parse(new Function('document', `return ${script}`)({
+      readyState: 'complete',
       documentElement: { dataset: { pinkLivePhase: phase } },
     }))
     expect(observe('categories')).toEqual({ matched: false, phase: 'categories' })
     expect(observe('https://private-sub.example/fixture-user/fixture-pass')).toEqual({ matched: false, phase: 'absent' })
+  })
+  it('cannot certify a route with no old form while its new document is loading', () => {
+    const observation = harness.match(/val raw = js\(activity, """([\s\S]*?)"""\)/)?.[1]
+    if (!observation) throw new Error('Loading-aware live observation missing')
+    const script = observation.replace('$expression', 'true')
+    const observe = (readyState: string) => JSON.parse(new Function('document', `return ${script}`)({
+      readyState, documentElement: { dataset: {} },
+    }))
+    expect(observe('loading').matched).toBe(false)
+    expect(observe('interactive').matched).toBe(false)
+    expect(observe('complete').matched).toBe(true)
   })
   it('marks the generated live fetch and paint boundaries using only fixed values', () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')

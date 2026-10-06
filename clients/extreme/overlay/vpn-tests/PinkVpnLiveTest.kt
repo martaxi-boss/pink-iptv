@@ -84,11 +84,20 @@ class PinkVpnLiveTest {
     private fun waitJs(activity: ActivityScenario<MainActivity>, expression: String, seconds: Int) {
         val deadline = System.currentTimeMillis() + seconds * 1000L
         while (System.currentTimeMillis() < deadline) {
-            val observation = JSONObject(js(activity, """JSON.stringify({
-                matched:Boolean($expression),
-                phase:(()=>{const value=document.documentElement.dataset.pinkLivePhase;
+            var loaded = false
+            activity.onActivity { host ->
+                loaded = webView(host.findViewById(android.R.id.content))?.progress == 100
+            }
+            if (!loaded) { Thread.sleep(250); continue }
+            val raw = js(activity, """JSON.stringify({
+                matched:document.readyState==='complete' && Boolean($expression),
+                phase:(()=>{const value=document.documentElement?.dataset.pinkLivePhase;
                     return ['boot','account','preferences','categories','channels','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
-            })"""))
+            })""")
+            // A document can be replaced between native readiness and evaluation.
+            // WebView's null response is pending, never a successful checkpoint.
+            if (raw == "null") { Thread.sleep(250); continue }
+            val observation = JSONObject(raw)
             uiLivePhase = observation.getString("phase")
             if (observation.getBoolean("matched")) return
             Thread.sleep(250)

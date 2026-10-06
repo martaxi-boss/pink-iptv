@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 9,
+  "recorded_at": "2026-10-06T17:09:33.423Z",
+  "event": "REPLAN",
+  "strategy_generation": 5,
+  "action_fingerprint": "061;native-load-and-complete-document-barrier-null-is-pending",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "0a29995ba6039f4c531b813b711c0cb1efe6562ee10397a918b83cf0f6e35db2",
+  "detail": "Wait for native WebView progress100 before polling, require document.readyState complete before any matched checkpoint and treat WebView null from a document replacement as pending within original deadline. Guard absent root during navigation. Preserve strict submit, catalog rows, UI roundtrip, callback timeout and native AV/recovery checks. Actual old generated observation accepts loading document; corrected regression rejects loading/interactive and accepts complete. DNS correction now passes native protected login/catalog, a concrete milestone; reset no-progress for this navigation strategy. Fresh exact source CI and separate operational authorization required."
+}

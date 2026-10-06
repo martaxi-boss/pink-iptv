@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 8,
+  "recorded_at": "2026-10-06T17:09:33.423Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 4,
+  "action_fingerprint": "061;97394947;R14-partial-document-checkpoint-JSON-null",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "c240a44ffde3451dd7f16fed87cf0fa4d92e87f912bc46b2135b6a7323023293",
+  "detail": "R14 run37500471657 protected login/native catalog PASS, runtime ready and account cache VALID/encrypted. Actual UI failed login_home with JSON decode; last native route=/ progress60 phaseabsent. The observer evaluated a transitioning document before complete and attempted JSONObject(null); old Boolean checkpoint can also accept / with no old form prematurely. Cleanup and protected audits PASS; Live UI/native AV not reached."
+}

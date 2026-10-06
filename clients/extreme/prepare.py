@@ -134,14 +134,24 @@ p = DEST / 'src/scripts/lib/creds.js'
 text = 'import { installPinkBridge } from "./pink-bridge.js"\n' + p.read_text()
 begin = text.index('async function readRaw() {')
 end = text.index('// ---------------------------------------------------------------------------\n// Migration from the legacy flat keys', begin)
-text = text[:begin] + '''let pinkValidatedBlob = null
+text = text[:begin] + '''const PINK_VALIDATED_MEMORY_KEY = "__pink_validated_account_state_v1"
+let pinkValidatedBlob = null
 function pinkVault() {
   installPinkBridge()
   const vault = typeof window !== "undefined" && window.PinkAccountVault
   if (!vault) throw new Error("Protected account storage unavailable")
   return vault
 }
+function readValidatedMemory() {
+  if (typeof window === "undefined") return null
+  return window[PINK_VALIDATED_MEMORY_KEY] || null
+}
+function writeValidatedMemory(data) {
+  if (typeof window !== "undefined") window[PINK_VALIDATED_MEMORY_KEY] = data
+}
 async function readRaw() {
+  const memory = readValidatedMemory()
+  if (memory) return memory
   if (!pinkValidatedBlob) {
     pinkValidatedBlob = (async () => {
       const raw = await pinkVault().read()
@@ -155,6 +165,7 @@ async function readRaw() {
           Object.assign(entry, account)
         } catch { return null } // Keep encrypted account; show login/retry, never stale authority.
       }
+      writeValidatedMemory(data)
       return data
     })()
   }
@@ -162,8 +173,11 @@ async function readRaw() {
 }
 async function writeRaw(data) {
   if (!await pinkVault().write(JSON.stringify(data))) throw new Error("Protected account save failed")
-  // Existing player/cast connection-limit readers need the selected ID synchronously.
-  // Publish metadata only; credentials and provider origins never leave the vault.
+  // Keep the already validated account only in this process so Astro route changes
+  // cannot immediately force a second session/enrolment round trip.
+  writeValidatedMemory(data)
+  // Existing first-run/player readers need only the selected ID synchronously.
+  // Credentials and provider origins never leave the encrypted vault/process memory.
   localStorage.setItem("xt_playlists", JSON.stringify({ selectedId: data.selectedId || "", entries: [] }))
   pinkValidatedBlob = Promise.resolve(data)
   migrationPromise = Promise.resolve(data)
@@ -199,12 +213,18 @@ text = text[:begin] + 'export async function restoreState() { throw new Error("E
 p.write_text(text)
 
 welcome = DEST / 'src/components/WelcomeCard.astro'
-welcome.write_text('''<section class="welcome-card rounded-2xl border border-line bg-surface px-8 py-10 text-center">
-  <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-6 w-64" />
-  <h1 class="text-2xl font-semibold text-fg">A sua televisão, num só lugar.</h1>
-  <p class="my-5 text-fg-3">Entre com a sua conta PINK para ver canais, filmes e séries.</p>
-  <a href="/login" class="btn-primary">Entrar na PINK IPTV</a>
-</section>\n''')
+welcome.write_text('''<div aria-hidden="true"></div>
+<script is:inline>
+  location.replace("/login")
+</script>\n''')
+
+# The encrypted account is intentionally absent from localStorage. Teach the
+# upstream first-run probe to use the non-sensitive selectedId metadata instead
+# of demanding plaintext entry objects, so a validated account opens the menus
+# immediately while a fresh install is redirected straight to login.
+replace('src/pages/index.astro',
+        'hasEntries = !!(\n\t\t\t\t\tparsed &&\n\t\t\t\t\tArray.isArray(parsed.entries) &&\n\t\t\t\t\tparsed.entries.length\n\t\t\t\t);',
+        'hasEntries = !!(parsed && typeof parsed.selectedId === "string" && parsed.selectedId);')
 
 replace('src/scripts/lib/app-settings.js', 'return readLS(KEY_USER_AGENT, "")', 'return readLS(KEY_USER_AGENT, "PINK-IPTV/0.1")')
 replace('src/components/PlaylistSwitcher.svelte', '<span data-i18n="playlist.add" class="truncate">Add playlist</span>', '<span class="truncate">Conta PINK</span>')

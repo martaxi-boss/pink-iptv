@@ -78,6 +78,9 @@ describe('bounded live progress diagnostics', () => {
       documentElement: { dataset: { pinkLivePhase: phase } },
     }))
     expect(observe('categories')).toEqual({ matched: false, phase: 'categories' })
+    for (const phase of ['channels', 'response', 'reading', 'body', 'parsing']) {
+      expect(observe(phase)).toEqual({ matched: false, phase })
+    }
     expect(observe('https://private-sub.example/fixture-user/fixture-pass')).toEqual({ matched: false, phase: 'absent' })
   })
   it('cannot certify a route with no old form while its new document is loading', () => {
@@ -91,10 +94,22 @@ describe('bounded live progress diagnostics', () => {
     expect(observe('interactive').matched).toBe(false)
     expect(observe('complete').matched).toBe(true)
   })
+  it('relays only a fixed phase and cannot fail the catalog if diagnostics are unavailable', () => {
+    const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
+    const marker = live.match(/function pinkLivePhase\(value\) \{([\s\S]*?)\n\}/)?.[1]
+    if (!marker) throw new Error('Live marker missing')
+    const document = { documentElement: { dataset: {} } }
+    const postMessage = vi.fn()
+    const run = new Function('document', 'window', 'value', marker)
+    run(document, { PinkNative: { postMessage } }, 'reading')
+    expect(JSON.parse(postMessage.mock.calls[0][0])).toEqual({ id: '0', operation: 'livePhase', payload: { phase: 'reading' } })
+    expect(() => run(document, {}, 'body')).not.toThrow()
+    expect(() => run(document, { PinkNative: { postMessage: () => { throw new Error('unavailable') } } }, 'body')).not.toThrow()
+  })
   it('marks the generated live fetch and paint boundaries using only fixed values', () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
     const values = [...live.matchAll(/pinkLivePhase\("([^"]+)"\)/g)].map(match => match[1])
-    expect(values).toEqual(['account', 'preferences', 'categories', 'channels', 'parsing', 'painting', 'painted', 'failed', 'boot'])
+    expect(values).toEqual(['account', 'preferences', 'categories', 'channels', 'response', 'reading', 'body', 'parsing', 'painting', 'painted', 'failed', 'boot'])
     expect(live.indexOf('pinkLivePhase("categories")')).toBeLessThan(live.indexOf('const catMap = await ensureCategoryMap()'))
     expect(live.indexOf('pinkLivePhase("painted")')).toBeGreaterThan(live.indexOf('paintChannels(data, fromCache, age, false)'))
   })

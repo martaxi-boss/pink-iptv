@@ -92,7 +92,7 @@ class PinkVpnLiveTest {
             val raw = js(activity, """JSON.stringify({
                 matched:document.readyState==='complete' && Boolean($expression),
                 phase:(()=>{const value=document.documentElement?.dataset.pinkLivePhase;
-                    return ['boot','account','preferences','categories','channels','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
+                    return ['boot','account','preferences','categories','channels','response','reading','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
             })""")
             // A document can be replaced between native readiness and evaluation.
             // WebView's null response is pending, never a successful checkpoint.
@@ -326,6 +326,7 @@ class PinkVpnLiveTest {
                 }
                 report("ACTUAL_UI_FAILURE_CHECKPOINT="+uiCheckpoint+";js="+uiJsBoundary+";category="+category)
                 report("ACTUAL_UI_LAST_FIXED_OBSERVATION=route="+uiNativeRoute+";progress="+uiNativeProgress+";livePhase="+uiLivePhase)
+                report("ACTUAL_UI_NATIVE_LIVE_PHASE="+PinkWebBridge.livePhaseForTests())
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
                 val cacheState = try {
                     val raw = PinkVault(context).readValidated()

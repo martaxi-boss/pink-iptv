@@ -215,6 +215,9 @@ replace('src/scripts/stream/stream.ts',
         'async function loadChannels() {',
         '''function pinkLivePhase(value) {
   document.documentElement.dataset.pinkLivePhase = value
+  // One-way fixed progress survives a later blocked WebView callback. No URL,
+  // account, response body or error text crosses this diagnostic boundary.
+  try { window.PinkNative?.postMessage(JSON.stringify({id:"0", operation:"livePhase", payload:{phase:value}})) } catch {}
 }
 async function loadChannels() {
   pinkLivePhase("account")''')
@@ -222,6 +225,11 @@ replace('src/scripts/stream/stream.ts', '  await Promise.allSettled([',
         '  pinkLivePhase("preferences")\n  await Promise.allSettled([')
 replace('src/scripts/stream/stream.ts', '        const catMap = await ensureCategoryMap()',
         '        pinkLivePhase("categories")\n        const catMap = await ensureCategoryMap()\n        pinkLivePhase("channels")')
+replace('src/scripts/stream/stream.ts',
+        '        const r = await xtreamApiFetch("get_live_streams")',
+        '        const r = await xtreamApiFetch("get_live_streams")\n        pinkLivePhase("response")')
+replace('src/scripts/stream/stream.ts', '        const body = await r.text()',
+        '        pinkLivePhase("reading")\n        const body = await r.text()\n        pinkLivePhase("body")')
 replace('src/scripts/stream/stream.ts', '        const parsed = JSON.parse(body)',
         '        pinkLivePhase("parsing")\n        const parsed = JSON.parse(body)')
 replace('src/scripts/stream/stream.ts', '    paintChannels(data, fromCache, age, false)',

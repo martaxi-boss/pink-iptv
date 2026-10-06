@@ -24,6 +24,30 @@ describe('protected PINK account restore', () => {
     expect(vault.write).not.toHaveBeenCalled()
     expect(mirror).not.toHaveBeenCalled()
   })
+  it('keeps a newly validated account in process across route-module reloads', async () => {
+    vault.read.mockReturnValue("")
+    const first = await import('../src/scripts/lib/creds.js')
+    await first.addEntry({
+      type: 'xtream',
+      title: 'Fixture',
+      serverUrl: 'https://current.example',
+      username: 'fixture-user',
+      password: 'fixture-password', // pragma: allowlist secret — synthetic test fixture
+      liveContainer: 'ts',
+    })
+    expect(vault.write).toHaveBeenCalledTimes(1)
+    const readsBeforeRouteReload = vault.read.mock.calls.length
+
+    vi.resetModules()
+    resolve.mockReset()
+    const second = await import('../src/scripts/lib/creds.js')
+    const state = await second.getState()
+
+    expect(state.entries).toHaveLength(1)
+    expect(state.entries[0].username).toBe('fixture-user')
+    expect(vault.read.mock.calls.length).toBe(readsBeforeRouteReload)
+    expect(resolve).not.toHaveBeenCalled()
+  })
   it('preserves the encrypted account on temporary backend failure without granting stale access', async () => {
     resolve.mockRejectedValue(new Error('temporary fixture outage'))
     const { getState } = await import('../src/scripts/lib/creds.js')

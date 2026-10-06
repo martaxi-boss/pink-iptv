@@ -5,9 +5,9 @@ export const loginMarkup = `
     <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-8 w-64" />
     <h1 class="mb-2 text-2xl font-semibold text-fg">Bem-vindo à PINK IPTV</h1>
     <p class="mb-7 text-fg-3">Use o mesmo utilizador e palavra-passe da sua conta PINK IPTV. O acesso fica guardado neste dispositivo.</p>
-    <form data-pink-login class="space-y-5">
-      <label class="block text-fg">Utilizador<input name="username" required autocomplete="username" autocapitalize="none" spellcheck="false" data-focus-key="pink:username" class="mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
-      <label class="block text-fg">Palavra-passe<input name="password" type="password" required autocomplete="current-password" data-focus-key="pink:password" class="mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
+    <form data-pink-login autocomplete="off" class="space-y-5">
+      <label class="block text-fg">Utilizador<input name="username" required autocomplete="off" autocapitalize="none" spellcheck="false" data-focus-key="pink:username" class="mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
+      <label class="block text-fg">Palavra-passe<input name="password" type="password" required autocomplete="off" data-focus-key="pink:password" class="mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
       <p data-pink-status role="status" aria-live="polite" class="min-h-6 text-fg-3"></p>
       <button type="submit" data-focus-key="pink:submit" class="min-h-12 w-full rounded-2xl bg-accent px-6 py-3 font-semibold text-black tv-focus-inset">Entrar</button>
     </form>

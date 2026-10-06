@@ -59,6 +59,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     @Volatile private var protectedActivation = "not_started"
     @Volatile private var initialServiceStopAcknowledged = false
     @Volatile private var initialPeerReplacements = 0
+    @Volatile private var protectedControlFailure = "none"
     // Inactive outside instrumentation; only fixed lifecycle categories are observed.
     @Volatile internal var failClosureObserverForTests: ((String) -> Unit)? = null
 
@@ -103,7 +104,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     internal fun startupDiagnosticForTests(): String =
         "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
     internal fun protectedDiagnosticForTests(): String =
-        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements"
+        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements;control=$protectedControlFailure"
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes
@@ -157,6 +158,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             try {
                 protectedStage = "identity"
                 protectedFailure = "none"
+                protectedControlFailure = "none"
                 ensureIdentity()
                 protectedStage = "session_resolve"
                 val reply = control("/v1/session/resolve", JSONObject()
@@ -371,31 +373,78 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
         } ?: throw IllegalStateException("Connection unavailable")
-        val connection = physical.openConnection(URL("https://pink-iptv.duckdns.org$path")) as javax.net.ssl.HttpsURLConnection
-        connection.instanceFollowRedirects = false
-        connection.connectTimeout = 15000
-        connection.readTimeout = 20000
-        connection.requestMethod = "POST"
-        connection.doOutput = true
-        connection.setRequestProperty("Content-Type", "application/json")
-        connection.setRequestProperty("Accept", "application/json")
-        session?.let { connection.setRequestProperty("Authorization", "Bearer $it") }
+        val capabilities = cm.getNetworkCapabilities(physical)
+        val transport = when {
+            capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> "WIFI"
+            capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> "CELLULAR"
+            capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true -> "ETHERNET"
+            capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true -> "VPN"
+            else -> "OTHER"
+        }
+        val validated = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+        val physicalDefault = cm.activeNetwork == physical
+        val link = cm.getLinkProperties(physical)
+        val v4 = link?.linkAddresses?.any { it.address is java.net.Inet4Address } == true
+        val v6 = link?.linkAddresses?.any { it.address is java.net.Inet6Address } == true
+        var phase = "open_connection"
+        var status = -1
         try {
-            connection.outputStream.use { it.write(payload.toString().toByteArray(Charsets.UTF_8)) }
-            check(connection.responseCode == 200)
-            val raw = connection.inputStream.use { source ->
-                val output = java.io.ByteArrayOutputStream()
-                val buffer = ByteArray(4096)
-                while (output.size() <= 65536) {
-                    val count = source.read(buffer)
-                    if (count < 0) break
-                    output.write(buffer, 0, count)
+            val connection = physical.openConnection(URL("https://pink-iptv.duckdns.org$path")) as javax.net.ssl.HttpsURLConnection
+            connection.instanceFollowRedirects = false
+            connection.connectTimeout = 15000
+            connection.readTimeout = 20000
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "application/json")
+            session?.let { connection.setRequestProperty("Authorization", "Bearer $it") }
+            try {
+                phase = "connect_write"
+                connection.outputStream.use { it.write(payload.toString().toByteArray(Charsets.UTF_8)) }
+                phase = "response_headers"
+                status = connection.responseCode
+                check(status == 200)
+                phase = "response_body"
+                val raw = connection.inputStream.use { source ->
+                    val output = java.io.ByteArrayOutputStream()
+                    val buffer = ByteArray(4096)
+                    while (output.size() <= 65536) {
+                        val count = source.read(buffer)
+                        if (count < 0) break
+                        output.write(buffer, 0, count)
+                    }
+                    output.toByteArray()
                 }
-                output.toByteArray()
+                check(raw.size <= 65536)
+                return JSONObject(String(raw, Charsets.UTF_8))
+            } finally { connection.disconnect() }
+        } catch (failure: Exception) {
+            if (path != "/v1/vpn/refresh") {
+                val role = if (path == "/v1/session/resolve") "SESSION" else "ENROLL"
+                var cause: Throwable? = failure
+                var errno = 0
+                repeat(8) {
+                    if (cause is android.system.ErrnoException) errno = (cause as android.system.ErrnoException).errno
+                    cause = cause?.cause
+                }
+                val message = failure.message.orEmpty()
+                val category = when {
+                    failure is java.net.UnknownHostException -> "DNS"
+                    failure is java.net.SocketTimeoutException -> "TIMEOUT"
+                    message.contains("unreachable", true) -> "UNREACHABLE"
+                    message.contains("reset", true) -> "RESET"
+                    message.contains("abort", true) -> "ABORT"
+                    message.contains("closed", true) -> "CLOSED"
+                    message.contains("refused", true) -> "REFUSED"
+                    failure is javax.net.ssl.SSLException -> "TLS"
+                    failure is java.net.SocketException -> "SOCKET_OTHER"
+                    else -> "OTHER"
+                }
+                // Fixed enums/booleans/OS errno and HTTP status only; never message/URL/account.
+                protectedControlFailure = "$role:$phase:$category;errno=$errno;status=$status;transport=$transport;validated=$validated;physicalDefault=$physicalDefault;v4=$v4;v6=$v6"
             }
-            check(raw.size <= 65536)
-            return JSONObject(String(raw, Charsets.UTF_8))
-        } finally { connection.disconnect() }
+            throw failure
+        }
     }
 
     companion object {

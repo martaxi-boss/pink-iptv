@@ -34,6 +34,21 @@ describe('origin-restricted native transport', () => {
     native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: true }) })
     expect(await saved).toBe(true)
   })
+  it('bridges native process-only validated account cache operations', async () => {
+    const { native, host } = create()
+    const read = host.PinkAccountVault.readValidated()
+    let request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request.operation).toBe('vaultReadValidated')
+    native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: '' }) })
+    expect(await read).toBe('')
+
+    const mark = host.PinkAccountVault.markValidated('synthetic-validated-state')
+    request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request.operation).toBe('vaultMarkValidated')
+    expect(request.payload).toEqual({ value: 'synthetic-validated-state' })
+    native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: true }) })
+    expect(await mark).toBe(true)
+  })
   it('never surfaces native error details', async () => {
     const { native, host } = create()
     const waiting = expect(host.PinkConnection.ready()).rejects.toThrow('temporariamente indisponível')

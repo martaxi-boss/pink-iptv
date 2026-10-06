@@ -75,6 +75,18 @@ class PinkVpnLiveTest {
             if (js(activity, "Boolean($expression)") == "true") return
             Thread.sleep(250)
         }
+        val flags = js(activity, """JSON.stringify({
+            online:navigator.onLine===true,
+            login:!!document.querySelector('[data-pink-login]'),
+            live:!!document.querySelector('#viewport'),
+            skeletons:document.querySelectorAll('#viewport [data-skeleton]').length,
+            rows:document.querySelectorAll('#viewport .channel-row:not([data-skeleton])').length,
+            nativeBridge:typeof window.PinkNative?.postMessage==='function',
+            nativeReady:typeof window.PinkConnection?.ready==='function'
+        })""")
+        InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
+            putString("stream", "\nACTUAL_WEBVIEW_FIXED_FLAGS="+flags+"\n")
+        })
         throw AssertionError("Protected WebView checkpoint unavailable")
     }
 
@@ -169,6 +181,8 @@ class PinkVpnLiveTest {
                 report("AUTHORITATIVE_USERNAME_PASSWORD_LOGIN_AND_CATALOG_VIA_WIREGUARD=PASS")
                 advance("webview-login-catalog")
                 uiLoginAndCatalog(activity, fixture, ::report)
+                check(context.getSharedPreferences("pink_account_v1",0).edit().clear().commit())
+                report("UI_FIXTURE_VAULT_CLEARED_BEFORE_NO_CREDENTIAL_COLD_PROOF=PASS")
                 advance("native-audio-video")
                 var decoded = false
                 for (index in 0 until minOf(3,streams.length())) {

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 7,
+  "recorded_at": "2026-10-05T16:23:17.859Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 2,
+  "action_fingerprint": "055-hosted-consent-and-route-measurement",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "25f50f4bc49b11b76f43551060216fd08364b7a8256214129ff6c06a22691024",
+  "detail": "Supervisor authorizes only the new hosted measurement strategy: robust60second normal consent observation, live offline route/UID/socket diagnostics via Instrumentation.sendStatus rather than uncollected app stdout, strict IPv4/IPv6 assertions and bounded capture wait. Emit sanitized phase labels for later real-flow diagnostics; no provider credentials yet. Preserve every production routing gate and accepted gateway. Native execution follows canonical validation and durable publication of this exact event; attempt1 in strategy generation2."
+}

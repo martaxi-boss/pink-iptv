@@ -1,0 +1,130 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-05T15:25:40.317Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner autonomous completion authorizes a new bounded certification plan over the technically successful Extreme/WireGuard baseline713431f2, preserving all Task053 immutable records and its blocked control result. Do not retry its old failed strategies or rewrite attempt counters. Extend protected native live-flow tests with transient fixture input only, sanitize native playback event errors, obtain fresh exact Android/Backend CI and independent runtime gateway proof054. A separately authorized VPS task may retrieve the already authorized Mega test line transiently and run real Android login/catalog/audio/video through the same built overlay. No old UI, APK secret, DNS input or external player."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "a0725aa6ced7c6da4be82c9ad256611a7cb65601",
+    "task_branch": "builder/extreme-live-certification-055"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "clients/extreme/**",
+    ".github/workflows/pink-extreme-042.yml",
+    "docs/VPN_EXTREME_055.md",
+    ".project-leader/tasks/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055.json",
+    ".project-leader/results/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055.json",
+    ".project-leader/transitions/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055-*",
+    ".project-leader/recovery-events/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "client_dns_input",
+    "provider_hostname_guessing",
+    "password_persistence",
+    "mega_token_exposure",
+    "third_project_mutation",
+    "force_push",
+    "device_private_key_persistence",
+    "global_apk_secret",
+    "old_compose_product_mutation",
+    "system_vpn_consent_bypass",
+    "external_player_unprotected_handoff",
+    "unrelated_device_routing",
+    "live_gateway_mutation"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Installation identity and Keystore isolation",
+    "Android consent and startup lifecycle",
+    "Native authenticated enrollment",
+    "App-scoped dual-family capture and fail closure",
+    "No VPN customer controls or technical configuration",
+    "Extreme login and playback regression",
+    "Prior unusable control journal preserved and bounded replacement plan",
+    "Real login catalogue and native playback through staging WireGuard"
+  ],
+  "required_ci": [
+    "PINK Extreme Android 042"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "147fb55338267ba2e9727c4a85e468e342300a69557d80781edeba4b6fa8d0f9",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "c42ed27cc6c520bfd63015097c8c60ee42392ba5"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Fresh exact CI and valid authorization/recovery records certify the complete Extreme/PINK native app and source artifact. Independent accepted gateway audit054 and separately bounded operational real Android flow must pass before physical handoff. Preserve old Task053 control history, normal system consent, invisible PINK VPN, username/password-only login and app-scoped fail closure.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

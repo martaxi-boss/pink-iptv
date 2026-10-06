@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T16:59:23.720Z",
+  "previous_event_sha256": "f4a49dbcb1da3ee0dfb6c47c48f6af8a29eff83a3841e1e2d34f7fdbb6a7be82",
+  "sequence": 12,
+  "event": "REPLAN",
+  "strategy_generation": 4,
+  "action_fingerprint": "055-origin-restricted-native-bridge-and-lint-audit",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "detail": "Preserve Extreme UI and the effective-route readiness correction. Replace only PINK account/login JavaScript interfaces with AndroidX origin-restricted WebMessageListener for exact local Tauri origins and main-frame checks; asynchronous wrappers preserve existing frontend behavior. Require actual local-vault/foreign-origin Android proof and frontend transport tests. Move required lint after native tests/privacy scan and expose its complete public source-only report on failure, without disabling or accepting lint errors. Audit each inherited finding against pinned upstream before any narrowly bound baseline; fix every PINK-added finding. Keep normal consent, installation identity and accepted gateway unchanged."
+}

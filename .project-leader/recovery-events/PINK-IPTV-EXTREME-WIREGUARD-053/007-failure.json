@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 7,
+  "recorded_at": "2026-10-05T15:05:25.585Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-explicit-tauri-test-variant",
+  "attempt_count": 4,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "d9c3dd22a592cde5f7dfba60dbf86eefa1f9821a805f6d106118711f08c14855",
+  "detail": "Exact material headfac83a4c5543cc48b2b3d10167f3278571d7cd81 run37328887302 job111826559260 compiled the complete Android APK successfully, then failed because app:assembleDebugAndroidTest is ambiguous across generated Tauri flavors. Select assembleUniversalDebugAndroidTest explicitly and reuse already-built JNI output by excluding only rustBuildUniversalDebug. Add real emulator execution of protected identity/system consent/offline app capture and activity recreation, plus reused pure identity JVM tests; this stays within Task053 test and product scope."
+}

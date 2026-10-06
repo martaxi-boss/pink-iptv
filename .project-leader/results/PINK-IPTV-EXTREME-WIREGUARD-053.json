@@ -1,0 +1,90 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "terminal_status": "BLOCKED",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-EXTREME-WIREGUARD-053.json",
+  "authorization_commit_sha": "32c744909766bd2afdf385acbdc527cfb50536be",
+  "authorization_sha256": "119f3a8d0646d7bf228a182b3c41ab79c3956ac9eb3d399337ccff68e7a5bcbe",
+  "implementation_head_sha": "713431f270042fbcd69c5cb12f178f5662eab25b",
+  "branch": "builder/extreme-wireguard-053",
+  "pr_number": 41,
+  "recorded_at": "2026-10-05T15:25:38.952Z",
+  "state_observed_at": "2026-10-05T15:25:38.952Z",
+  "changes": [
+    "Complete deterministic native Extreme/PINK WireGuard overlay with protected installation identity, native enrollment, normal Android consent, application-only dual-family routes and startup guards.",
+    "Exact Android pipeline passed APK/JVM/instrumentation/real emulator/source scan and corresponding source artifact."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "FAIL",
+      "evidence": "Exact technical CI37330251226 passed, but immutable recovery events007/008 contain attempt_count4, outside the canonical maximum3. Preserve these records and do not claim a terminal Task053 control certificate. Separately authorize a new bounded plan and fresh certification task."
+    },
+    {
+      "name": "Installation identity and Keystore isolation",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "Android consent and startup lifecycle",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "Native authenticated enrollment",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "App-scoped dual-family capture and fail closure",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "No VPN customer controls or technical configuration",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    },
+    {
+      "name": "Extreme login and playback regression",
+      "status": "PASS",
+      "evidence": "Technical evidence in exact successful CI37330251226 and source713431f270042fbcd69c5cb12f178f5662eab25b; final control certification superseded."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK Extreme Android 042",
+      "status": "SUCCESS",
+      "run_id": 37330251226
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37330251204
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37330251226"
+  ],
+  "material_non_effects": [
+    "Old Compose remains read-only.",
+    "No device private keys/credentials in source or artifact.",
+    "No public launch or final physical certificate claimed."
+  ],
+  "residual_blockers": [
+    "Immutable retry counter record prevents terminal Task053 control certification; route to a new bounded plan, preserve history and obtain fresh exact CI."
+  ],
+  "superseded_by": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055"
+}

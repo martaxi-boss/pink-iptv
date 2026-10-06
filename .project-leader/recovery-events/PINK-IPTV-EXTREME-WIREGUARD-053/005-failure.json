@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-WIREGUARD-053",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 5,
+  "recorded_at": "2026-10-05T14:56:18.163Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "053-external-player-guard-local-symbol",
+  "attempt_count": 3,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "2c67fed39ff326c7f615c9f4271585e80eface352415c307154b39632203f55e",
+  "detail": "Exact current material head1dd45b882c7acbe6d2ef03e8eeacfe45a8c46f36 Android run37327411713 is terminal failure. Earlier corrected Kotlin/scan issue progressed: Backend CI3c2cfe66 passed and Kotlin metadata incompatibility is gone. The deterministic no-external-player overlay removed a local uri declaration from an unreachable upstream block; Kotlin still validates that block and reports unresolved uri. Preserve the declaration behind an unconditional early guard. Add explicit offline startup capture and maintain its initial authorization boundary while certifying the next descendant."
+}

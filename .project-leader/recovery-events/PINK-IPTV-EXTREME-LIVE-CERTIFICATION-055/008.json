@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T16:41:42.366Z",
+  "previous_event_sha256": "81f86f5c647be6775010d454f5698ad3ede94774ec5843f58abff4f9f34682f5",
+  "sequence": 8,
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 2,
+  "action_fingerprint": "055-instrumentation-final-activity-exit",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "detail": "Exact sourceb65839ef run37340735398 measured normal Android permission, ownUID10209 rules to tun0, offline IPv4 and IPv6 blocked, HTTPS fail closure and same-identity activity recreation, then emitted successful test status0 but process-crashed instead of final runner OK. This is positive diagnostic progress, not an accepted CI result. Earlier immediate IP failures remain uncertified until startup waits for effective routing. No private fixture or live peer used. Do not rerun unchanged diagnostics."
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T16:59:23.720Z",
+  "previous_event_sha256": "92964bc671ecdce10f815475901d7de7d4bef0d43e818069d8326e144f1be952",
+  "sequence": 13,
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 4,
+  "action_fingerprint": "055-origin-restricted-native-bridge-and-lint-audit",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "detail": "Authorize one exact new source iteration implementing only the preceding internal privacy integration and report-audit plan. No UI controls/layout changes, no new secrets, no direct networking fallback, no known-account fixture yet. Validate proposed prepare.py syntax with the pinned hosted control job before source publication. Keep strict immediate IPv4/IPv6, HTTPS, recreation and all identity assertions; Android workflow remains failed if lint reports unresolved errors. Separately authorized real flow follows only complete certification."
+}

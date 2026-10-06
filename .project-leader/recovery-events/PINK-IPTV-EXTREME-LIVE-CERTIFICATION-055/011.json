@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-05T16:59:23.720Z",
+  "previous_event_sha256": "bf166330048d3922de5fad408265ff17516037e35372057a2ca5f734dacfa7ff",
+  "sequence": 11,
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 3,
+  "action_fingerprint": "055-expanded-lint-and-origin-audit",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "detail": "Exact source3d61cec1 run37343031889 compiled all APKs and native tests but newly required lint stopped before emulator execution:72errors,90warnings; first GestureBackNavigation at unchanged upstream VideoActivity KEYCODE_BACK. Full findings still need audit; no blanket suppression. Independent privacy audit confirms JavaScriptInterface account vault/login objects are available to embedded frames, whereas only the local PINK document should have that authority. Device VPN private keys/tokens are not JavaScript exposed. No real credentials were used; backend exact source CI passed."
+}

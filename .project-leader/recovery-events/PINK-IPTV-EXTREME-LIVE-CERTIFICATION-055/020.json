@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-06T00:17:16.138Z",
+  "previous_event_sha256": "f26fa738de789922b1992f07aeb5d8514c520ffb06604d4d3ff4002909b243c6",
+  "sequence": 20,
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 7,
+  "action_fingerprint": "055-correct-kotlin-protected-diagnostic-concatenation",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 1,
+  "detail": "Real056 R8 run37392109317/source551316ef FAILURE after normal consent. Instrumentation emits only Temporary peer cleanup requires recovery (PinkVpnLiveTest.kt203); SIGNALED status9 with no allowed native crash. enrolled=true cleanup branch proves successful native session/enrollment/connect return but masks any primary post-login failure. External mandatory own-peer cleanup and protected post-host audit PASS. Do not attribute stale R7 activation or prior network failure. Operational retain mode incorrectly duplicates native cleanup on failure although external trap owns every exit."
+}

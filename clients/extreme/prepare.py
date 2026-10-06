@@ -82,7 +82,7 @@ shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink
 
 replace('src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/MainActivity.kt',
         'webView.addJavascriptInterface(PipBridge(this), "AndroidPip")',
-        'PinkWebBridge.attach(this, webView)\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
+        'PinkWebBridge.attach(this, webView)\n    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {\n      webView.importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS\n    }\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
 replace('src-tauri/gen/android/app/src/main/AndroidManifest.xml', '<application', '<application android:allowBackup="false"')
 
 # Native PINK owns actual connectivity state. Generic WebView navigator.onLine can
@@ -134,26 +134,19 @@ p = DEST / 'src/scripts/lib/creds.js'
 text = 'import { installPinkBridge } from "./pink-bridge.js"\n' + p.read_text()
 begin = text.index('async function readRaw() {')
 end = text.index('// ---------------------------------------------------------------------------\n// Migration from the legacy flat keys', begin)
-text = text[:begin] + '''const PINK_VALIDATED_MEMORY_KEY = "__pink_validated_account_state_v1"
-let pinkValidatedBlob = null
+text = text[:begin] + '''let pinkValidatedBlob = null
 function pinkVault() {
   installPinkBridge()
   const vault = typeof window !== "undefined" && window.PinkAccountVault
   if (!vault) throw new Error("Protected account storage unavailable")
   return vault
 }
-function readValidatedMemory() {
-  if (typeof window === "undefined") return null
-  return window[PINK_VALIDATED_MEMORY_KEY] || null
-}
-function writeValidatedMemory(data) {
-  if (typeof window !== "undefined") window[PINK_VALIDATED_MEMORY_KEY] = data
-}
 async function readRaw() {
-  const memory = readValidatedMemory()
-  if (memory) return memory
   if (!pinkValidatedBlob) {
     pinkValidatedBlob = (async () => {
+      const cached = await pinkVault().readValidated()
+      if (cached) return JSON.parse(cached)
+
       const raw = await pinkVault().read()
       if (!raw) return null
       const data = JSON.parse(raw)
@@ -165,7 +158,7 @@ async function readRaw() {
           Object.assign(entry, account)
         } catch { return null } // Keep encrypted account; show login/retry, never stale authority.
       }
-      writeValidatedMemory(data)
+      await pinkVault().markValidated(JSON.stringify(data))
       return data
     })()
   }
@@ -173,11 +166,9 @@ async function readRaw() {
 }
 async function writeRaw(data) {
   if (!await pinkVault().write(JSON.stringify(data))) throw new Error("Protected account save failed")
-  // Keep the already validated account only in this process so Astro route changes
-  // cannot immediately force a second session/enrolment round trip.
-  writeValidatedMemory(data)
-  // Existing first-run/player readers need only the selected ID synchronously.
-  // Credentials and provider origins never leave the encrypted vault/process memory.
+  // The native bridge retains this already-validated blob only for this Android
+  // process, so route swaps do not trigger a second control-plane login.
+  // Persistent credentials remain only in the encrypted Android Keystore vault.
   localStorage.setItem("xt_playlists", JSON.stringify({ selectedId: data.selectedId || "", entries: [] }))
   pinkValidatedBlob = Promise.resolve(data)
   migrationPromise = Promise.resolve(data)

@@ -60,7 +60,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     @Volatile private var initialServiceStopAcknowledged = false
     @Volatile private var initialPeerReplacements = 0
     @Volatile private var protectedControlFailure = "none"
-    @Volatile private var capturedControlRequests = 0
+    @Volatile private var controlPlaneRequests = 0
     // Inactive outside instrumentation; only fixed lifecycle categories are observed.
     @Volatile internal var failClosureObserverForTests: ((String) -> Unit)? = null
 
@@ -100,13 +100,13 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     internal fun hasCapturedRouteForTests(): Boolean = live && boundVpn != null
     internal fun initialServiceStopAcknowledgedForTests(): Boolean = initialServiceStopAcknowledged
     internal fun initialPeerReplacementCountForTests(): Int = initialPeerReplacements
-    internal fun capturedControlRequestCountForTests(): Int = capturedControlRequests
+    internal fun controlPlaneRequestCountForTests(): Int = controlPlaneRequests
     // Only fixed stages and exception class names; no exception messages, keys,
     // grants, account data or provider origins may enter diagnostic output.
     internal fun startupDiagnosticForTests(): String =
         "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
     internal fun protectedDiagnosticForTests(): String =
-        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements;control=$protectedControlFailure;capturedControlRequests=$capturedControlRequests"
+        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements;control=$protectedControlFailure;controlPlaneRequests=$controlPlaneRequests"
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes
@@ -166,6 +166,16 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 val reply = control("/v1/session/resolve", JSONObject()
                     .put("username", username).put("password", password))
                 if (reply.optString("code") != "SUCCESS") return@submit reply
+
+                // The WireGuard identity/peer belongs to this installation, not to
+                // an Xtream account. Once the admitted peer is healthy, changing
+                // IPTV accounts must not re-enrol or replace the tunnel.
+                if (admitted && live && boundVpn != null && probe()) {
+                    protectedStage = "ready"
+                    return@submit JSONObject().put("code", "SUCCESS")
+                        .put("xtream_base_url", reply.getString("xtream_base_url"))
+                }
+
                 val payload = JSONObject().put("public_key", pair().publicKey.toBase64())
                 readGrant()?.optString("device_token")?.takeIf { it.isNotBlank() }?.let {
                     payload.put("device_token", it)
@@ -370,24 +380,20 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
 
     private fun control(path: String, payload: JSONObject, session: String? = null): JSONObject {
         check(path in setOf("/v1/session/resolve", "/v1/vpn/enroll", "/v1/vpn/refresh"))
-        val capturedControl = admitted
-        // The physical exception is only needed to establish/restore admission.
-        // After admission, control sockets and DNS use the same captured VPN.
-        // A dead/lost capture cannot fall back to any physical network.
-        val controlNetwork = if (capturedControl) {
-            check(live)
-            val captured = checkNotNull(boundVpn)
-            check(cm.boundNetworkForProcess == captured)
-            check(cm.getNetworkCapabilities(captured)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true)
-            captured
-        } else {
-            cm.allNetworks.firstOrNull {
-                val capabilities = cm.getNetworkCapabilities(it)
-                capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
-                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
-            } ?: throw IllegalStateException("Connection unavailable")
+        // Fixed PINK HTTPS endpoints are the control plane that creates/repairs
+        // the WireGuard data plane. Keep them on an explicitly selected physical
+        // Network so recovery never depends circularly on the tunnel it is
+        // repairing. Provider/catalog/media traffic still has no physical fallback:
+        // the process remains bound to the captured VPN Network once admitted.
+        val candidates = cm.allNetworks.filter {
+            val capabilities = cm.getNetworkCapabilities(it)
+            capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
         }
-        val route = if (capturedControl) "CAPTURED_VPN" else "PHYSICAL_BOOTSTRAP"
+        val controlNetwork = candidates.firstOrNull {
+            cm.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+        } ?: candidates.firstOrNull() ?: throw IllegalStateException("Connection unavailable")
+        val route = "PINNED_HTTPS_CONTROL"
         val capabilities = cm.getNetworkCapabilities(controlNetwork)
         val transport = when {
             capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> "WIFI"
@@ -404,7 +410,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         var phase = "open_connection"
         var status = -1
         try {
-            if (capturedControl) capturedControlRequests++
+            controlPlaneRequests++
             val connection = controlNetwork.openConnection(URL("https://pink-iptv.duckdns.org$path")) as javax.net.ssl.HttpsURLConnection
             connection.instanceFollowRedirects = false
             connection.connectTimeout = 15000
@@ -436,7 +442,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             } finally { connection.disconnect() }
         } catch (failure: Exception) {
             if (path != "/v1/vpn/refresh") {
-                val role = if (path == "/v1/session/resolve") "SESSION" else "ENROLL"
+                val role = when (path) { "/v1/session/resolve" -> "SESSION"; "/v1/vpn/enroll" -> "ENROLL"; else -> "REFRESH" }
                 var cause: Throwable? = failure
                 var errno = 0
                 repeat(8) {

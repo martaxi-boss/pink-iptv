@@ -68,6 +68,21 @@ describe('actual Android proof navigation boundary', () => {
   })
 })
 
+describe('actual channel click media evidence', () => {
+  it('requires progressing playback and both decoded video and audio', () => {
+    const playback = harness.match(/decoded = js\(activity, """\(\(\)=>\{([\s\S]*?)\}\)\(\)"""\)/)?.[1]
+    if (!playback) throw new Error('Actual UI media observation missing')
+    const observe = (video: object | null) => new Function('document', playback)({ querySelector: () => video })
+    const playing = { paused: false, error: null, currentTime: 2,
+      getVideoPlaybackQuality: () => ({ totalVideoFrames: 10 }), webkitAudioDecodedByteCount: 400 }
+    expect(observe(playing)).toBe(true)
+    expect(observe({ ...playing, webkitAudioDecodedByteCount: 0 })).toBe(false)
+    expect(observe({ ...playing, getVideoPlaybackQuality: () => ({ totalVideoFrames: 0 }) })).toBe(false)
+    expect(observe({ ...playing, paused: true })).toBe(false)
+    expect(observe(null)).toBe(false)
+  })
+})
+
 describe('bounded live progress diagnostics', () => {
   it('executes the actual Android observation without returning account data', () => {
     const observation = harness.match(/val raw = js\(activity, """([\s\S]*?)"""\)/)?.[1]

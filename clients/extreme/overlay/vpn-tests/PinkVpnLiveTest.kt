@@ -169,6 +169,61 @@ class PinkVpnLiveTest {
         js(activity, "document.querySelector('#category-picker-trigger').click();true")
         report("ACTUAL_WEBVIEW_TAURI_LIVE_CATALOG_AND_UI_ROUNDTRIP=PASS")
         report("WEBVIEW_ONLINE_FIXED_STATE="+js(activity, "navigator.onLine===true"))
+        actualUiPlayback(activity, report)
+    }
+
+    private fun actualUiPlayback(activity: ActivityScenario<MainActivity>, report: (String) -> Unit) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val monitor = instrumentation.addMonitor(VideoActivity::class.java.name, null, false)
+        var nativeVideo: VideoActivity? = null
+        var decoded = false
+        var transport = "none"
+        try {
+            uiCheckpoint = "live_channel_click"
+            // Exercise the real row handler with production player preferences and
+            // URL construction. No fixture URL, payload or forced native preference.
+            check(js(activity, """(()=>{
+                document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+                const button=document.querySelector('#viewport .channel-row:not([data-skeleton]) [data-role="play"]');
+                if (!button) return false;
+                button.click();
+                return true;
+            })()""") == "true")
+            uiCheckpoint = "live_channel_decode"
+            val deadline = System.currentTimeMillis()+60000
+            while (!decoded && System.currentTimeMillis()<deadline) {
+                nativeVideo = monitor.lastActivity as? VideoActivity
+                if (nativeVideo != null) {
+                    instrumentation.runOnMainSync {
+                        val host = checkNotNull(nativeVideo)
+                        check(!host.isFinishing && !host.isDestroyed)
+                        val field = VideoActivity::class.java.getDeclaredField("exoPlayer")
+                        field.isAccessible = true
+                        val player = field.get(host) as? ExoPlayer
+                        check(player?.playerError == null)
+                        decoded = player?.isPlaying == true && player.currentPosition>1000 &&
+                            (player.videoDecoderCounters?.renderedOutputBufferCount ?: 0)>0 &&
+                            (player.audioDecoderCounters?.renderedOutputBufferCount ?: 0)>0
+                    }
+                    transport = "native"
+                } else {
+                    decoded = js(activity, """(()=>{
+                        const video=document.querySelector('#player-wrap video');
+                        return !!video && !video.paused && !video.error && video.currentTime>1 &&
+                            (video.getVideoPlaybackQuality?.().totalVideoFrames || 0)>0 &&
+                            (video.webkitAudioDecodedByteCount || 0)>0;
+                    })()""") == "true"
+                    transport = "webview"
+                }
+                Thread.sleep(250)
+            }
+            check(decoded && PinkVpnRuntime.isReady())
+            report("ACTUAL_UI_CHANNEL_CLICK_VIDEO_AUDIO_DECODE=PASS;player="+transport)
+        } finally {
+            nativeVideo?.let { host -> instrumentation.runOnMainSync { host.finish() } }
+            instrumentation.removeMonitor(monitor)
+            instrumentation.waitForIdleSync()
+        }
     }
 
     @Test fun authenticatedNativeLoginCatalogAndDecodedLiveAudioVideoUseWireGuard() {

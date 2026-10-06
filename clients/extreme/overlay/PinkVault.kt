@@ -12,9 +12,11 @@ import javax.crypto.spec.GCMParameterSpec
 
 /** Local account blob: AES-GCM, non-exportable Android Keystore key, backups disabled. */
 class PinkVault(private val context: Context) {
+  companion object {
+    @Volatile private var validatedProcessBlob: String? = null
+  }
   private val alias = "pink.extreme.account.v1"
   private val prefs = context.getSharedPreferences("pink_account_v1", Context.MODE_PRIVATE)
-  @Volatile private var validatedProcessBlob: String? = null
   @Synchronized private fun key(): SecretKey {
     val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
     (store.getKey(alias, null) as? SecretKey)?.let { return it }

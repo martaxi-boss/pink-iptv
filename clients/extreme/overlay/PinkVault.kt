@@ -14,6 +14,7 @@ import javax.crypto.spec.GCMParameterSpec
 class PinkVault(private val context: Context) {
   private val alias = "pink.extreme.account.v1"
   private val prefs = context.getSharedPreferences("pink_account_v1", Context.MODE_PRIVATE)
+  @Volatile private var validatedProcessBlob: String? = null
   @Synchronized private fun key(): SecretKey {
     val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
     (store.getKey(alias, null) as? SecretKey)?.let { return it }
@@ -33,11 +34,19 @@ class PinkVault(private val context: Context) {
       String(cipher.doFinal(bytes.copyOfRange(12, bytes.size)), Charsets.UTF_8)
     } catch (_: Exception) { throw IllegalStateException("Saved account unavailable") }
   }
+  @Synchronized fun readValidated(): String = validatedProcessBlob ?: ""
+  @Synchronized fun markValidated(value: String): Boolean {
+    require(value.length <= 131072)
+    validatedProcessBlob = value
+    return true
+  }
   @Synchronized fun write(value: String): Boolean {
     require(value.length <= 131072)
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
     cipher.init(Cipher.ENCRYPT_MODE, key())
     val bytes = cipher.iv + cipher.doFinal(value.toByteArray(Charsets.UTF_8))
-    return prefs.edit().putString("account", Base64.encodeToString(bytes, Base64.NO_WRAP)).commit()
+    val committed = prefs.edit().putString("account", Base64.encodeToString(bytes, Base64.NO_WRAP)).commit()
+    if (committed) validatedProcessBlob = value
+    return committed
   }
 }

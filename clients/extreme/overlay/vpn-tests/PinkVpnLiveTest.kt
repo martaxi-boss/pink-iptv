@@ -50,18 +50,23 @@ class PinkVpnLiveTest {
     @Test fun authenticatedNativeLoginCatalogAndDecodedLiveAudioVideoUseWireGuard() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         fun report(message: String) = instrumentation.sendStatus(2, android.os.Bundle().apply { putString("stream", "\n"+message+"\n") })
-        var phase = "fixture"
         val context = instrumentation.targetContext
+        var phase = "fixture"
+        fun advance(next: String) {
+            phase = next
+            try { context.filesDir.resolve("pink055-live-phase-public.txt").writeText(android.os.Process.myPid().toString()+":"+next) } catch (_: Exception) { }
+        }
+        advance("fixture")
         val fixtureFile = context.filesDir.resolve("pink055-test-account.json")
         check(fixtureFile.isFile)
         val fixture = JSONObject(fixtureFile.readText())
         check(fixtureFile.delete())
         var enrolled = false
         val retainForRestart = InstrumentationRegistry.getArguments().getString("pinkRetainGrant") == "true"
-        var completed = false
+        var primaryFailed = false
         try {
             ActivityScenario.launch(MainActivity::class.java).let { activity ->
-                phase = "normal-consent"
+                advance("normal-consent")
                 val device = UiDevice.getInstance(instrumentation)
                 val consentDeadline = System.currentTimeMillis()+60000
                 var launcherDialogs = 0
@@ -80,8 +85,11 @@ class PinkVpnLiveTest {
                 }
                 check(VpnService.prepare(context) == null)
                 report("NORMAL_SYSTEM_CONSENT=PASS")
-                phase = "offline-capture"
+                advance("offline-capture")
                 val runtime = PinkVpnRuntime.get(context)
+                runtime.failClosureObserverForTests = { reason ->
+                    context.filesDir.resolve("pink055-fail-closure-public.txt").writeText(android.os.Process.myPid().toString()+":"+reason)
+                }
                 val deadline = System.currentTimeMillis()+60000
                 while (!runtime.hasCapturedRouteForTests() && System.currentTimeMillis()<deadline) Thread.sleep(100)
                 check(runtime.hasCapturedRouteForTests())
@@ -89,7 +97,7 @@ class PinkVpnLiveTest {
                     DataStoreVpnIdentityPersistence(context)).loadIdentity() as VpnIdentityResult.Available }
                 context.filesDir.resolve("pink055-peer-public.txt").writeText(publicIdentity.identity.publicKey)
                 context.filesDir.resolve("pink055-process-public.txt").writeText(android.os.Process.myPid().toString())
-                phase = "protected-login-enrollment"
+                advance("protected-login-enrollment")
                 val reply = runtime.resolve(fixture.getString("username"),fixture.getString("password"))
                 check(reply.getString("code") == "SUCCESS")
                 enrolled = true
@@ -99,13 +107,13 @@ class PinkVpnLiveTest {
                 val identity = runBlocking { SecureVpnIdentityStore(AndroidKeystoreVpnIdentityCipher(),
                     DataStoreVpnIdentityPersistence(context)).loadIdentity() }
                 check(identity is VpnIdentityResult.Available)
-                phase = "authoritative-catalog"
+                advance("authoritative-catalog")
                 val query = "username="+encoded(fixture.getString("username"))+"&password="+encoded(fixture.getString("password"))
                 val categories = catalog("$origin/player_api.php?$query&action=get_live_categories")
                 val streams = catalog("$origin/player_api.php?$query&action=get_live_streams")
                 check(categories.length()>0 && streams.length()>0)
                 report("AUTHORITATIVE_USERNAME_PASSWORD_LOGIN_AND_CATALOG_VIA_WIREGUARD=PASS")
-                phase = "native-audio-video"
+                advance("native-audio-video")
                 var decoded = false
                 for (index in 0 until minOf(3,streams.length())) {
                     val stream = streams.getJSONObject(index)
@@ -162,7 +170,7 @@ class PinkVpnLiveTest {
                 }
                 check(decoded)
                 check(PinkVpnRuntime.isReady())
-                phase = "activity-recreation"
+                advance("activity-recreation")
                 activity.recreate()
                 instrumentation.waitForIdleSync()
                 check(VpnService.prepare(context) == null && PinkVpnRuntime.isReady())
@@ -170,14 +178,16 @@ class PinkVpnLiveTest {
                     DataStoreVpnIdentityPersistence(context)).loadIdentity() }
                 check(identity == reloaded)
                 report("NATIVE_LIVE_AUDIO_VIDEO_DECODE_AND_SAME_INSTALLATION_RECREATION=PASS")
-                completed = true
             }
         } catch (_: Throwable) {
+            primaryFailed = true
+            report("PROTECTED_FLOW_FAILURE_PHASE="+phase)
             if (phase == "protected-login-enrollment") report("PROTECTED_ACTIVATION_DIAGNOSTIC="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
             // Provider exceptions can contain credential-bearing URLs: never chain them.
             throw AssertionError("Protected real Android flow unavailable at "+phase)
         } finally {
-            if (enrolled && !(completed && retainForRestart)) {
+            // Operational retain mode delegates every exit to the mandatory external own-peer cleanup trap.
+            if (enrolled && !retainForRestart) {
                 try {
                     val prefs = context.getSharedPreferences("pink_vpn_grant_v1",0)
                     val saved = JSONObject(AndroidKeystoreVpnIdentityCipher().decrypt(VpnEncryptedPayload(
@@ -200,7 +210,10 @@ class PinkVpnLiveTest {
                     } finally { request.disconnect() }
                     check(prefs.edit().clear().commit())
                     report("TEMPORARY_INSTALLATION_AUTHORIZATION_REVOKED=PASS")
-                } catch (_: Throwable) { throw AssertionError("Temporary peer cleanup requires recovery") }
+                } catch (_: Throwable) {
+                    report("INSTRUMENTATION_PEER_CLEANUP=FAIL")
+                    if (!primaryFailed) throw AssertionError("Temporary peer cleanup requires recovery")
+                }
             }
         }
     }

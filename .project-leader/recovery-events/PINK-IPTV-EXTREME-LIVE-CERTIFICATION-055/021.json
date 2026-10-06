@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055",
+  "repository": "martaxi-boss/pink-iptv",
+  "recorded_at": "2026-10-06T00:17:16.140Z",
+  "previous_event_sha256": "32617536fd56242cd0771df562f1059c10ef7eb9178ab86029dcb05cbc25f2aa",
+  "sequence": 21,
+  "event": "REPLAN",
+  "strategy_generation": 8,
+  "action_fingerprint": "055-operational-cleanup-ownership-and-all-phase-primary-proof",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "detail": "Material test correction delegates native cleanup in operational retain mode exclusively to the already mandatory external own-installation cleanup trap on every exit. Non-operational native cleanup still runs and cannot mask primary failure. Emit fixed primary phase before reporting generic error, persist exact PID+fixed live phase, attach inactive-in-production fixed fail-closure observer in live instrumentation. Product routing/admission/termination, identity, login and playback remain unchanged. Fresh exact source/native CI and source-bound real056 proof required; unknown crash and any external cleanup/audit failure remain failures. Local command runtime unavailable; approved GitHub runners continue verification."
+}

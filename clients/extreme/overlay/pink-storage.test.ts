@@ -36,6 +36,9 @@ describe('protected PINK account restore', () => {
       liveContainer: 'ts',
     })
     expect(vault.write).toHaveBeenCalledTimes(1)
+    const mirrored = JSON.parse(mirror.mock.calls.at(-1)?.[1] || "{}")
+    expect(mirrored.selectedId).toBeTruthy()
+    expect(mirrored.entries).toEqual([])
     const readsBeforeRouteReload = vault.read.mock.calls.length
 
     vi.resetModules()

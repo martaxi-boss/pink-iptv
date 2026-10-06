@@ -33,7 +33,10 @@ export function mountPinkLogin(root, navigate) {
       // Keep a single managed account, rather than accumulating duplicate logins.
       for (const entry of await getEntries()) await removeEntry(entry._id)
       await addEntry({ ...account, type: 'xtream', title: username, accent: 'fuchsia', liveContainer: 'ts' })
-      if (alive) await navigate()
+      if (alive) {
+        status.textContent = 'Conta validada. A abrir…'
+        await navigate()
+      }
     } catch (error) {
       if (alive) status.textContent = error instanceof Error && error.message.startsWith('A sua') ? error.message :
         (error instanceof Error && /^(Utilizador|Não foi|Serviço|O serviço)/.test(error.message) ? error.message : 'Não foi possível entrar. Verifique a ligação e tente novamente.')

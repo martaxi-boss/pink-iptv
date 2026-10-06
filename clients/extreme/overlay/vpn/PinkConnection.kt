@@ -167,15 +167,6 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                     .put("username", username).put("password", password))
                 if (reply.optString("code") != "SUCCESS") return@submit reply
 
-                // The WireGuard identity/peer belongs to this installation, not to
-                // an Xtream account. Once the admitted peer is healthy, changing
-                // IPTV accounts must not re-enrol or replace the tunnel.
-                if (admitted && live && boundVpn != null && probe()) {
-                    protectedStage = "ready"
-                    return@submit JSONObject().put("code", "SUCCESS")
-                        .put("xtream_base_url", reply.getString("xtream_base_url"))
-                }
-
                 val payload = JSONObject().put("public_key", pair().publicKey.toBase64())
                 readGrant()?.optString("device_token")?.takeIf { it.isNotBlank() }?.let {
                     payload.put("device_token", it)

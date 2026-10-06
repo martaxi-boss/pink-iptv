@@ -1,19 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { choosePinkLiveContainer, pinkNativeOwnsConnectivity } from "../src/scripts/lib/pink-runtime-policy.ts"
+import { buildPinkLiveStreamUrl, pinkNativeOwnsConnectivity } from "../src/scripts/lib/pink-runtime-policy.ts"
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe("PINK runtime presentation and live-container policy", () => {
-  it("prefers HLS when the provider allows it", () => {
-    expect(choosePinkLiveContainer(["ts", "m3u8"])).toBe("m3u8")
+describe("PINK runtime provider and connectivity policy", () => {
+  it("builds the Mega authoritative legacy live path without a synthetic extension", () => {
+    expect(buildPinkLiveStreamUrl(
+      { host: "http://provider.example/", user: "fixture user", pass: "fixture/pass" },
+      30647,
+    )).toBe("http://provider.example/fixture%20user/fixture%2Fpass/30647")
   })
 
-  it("uses MPEG-TS only when HLS is not advertised", () => {
-    expect(choosePinkLiveContainer(["ts"])).toBe("ts")
-  })
-
-  it("defaults safely to HLS when provider format metadata is absent", () => {
-    expect(choosePinkLiveContainer(null)).toBe("m3u8")
+  it("fails closed when a live route cannot be constructed", () => {
+    expect(buildPinkLiveStreamUrl({ host: "", user: "u", pass: "p" }, 1)).toBe("")
   })
 
   it("does not let generic WebView navigator state own connectivity in native PINK", () => {

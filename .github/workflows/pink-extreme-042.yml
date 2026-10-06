@@ -1,7 +1,7 @@
 name: PINK Extreme Android 042
 on:
   push:
-    branches: ["builder/extreme-live-certification-055"]
+    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059"]
     paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml"]
   workflow_dispatch:
 permissions:
@@ -157,6 +157,7 @@ jobs:
           APK="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
           test -s "$APK"
           cp "$APK" "$RUNNER_TEMP/pink-deliverable/PINK-IPTV-Extreme-1.9.0-debug.apk"
+          cp "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/androidTest/universal/debug/app-universal-debug-androidTest.apk" "$RUNNER_TEMP/pink-deliverable/PINK-IPTV-Extreme-instrumentation.apk"
           tar --exclude='.git' --exclude='node_modules' --exclude='target' --exclude='build' --exclude='.gradle' --exclude='dist' --exclude='__pycache__' -czf "$RUNNER_TEMP/pink-deliverable/PINK-IPTV-Extreme-source.tar.gz" -C "$RUNNER_TEMP" pink-extreme
           cp -r clients/extreme "$RUNNER_TEMP/pink-deliverable/rebuild-recipe"
           find "$RUNNER_TEMP/pink-deliverable/rebuild-recipe" -type d -name __pycache__ -prune -exec rm -rf {} +

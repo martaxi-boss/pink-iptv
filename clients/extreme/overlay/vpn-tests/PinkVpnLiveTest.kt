@@ -47,6 +47,60 @@ class PinkVpnLiveTest {
         } finally { request.disconnect() }
     }
 
+
+    private fun webView(host: android.view.View): android.webkit.WebView? {
+        if (host is android.webkit.WebView) return host
+        if (host is android.view.ViewGroup) {
+            for (index in 0 until host.childCount) webView(host.getChildAt(index))?.let { return it }
+        }
+        return null
+    }
+
+    private fun js(activity: ActivityScenario<MainActivity>, script: String): String {
+        val latch = java.util.concurrent.CountDownLatch(1)
+        var result: String? = null
+        activity.onActivity { host ->
+            checkNotNull(webView(host.findViewById(android.R.id.content))).evaluateJavascript(script) {
+                result = it
+                latch.countDown()
+            }
+        }
+        check(latch.await(10, java.util.concurrent.TimeUnit.SECONDS))
+        return org.json.JSONTokener(checkNotNull(result)).nextValue().toString()
+    }
+
+    private fun waitJs(activity: ActivityScenario<MainActivity>, expression: String, seconds: Int) {
+        val deadline = System.currentTimeMillis() + seconds * 1000L
+        while (System.currentTimeMillis() < deadline) {
+            if (js(activity, "Boolean($expression)") == "true") return
+            Thread.sleep(250)
+        }
+        throw AssertionError("Protected WebView checkpoint unavailable")
+    }
+
+    private fun uiLoginAndCatalog(activity: ActivityScenario<MainActivity>, fixture: JSONObject, report: (String) -> Unit) {
+        js(activity, "location.assign('/login');true")
+        waitJs(activity, "document.querySelector('[data-pink-login]')", 45)
+        // Runtime-only fixture values enter only the local form, never output/artifacts.
+        val username = JSONObject.quote(fixture.getString("username"))
+        val password = JSONObject.quote(fixture.getString("password"))
+        js(activity, """(()=>{
+            const form=document.querySelector('[data-pink-login]');
+            form.elements.namedItem('username').value=$username;
+            form.elements.namedItem('password').value=$password;
+            form.requestSubmit();return true;
+        })()""")
+        waitJs(activity, "location.pathname==='/' && !document.querySelector('[data-pink-login]')", 90)
+        report("ACTUAL_WEBVIEW_USERNAME_PASSWORD_LOGIN=PASS")
+        js(activity, "location.assign('/livetv');true")
+        waitJs(activity, "document.querySelector('#viewport .channel-row:not([data-skeleton])')", 90)
+        // A main-thread roundtrip and category control, independent of native HTTP proof.
+        check(js(activity, "Boolean(document.querySelector('#category-picker-trigger'))") == "true")
+        js(activity, "document.querySelector('#category-picker-trigger').click();true")
+        report("ACTUAL_WEBVIEW_TAURI_LIVE_CATALOG_AND_UI_ROUNDTRIP=PASS")
+        report("WEBVIEW_ONLINE_FIXED_STATE="+js(activity, "navigator.onLine===true"))
+    }
+
     @Test fun authenticatedNativeLoginCatalogAndDecodedLiveAudioVideoUseWireGuard() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         fun report(message: String) = instrumentation.sendStatus(2, android.os.Bundle().apply { putString("stream", "\n"+message+"\n") })
@@ -113,6 +167,8 @@ class PinkVpnLiveTest {
                 val streams = catalog("$origin/player_api.php?$query&action=get_live_streams")
                 check(categories.length()>0 && streams.length()>0)
                 report("AUTHORITATIVE_USERNAME_PASSWORD_LOGIN_AND_CATALOG_VIA_WIREGUARD=PASS")
+                advance("webview-login-catalog")
+                uiLoginAndCatalog(activity, fixture, ::report)
                 advance("native-audio-video")
                 var decoded = false
                 for (index in 0 until minOf(3,streams.length())) {

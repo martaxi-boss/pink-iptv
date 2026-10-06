@@ -22,6 +22,8 @@ class PinkWebBridgeTest {
             val second = PinkVault(context)
             assertEquals(blob, second.readValidated())
             assertNull(prefs.getString("account", null))
+            assertTrue(second.markValidated(""))
+            assertEquals("", PinkVault(context).readValidated())
         } finally {
             PinkVault(context).markValidated("")
             prefs.edit().clear().commit()

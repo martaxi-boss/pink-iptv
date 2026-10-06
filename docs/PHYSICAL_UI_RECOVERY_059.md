@@ -41,3 +41,18 @@ The obsolete first-run WelcomeCard is replaced by an automatic redirect to the P
 The owner video shows a successful submission navigating briefly to Home and then returning to an empty login form. Inspection of source e5badb588333545c1beb599800cebc8b71bba16b found an unconditional inline `location.replace("/login")` in WelcomeCard. Astro includes that component in Home even when its parent section is hidden; hiding the component does not prevent its script from executing. Thus the page redirected independently of the validated account, including after a successful protected login.
 
 Remove that inline script entirely. The existing Home reconciliation now redirects only after `getEntries()` has finished reading/validating the protected account and returns an empty list. An authenticated account remains on Home; a fresh or unvalidated account still opens login automatically. The selectedId mirror remains presentation metadata only. Native routing, encrypted storage, and cold-start validation are unchanged. Generated-page regression tests cover authenticated Home, empty-account redirect, and delayed protected validation, and are included in Android CI. Exact fresh CI and live UI/playback validation are still required; source inspection does not certify the owner device.
+
+### Exact Android13 proof after Home correction
+
+Source `7e8ad3aa` passed Android042 and Backend CI. Operational run
+`37479264378` passed authoritative VPN login/catalog and retained protected
+runtime/source identity before and after disposable peer removal. Actual WebView
+checkpoint `login_home` failed with the form still present; native runtime was
+ready with no recorded failure. This does not certify actual UI or native AV.
+
+The next bounded diagnostic exposes only fixed login transaction phases
+(authenticating, loading_account, saving_account, navigating) and fixed route
+categories. It never returns form values, status/error text, URLs, account blobs
+or credentials. Six transaction tests cover save-before-navigation, each failure
+phase, duplicate submission and disposed form completion. The 90-second actual
+UI checkpoint stays unchanged; no same-source proof rerun is authorized.

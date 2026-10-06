@@ -77,6 +77,7 @@ for src, dst in {
 shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-session.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storage.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-home.test.ts', DEST / 'tests/pink-home.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-login.test.ts', DEST / 'tests/pink-login.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink-runtime-policy.test.ts')

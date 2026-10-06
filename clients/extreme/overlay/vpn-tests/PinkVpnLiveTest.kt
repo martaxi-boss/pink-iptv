@@ -87,7 +87,14 @@ class PinkVpnLiveTest {
             skeletons:document.querySelectorAll('#viewport [data-skeleton]').length,
             rows:document.querySelectorAll('#viewport .channel-row:not([data-skeleton])').length,
             nativeBridge:typeof window.PinkNative?.postMessage==='function',
-            nativeReady:typeof window.PinkConnection?.ready==='function'
+            nativeReady:typeof window.PinkConnection?.ready==='function',
+            loginPhase:(()=>{const value=document.querySelector('[data-pink-login]')?.dataset.pinkPhase;
+                return ['idle','authenticating','loading_account','saving_account','navigating','failed'].includes(value)?value:'absent'})(),
+            loginFailure:(()=>{const value=document.querySelector('[data-pink-login]')?.dataset.pinkFailure;
+                return ['authenticating','loading_account','saving_account','navigating'].includes(value)?value:'none'})(),
+            submitDisabled:document.querySelector('[data-pink-login] button')?.disabled===true,
+            route:(()=>{const value=location.pathname;
+                return ['/','/login','/tv','/tv/login','/livetv','/tv/livetv'].includes(value)?value:'other'})()
         })""")
         InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
             putString("stream", "\nACTUAL_WEBVIEW_FIXED_FLAGS="+flags+"\n")

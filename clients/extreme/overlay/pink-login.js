@@ -19,11 +19,14 @@ export function mountPinkLogin(root, navigate) {
   const button = form.querySelector('button')
   let alive = true
   let busy = false
+  form.dataset.pinkPhase = "idle"
   const onSubmit = async (event) => {
     event.preventDefault()
     if (busy) return
     busy = true
     button.disabled = true
+    form.dataset.pinkPhase = 'authenticating'
+    delete form.dataset.pinkFailure
     status.textContent = 'A verificar a sua conta…'
     try {
       const username = form.elements.namedItem('username').value.trim()
@@ -31,13 +34,18 @@ export function mountPinkLogin(root, navigate) {
       const account = await resolvePinkSession(username, password)
       if (!alive) return
       // Keep a single managed account, rather than accumulating duplicate logins.
+      form.dataset.pinkPhase = 'loading_account'
       for (const entry of await getEntries()) await removeEntry(entry._id)
+      form.dataset.pinkPhase = 'saving_account'
       await addEntry({ ...account, type: 'xtream', title: username, accent: 'fuchsia', liveContainer: 'ts' })
       if (alive) {
+        form.dataset.pinkPhase = 'navigating'
         status.textContent = 'Conta validada. A abrir…'
         await navigate()
       }
     } catch (error) {
+      form.dataset.pinkFailure = form.dataset.pinkPhase
+      form.dataset.pinkPhase = "failed"
       if (alive) status.textContent = error instanceof Error && error.message.startsWith('A sua') ? error.message :
         (error instanceof Error && /^(Utilizador|Não foi|Serviço|O serviço)/.test(error.message) ? error.message : 'Não foi possível entrar. Verifique a ligação e tente novamente.')
     } finally {

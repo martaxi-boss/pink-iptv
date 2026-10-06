@@ -238,6 +238,9 @@ async function pinkLiveBody(response) {
   let received = false
   try {
     while (true) {
+      // Native IPC can supply many already-ready chunks. Leave a browser task
+      // between pulls so input, paint and callbacks cannot starve behind the drain.
+      await new Promise(resolve => setTimeout(resolve, 0))
       const {done, value} = await reader.read()
       if (done) break
       if (value?.byteLength) {

@@ -399,6 +399,9 @@ class PinkVpnLiveTest {
                 report("ACTUAL_UI_NATIVE_LIVE_PHASE="+PinkWebBridge.livePhaseForTests())
                 report("ACTUAL_UI_RENDERER_PULSE_DURING_CALLBACK="+
                     (if (PinkWebBridge.rendererPulseForTests()>uiPulseAtEvaluation) "ADVANCING" else "QUIET"))
+                val mainPulse = java.util.concurrent.CountDownLatch(1)
+                android.os.Handler(android.os.Looper.getMainLooper()).post { mainPulse.countDown() }
+                report("ACTUAL_UI_ANDROID_MAIN_QUEUE="+(if (mainPulse.await(250,java.util.concurrent.TimeUnit.MILLISECONDS)) "RESPONSIVE" else "QUIET"))
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
                 val cacheState = try {
                     val raw = PinkVault(context).readValidated()

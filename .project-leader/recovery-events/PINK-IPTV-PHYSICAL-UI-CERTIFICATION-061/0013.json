@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 13,
+  "recorded_at": "2026-10-06T21:08:01.324702+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 6,
+  "action_fingerprint": "061;catalog-reader-browser-task-yield;main-vs-renderer",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "8a972ce7c9292dbde7eecc1fa16d8390dc3683c65a698934772be23de8fb5f43",
+  "detail": "R19 run37530780239/source56d82cc reproduces live_rows callback miss10s with route/livetv progress100, phase streaming and independent renderer pulse QUIET. First actual catalog bytes arrived; normal consent/native protected login/catalog/WebView login/DNS/cache PASS, host audits and own-peer cleanup PASS. The renderer does not service its1Hz heartbeat during the callback wait; do not reopen DNS/auth or retry unchanged."
+}

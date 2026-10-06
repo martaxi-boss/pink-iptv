@@ -151,6 +151,35 @@ describe('bounded live progress diagnostics', () => {
     await expect((await read)({body:{getReader:()=>failedReader}})).rejects.toThrow('synthetic body failure')
     expect(failedReader.releaseLock).toHaveBeenCalledOnce()
   })
+  it('lets a queued browser task run before an immediately-ready catalog is fully drained', async () => {
+    const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
+    const drain = live.slice(live.indexOf('async function pinkLiveBody'), live.indexOf('async function loadChannels'))
+    const read = await new AsyncFunction('pinkLivePhase', drain+';return pinkLiveBody')(vi.fn())
+    let browserTaskRan = false
+    let reads = 0
+    let taskObservedBeforeEnd = false
+    const task = new Promise<void>(resolve => setTimeout(() => { browserTaskRan = true; resolve() }, 0))
+    const reader = {
+      read: async () => {
+        if (reads++ === 4) return { done: true }
+        taskObservedBeforeEnd ||= browserTaskRan
+        return { done: false, value: new Uint8Array([65]) }
+      }, releaseLock: vi.fn(),
+    }
+    expect(await read({body:{getReader:()=>reader}})).toBe('AAAA')
+    await task
+    expect(taskObservedBeforeEnd).toBe(true)
+    expect(reader.releaseLock).toHaveBeenCalledOnce()
+    // Exercise the old drain as a counterfactual: yielding only to already
+    // fulfilled read promises does not let the queued browser task run.
+    const oldDrain = drain.replace('await new Promise(resolve => setTimeout(resolve, 0))', '')
+    const readOld = await new AsyncFunction('pinkLivePhase', oldDrain+';return pinkLiveBody')(vi.fn())
+    browserTaskRan = false; reads = 0; taskObservedBeforeEnd = false
+    const oldTask = new Promise<void>(resolve => setTimeout(() => { browserTaskRan = true; resolve() }, 0))
+    expect(await readOld({body:{getReader:()=>reader}})).toBe('AAAA')
+    expect(taskObservedBeforeEnd).toBe(false)
+    await oldTask
+  })
   it('marks the generated live fetch and paint boundaries using only fixed values', () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
     const values = [...live.matchAll(/pinkLivePhase\("([^"]+)"\)/g)].map(match => match[1])

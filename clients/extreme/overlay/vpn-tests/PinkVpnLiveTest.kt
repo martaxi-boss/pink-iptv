@@ -56,16 +56,21 @@ class PinkVpnLiveTest {
         return null
     }
 
+    private var uiJsBoundary = "not_started"
     private fun js(activity: ActivityScenario<MainActivity>, script: String): String {
         val latch = java.util.concurrent.CountDownLatch(1)
         var result: String? = null
+        uiJsBoundary = "host"
         activity.onActivity { host ->
+            uiJsBoundary = "webview"
             checkNotNull(webView(host.findViewById(android.R.id.content))).evaluateJavascript(script) {
                 result = it
                 latch.countDown()
             }
         }
+        uiJsBoundary = "callback"
         check(latch.await(10, java.util.concurrent.TimeUnit.SECONDS))
+        uiJsBoundary = "decode"
         return org.json.JSONTokener(checkNotNull(result)).nextValue().toString()
     }
 
@@ -90,24 +95,43 @@ class PinkVpnLiveTest {
         throw AssertionError("Protected WebView checkpoint unavailable")
     }
 
+    private var uiCheckpoint = "not_started"
+    private fun navigate(activity: ActivityScenario<MainActivity>, path: String) {
+        check(path in setOf("/login", "/livetv"))
+        // A navigation can dispose the evaluating document and its callback.
+        // Completion is the next page checkpoint, not a callback from the old page.
+        activity.onActivity { host ->
+            checkNotNull(webView(host.findViewById(android.R.id.content)))
+                .evaluateJavascript("location.assign(" + JSONObject.quote(path) + ")", null)
+        }
+    }
+
     private fun uiLoginAndCatalog(activity: ActivityScenario<MainActivity>, fixture: JSONObject, report: (String) -> Unit) {
-        js(activity, "location.assign('/login');true")
+        uiCheckpoint = "navigate_login"
+        navigate(activity, "/login")
+        uiCheckpoint = "login_form"
         waitJs(activity, "document.querySelector('[data-pink-login]')", 45)
         // Runtime-only fixture values enter only the local form, never output/artifacts.
         val username = JSONObject.quote(fixture.getString("username"))
         val password = JSONObject.quote(fixture.getString("password"))
+        uiCheckpoint = "submit_login"
         js(activity, """(()=>{
             const form=document.querySelector('[data-pink-login]');
             form.elements.namedItem('username').value=$username;
             form.elements.namedItem('password').value=$password;
             form.requestSubmit();return true;
         })()""")
+        uiCheckpoint = "login_home"
         waitJs(activity, "location.pathname==='/' && !document.querySelector('[data-pink-login]')", 90)
         report("ACTUAL_WEBVIEW_USERNAME_PASSWORD_LOGIN=PASS")
-        js(activity, "location.assign('/livetv');true")
+        uiCheckpoint = "navigate_livetv"
+        navigate(activity, "/livetv")
+        uiCheckpoint = "live_rows"
         waitJs(activity, "document.querySelector('#viewport .channel-row:not([data-skeleton])')", 90)
         // A main-thread roundtrip and category control, independent of native HTTP proof.
+        uiCheckpoint = "category_control"
         check(js(activity, "Boolean(document.querySelector('#category-picker-trigger'))") == "true")
+        uiCheckpoint = "category_roundtrip"
         js(activity, "document.querySelector('#category-picker-trigger').click();true")
         report("ACTUAL_WEBVIEW_TAURI_LIVE_CATALOG_AND_UI_ROUNDTRIP=PASS")
         report("WEBVIEW_ONLINE_FIXED_STATE="+js(activity, "navigator.onLine===true"))
@@ -255,10 +279,20 @@ class PinkVpnLiveTest {
                 check(identity == reloaded)
                 report("NATIVE_LIVE_AUDIO_VIDEO_DECODE_AND_SAME_INSTALLATION_RECREATION=PASS")
             }
-        } catch (_: Throwable) {
+        } catch (failure: Throwable) {
             primaryFailed = true
             report("PROTECTED_FLOW_FAILURE_PHASE="+phase)
             if (phase == "protected-login-enrollment") report("PROTECTED_ACTIVATION_DIAGNOSTIC="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
+            if (phase == "webview-login-catalog") {
+                val category = when (failure) {
+                    is AssertionError -> "ASSERTION"
+                    is IllegalStateException -> "STATE"
+                    is org.json.JSONException -> "JSON"
+                    else -> "OTHER"
+                }
+                report("ACTUAL_UI_FAILURE_CHECKPOINT="+uiCheckpoint+";js="+uiJsBoundary+";category="+category)
+                report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
+            }
             // Provider exceptions can contain credential-bearing URLs: never chain them.
             throw AssertionError("Protected real Android flow unavailable at "+phase)
         } finally {

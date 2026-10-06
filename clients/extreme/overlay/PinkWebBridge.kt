@@ -37,6 +37,8 @@ object PinkWebBridge {
                         "resolve" -> PinkVpnRuntime.get(app).resolve(
                             payload.getString("username"), payload.getString("password")).toString()
                         "vaultRead" -> vault.read()
+                        "vaultReadValidated" -> vault.readValidated()
+                        "vaultMarkValidated" -> vault.markValidated(payload.getString("value"))
                         "vaultWrite" -> vault.write(payload.getString("value"))
                         else -> throw IllegalArgumentException("Unavailable operation")
                     }

@@ -1,0 +1,46 @@
+import { readFileSync } from 'node:fs'
+import { describe, expect, it, vi } from 'vitest'
+
+// Exercise the generated home page, including scripts in hidden components.
+const home = readFileSync('src/pages/index.astro', 'utf8')
+const welcome = readFileSync('src/components/WelcomeCard.astro', 'utf8')
+const reconcile = home.match(/async function reconcileFirstRun\(\) \{([\s\S]*?)\n\t\}/)?.[1]
+if (!reconcile) throw new Error('Home reconciliation missing')
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+
+async function openHome(entries: Promise<unknown[]>) {
+  const replace = vi.fn()
+  const document = { documentElement: { toggleAttribute: vi.fn() } }
+  const location = { replace }
+  for (const match of welcome.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)) {
+    await new AsyncFunction('document', 'location', match[1])(document, location)
+  }
+  const completion = new AsyncFunction('getEntries', 'document', 'location', reconcile)(
+    () => entries, document, location,
+  )
+  return { replace, completion }
+}
+
+describe('PINK home login routing', () => {
+  it('stays home after successful login despite the hidden welcome component', async () => {
+    const { replace, completion } = await openHome(Promise.resolve([{ _id: 'fixture-id' }]))
+    expect(await completion).toBe(true)
+    expect(replace).not.toHaveBeenCalled()
+  })
+
+  it('opens login automatically when protected account validation returns no entries', async () => {
+    const { replace, completion } = await openHome(Promise.resolve([]))
+    expect(await completion).toBe(false)
+    expect(replace).toHaveBeenCalledExactlyOnceWith('/login')
+  })
+
+  it('waits for protected account validation before deciding to redirect', async () => {
+    let finish!: (value: unknown[]) => void
+    const pending = new Promise<unknown[]>(resolve => { finish = resolve })
+    const { replace, completion } = await openHome(pending)
+    expect(replace).not.toHaveBeenCalled()
+    finish([{ _id: 'fixture-id' }])
+    expect(await completion).toBe(true)
+    expect(replace).not.toHaveBeenCalled()
+  })
+})

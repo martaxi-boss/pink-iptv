@@ -76,6 +76,7 @@ for src, dst in {
     shutil.copyfile(ROOT / 'overlay' / src, DEST / dst)
 shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-session.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storage.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-home.test.ts', DEST / 'tests/pink-home.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink-runtime-policy.test.ts')
@@ -205,9 +206,13 @@ p.write_text(text)
 
 welcome = DEST / 'src/components/WelcomeCard.astro'
 welcome.write_text('''<div aria-hidden="true"></div>
-<script is:inline>
-  location.replace("/login")
-</script>\n''')
+''')
+
+# A hidden Astro component still executes its scripts. Only the home account
+# reconciliation may redirect, after the protected vault has been checked.
+replace('src/pages/index.astro',
+        '\t\tdocument.documentElement.toggleAttribute("data-first-run", !hasEntries);\n\t\treturn hasEntries;',
+        '\t\tdocument.documentElement.toggleAttribute("data-first-run", !hasEntries);\n\t\tif (!hasEntries) location.replace("/login");\n\t\treturn hasEntries;')
 
 # The encrypted account is intentionally absent from localStorage. Teach the
 # upstream first-run probe to use the non-sensitive selectedId metadata instead

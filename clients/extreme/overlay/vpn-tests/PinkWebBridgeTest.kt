@@ -10,6 +10,24 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class PinkWebBridgeTest {
+    @Test fun validatedAccountCacheSurvivesVaultRecreationOnlyInProcessMemory() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val prefs = context.getSharedPreferences("pink_account_v1", 0)
+        prefs.edit().clear().commit()
+        val blob = """{"entries":[{"_id":"fixture"}],"selectedId":"fixture"}"""
+        try {
+            val first = PinkVault(context)
+            assertTrue(first.markValidated(blob))
+            assertNull(prefs.getString("account", null))
+            val second = PinkVault(context)
+            assertEquals(blob, second.readValidated())
+            assertNull(prefs.getString("account", null))
+        } finally {
+            PinkVault(context).markValidated("")
+            prefs.edit().clear().commit()
+        }
+    }
+
     private fun evaluate(view: WebView, script: String): String {
         val latch = CountDownLatch(1)
         var result: String? = null

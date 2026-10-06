@@ -72,3 +72,24 @@ or submitting its form. Do not await a callback from the disposed document.
 Generated Kotlin-script regression tests reject the previous same-route document
 and require the destination path. This fixes a concrete test race; fresh exact
 actual UI/AV/recovery proof remains required to certify the app behavior.
+
+### Immutable certification061 continuation
+
+Canonical audit found malformed historical059 recovery event2: its predecessor
+hash is the raw-byte SHA256 instead of the canonical JSON digest, and its
+FAILURE_OBSERVED event increments strategy generation without REPLAN. Preserve
+the original task and both event files unchanged. They cannot certify059 success.
+Record059 as STALE_EXECUTION_PACKET superseded by independently authorized061.
+
+061 adopts corrected app/harness sourceea1770a9, whose65 tests and exact Android
+run37485188411/Backend37485188172 passed. The new authorization-only record
+precedes061 audit/closure implementation. Source CI verifies061 record immutability,
+scope and unchanged059 history. Fresh exact source CI and separate060 actual UI,
+native AV and recovery evidence remain required before certification/handoff.
+No historical event is repaired retrospectively and no control is weakened.
+
+061 also makes the actual proof assert that submitting the replacement form
+immediately enters the existing authenticating/busy state. Any later UI failure
+reports only native account-cache category VALID/EMPTY/MALFORMED and encrypted
+account presence, alongside existing fixed phase/route flags. No account values,
+credentials, origin, raw errors or blob are returned.

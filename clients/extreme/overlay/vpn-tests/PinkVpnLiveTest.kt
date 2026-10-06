@@ -126,12 +126,13 @@ class PinkVpnLiveTest {
         val username = JSONObject.quote(fixture.getString("username"))
         val password = JSONObject.quote(fixture.getString("password"))
         uiCheckpoint = "submit_login"
-        js(activity, """(()=>{
+        check(js(activity, """(()=>{
             const form=document.querySelector('[data-pink-login]');
             form.elements.namedItem('username').value=$username;
             form.elements.namedItem('password').value=$password;
-            form.requestSubmit();return true;
-        })()""")
+            form.requestSubmit();
+            return form.dataset.pinkPhase==='authenticating' && form.querySelector('button').disabled===true;
+        })()""") == "true")
         uiCheckpoint = "login_home"
         waitJs(activity, "location.pathname==='/' && !document.querySelector('[data-pink-login]')", 90)
         report("ACTUAL_WEBVIEW_USERNAME_PASSWORD_LOGIN=PASS")
@@ -303,6 +304,19 @@ class PinkVpnLiveTest {
                 }
                 report("ACTUAL_UI_FAILURE_CHECKPOINT="+uiCheckpoint+";js="+uiJsBoundary+";category="+category)
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
+                val cacheState = try {
+                    val raw = PinkVault(context).readValidated()
+                    if (raw.isEmpty()) "EMPTY" else {
+                        val account = JSONObject(raw)
+                        val selected = account.optString("selectedId")
+                        val entries = account.optJSONArray("entries")
+                        if (selected.isNotBlank() && entries != null &&
+                            (0 until entries.length()).any { entries.optJSONObject(it)?.optString("_id") == selected })
+                            "VALID" else "EMPTY"
+                    }
+                } catch (_: Exception) { "MALFORMED" }
+                val encrypted = context.getSharedPreferences("pink_account_v1", android.content.Context.MODE_PRIVATE).contains("account")
+                report("ACTUAL_UI_ACCOUNT_FIXED_STATE=cache="+cacheState+";encrypted="+encrypted)
             }
             // Provider exceptions can contain credential-bearing URLs: never chain them.
             throw AssertionError("Protected real Android flow unavailable at "+phase)

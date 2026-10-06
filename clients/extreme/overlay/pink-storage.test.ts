@@ -12,7 +12,7 @@ describe('protected PINK account restore', () => {
       title: 'Fixture',
       serverUrl: 'http://old.example',
       username: 'fixture-user',
-      password: 'fixture-password',
+      password: 'fixture-password', // pragma: allowlist secret — synthetic test fixture
     }],
     selectedId: 'fixture-id',
   }

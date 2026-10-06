@@ -209,6 +209,28 @@ welcome = DEST / 'src/components/WelcomeCard.astro'
 welcome.write_text('''<div aria-hidden="true"></div>
 ''')
 
+# Fixed progress markers let the Android proof distinguish a disposed callback
+# from a catalog stall without recording provider data or JavaScript errors.
+replace('src/scripts/stream/stream.ts',
+        'async function loadChannels() {',
+        '''function pinkLivePhase(value) {
+  document.documentElement.dataset.pinkLivePhase = value
+}
+async function loadChannels() {
+  pinkLivePhase("account")''')
+replace('src/scripts/stream/stream.ts', '  await Promise.allSettled([',
+        '  pinkLivePhase("preferences")\n  await Promise.allSettled([')
+replace('src/scripts/stream/stream.ts', '        const catMap = await ensureCategoryMap()',
+        '        pinkLivePhase("categories")\n        const catMap = await ensureCategoryMap()\n        pinkLivePhase("channels")')
+replace('src/scripts/stream/stream.ts', '        const parsed = JSON.parse(body)',
+        '        pinkLivePhase("parsing")\n        const parsed = JSON.parse(body)')
+replace('src/scripts/stream/stream.ts', '    paintChannels(data, fromCache, age, false)',
+        '    pinkLivePhase("painting")\n    paintChannels(data, fromCache, age, false)\n    pinkLivePhase("painted")')
+replace('src/scripts/stream/stream.ts', '    log.error("[xt:livetv] loadChannels threw:", e)',
+        '    pinkLivePhase("failed")\n    log.error("[xt:livetv] loadChannels threw:", e)')
+replace('src/scripts/stream/stream.ts', '  log.log("[xt:livetv] boot start")',
+        '  pinkLivePhase("boot")\n  log.log("[xt:livetv] boot start")')
+
 # A hidden Astro component still executes its scripts. Only the home account
 # reconciliation may redirect, after the protected vault has been checked.
 replace('src/pages/index.astro',

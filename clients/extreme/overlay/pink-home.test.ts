@@ -67,3 +67,23 @@ describe('actual Android proof navigation boundary', () => {
     expect(destination({}, { pathname: '/livetv' }, '/livetv')).toBe(true)
   })
 })
+
+describe('bounded live progress diagnostics', () => {
+  it('executes the actual Android observation without returning account data', () => {
+    const observation = harness.match(/val observation = JSONObject\(js\(activity, """([\s\S]*?)"""\)\)/)?.[1]
+    if (!observation) throw new Error('Live observation missing')
+    const script = observation.replace('$expression', 'false')
+    const observe = (phase: string) => JSON.parse(new Function('document', `return ${script}`)({
+      documentElement: { dataset: { pinkLivePhase: phase } },
+    }))
+    expect(observe('categories')).toEqual({ matched: false, phase: 'categories' })
+    expect(observe('https://private-sub.example/fixture-user/fixture-pass')).toEqual({ matched: false, phase: 'absent' })
+  })
+  it('marks the generated live fetch and paint boundaries using only fixed values', () => {
+    const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
+    const values = [...live.matchAll(/pinkLivePhase\("([^"]+)"\)/g)].map(match => match[1])
+    expect(values).toEqual(['account', 'preferences', 'categories', 'channels', 'parsing', 'painting', 'painted', 'failed', 'boot'])
+    expect(live.indexOf('pinkLivePhase("categories")')).toBeLessThan(live.indexOf('const catMap = await ensureCategoryMap()'))
+    expect(live.indexOf('pinkLivePhase("painted")')).toBeGreaterThan(live.indexOf('paintChannels(data, fromCache, age, false)'))
+  })
+})

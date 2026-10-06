@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 4,
+  "recorded_at": "2026-10-06T16:17:39.608596+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 2,
+  "action_fingerprint": "061;ea468ff3;R11-login-passes-live-rows-callback-missing",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "7e116703aa95f0f779ba7ba85521d983d427e2a243c515c2f1562812ed32ab66",
+  "detail": "R11 run37492834153 actual UI username/password login PASS and protected account cache VALID/encrypted true. Failure at live_rows with JS callback missing; native runtime ready/bound/admitted/saved and protected source/host audits and own-peer removal PASS. No false Live catalog or native AV/recovery success; source of callback loss remains unverified."
+}

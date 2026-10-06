@@ -57,13 +57,20 @@ class PinkVpnLiveTest {
     }
 
     private var uiJsBoundary = "not_started"
+    private var uiNativeRoute = "not_started"
+    private var uiNativeProgress = -1
+    private var uiLivePhase = "not_started"
     private fun js(activity: ActivityScenario<MainActivity>, script: String): String {
         val latch = java.util.concurrent.CountDownLatch(1)
         var result: String? = null
         uiJsBoundary = "host"
         activity.onActivity { host ->
             uiJsBoundary = "webview"
-            checkNotNull(webView(host.findViewById(android.R.id.content))).evaluateJavascript(script) {
+            val view = checkNotNull(webView(host.findViewById(android.R.id.content)))
+            val path = try { android.net.Uri.parse(view.url).path } catch (_: Exception) { null }
+            uiNativeRoute = if (path in setOf("/", "/login", "/tv", "/tv/login", "/livetv", "/tv/livetv")) path!! else "other"
+            uiNativeProgress = view.progress.coerceIn(0, 100)
+            view.evaluateJavascript(script) {
                 result = it
                 latch.countDown()
             }
@@ -77,7 +84,13 @@ class PinkVpnLiveTest {
     private fun waitJs(activity: ActivityScenario<MainActivity>, expression: String, seconds: Int) {
         val deadline = System.currentTimeMillis() + seconds * 1000L
         while (System.currentTimeMillis() < deadline) {
-            if (js(activity, "Boolean($expression)") == "true") return
+            val observation = JSONObject(js(activity, """JSON.stringify({
+                matched:Boolean($expression),
+                phase:(()=>{const value=document.documentElement.dataset.pinkLivePhase;
+                    return ['boot','account','preferences','categories','channels','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
+            })"""))
+            uiLivePhase = observation.getString("phase")
+            if (observation.getBoolean("matched")) return
             Thread.sleep(250)
         }
         val flags = js(activity, """JSON.stringify({
@@ -303,6 +316,7 @@ class PinkVpnLiveTest {
                     else -> "OTHER"
                 }
                 report("ACTUAL_UI_FAILURE_CHECKPOINT="+uiCheckpoint+";js="+uiJsBoundary+";category="+category)
+                report("ACTUAL_UI_LAST_FIXED_OBSERVATION=route="+uiNativeRoute+";progress="+uiNativeProgress+";livePhase="+uiLivePhase)
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
                 val cacheState = try {
                     val raw = PinkVault(context).readValidated()

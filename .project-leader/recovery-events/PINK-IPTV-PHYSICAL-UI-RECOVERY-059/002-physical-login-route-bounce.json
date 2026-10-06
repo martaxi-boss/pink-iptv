@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-RECOVERY-059",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 2,
+  "recorded_at": "2026-10-06T13:16:30Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 2,
+  "action_fingerprint": "059-physical-login-route-bounce-native-cache",
+  "attempt_count": 2,
+  "identical_failure_count": 2,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "185f18218c42e38ad184855d6501c6065b90bf1f3347a8be66ca98d0a576426f",
+  "detail": "Fresh owner physical video after the green recovery build shows direct login presentation is correct and the password-manager prompt is gone, but after submit the UI shows account verification, briefly transitions away, then returns to an empty login form instead of retaining the authenticated account and opening the menus. The current native validated-account cache is an instance field of PinkVault created inside PinkWebBridge.attach, so any bridge/WebView/activity reattachment loses the process-only validated state and the home reconciliation can classify the account as absent. Correct the cache to process scope and add native cross-instance coverage; keep persistent credentials encrypted in Keystore and cold-process revalidation/fail-closed semantics unchanged."
+}

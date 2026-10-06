@@ -9,7 +9,8 @@ type PinkLiveCredentials = {
  *   /<username>/<password>/<stream_id>
  * and those URLs return MPEG-TS bytes. The standard Xtream
  *   /live/<username>/<password>/<stream_id>.<ext>
- * route is not equivalent on this provider and has returned HTTP 401.
+ * route is not equivalent on this provider and has returned HTTP 401 in the
+ * bounded provider compatibility proof while this legacy source returned 200.
  *
  * Keep this provider compatibility in one PINK-owned helper so the complete
  * pinned Extreme application can keep using its normal player/cast paths.

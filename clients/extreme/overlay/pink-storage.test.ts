@@ -47,8 +47,8 @@ describe('protected PINK account restore', () => {
     resolve.mockResolvedValue({
       serverUrl: 'https://current.example',
       username: 'fixture-user',
-      password: 'fixture-password',
-    }) // pragma: allowlist secret — synthetic test fixture
+      password: 'fixture-password', // pragma: allowlist secret — synthetic test fixture
+    })
     const { getState } = await import('../src/scripts/lib/creds.js')
     const state = await getState()
     expect(resolve).toHaveBeenCalledWith('fixture-user', 'fixture-password')

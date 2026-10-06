@@ -56,3 +56,19 @@ categories. It never returns form values, status/error text, URLs, account blobs
 or credentials. Six transaction tests cover save-before-navigation, each failure
 phase, duplicate submission and disposed form completion. The 90-second actual
 UI checkpoint stays unchanged; no same-source proof rerun is authorized.
+
+### Proof R10 navigation race remediation
+
+Run37483877077 reached native authenticated VPN/catalog PASS but timed out at
+login_home. Its new fixed flags show route `/login`, phase `idle`, no failure and
+submit enabled, with native stage ready and failure none. The final document
+had not retained the submission. Protected host audits and own-peer cleanup PASS.
+
+The harness navigated asynchronously to `/login` and accepted any existing form,
+including one from the previous login document before navigation committed.
+Mark the outgoing document with a transient, non-sensitive flag and wait for the
+replacement document at the intended route with that flag absent, before filling
+or submitting its form. Do not await a callback from the disposed document.
+Generated Kotlin-script regression tests reject the previous same-route document
+and require the destination path. This fixes a concrete test race; fresh exact
+actual UI/AV/recovery proof remains required to certify the app behavior.

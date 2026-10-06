@@ -44,3 +44,26 @@ describe('PINK home login routing', () => {
     expect(replace).not.toHaveBeenCalled()
   })
 })
+
+const harness = readFileSync('src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme/PinkVpnLiveTest.kt', 'utf8')
+const launch = harness.match(/\.evaluateJavascript\("([^"]+)" \+ JSONObject.quote\(path\) \+ "([^"]+)", null\)/)
+const checkpoint = harness.match(/waitJs\(activity, "([^"]+)" \+ JSONObject.quote\(path\) \+\s*"([^"]+)", 45\)/)
+function destination(window: object, location: object, path: string) {
+  if (!checkpoint) throw new Error('New-document navigation barrier missing')
+  return new Function('window', 'location', `return ${checkpoint[1]}${JSON.stringify(path)}${checkpoint[2]}`)(window, location)
+}
+describe('actual Android proof navigation boundary', () => {
+  it('cannot accept the old login document while same-route navigation is pending', () => {
+    if (!launch) throw new Error('Explicit navigation launch missing')
+    const window = {}
+    const location = { pathname: '/login', assign: vi.fn() }
+    new Function('window', 'location', `${launch[1]}${JSON.stringify('/login')}${launch[2]}`)(window, location)
+    expect(location.assign).toHaveBeenCalledExactlyOnceWith('/login')
+    expect(destination(window, location, '/login')).toBe(false)
+    expect(destination({}, location, '/login')).toBe(true)
+  })
+  it('requires the intended route in the replacement document', () => {
+    expect(destination({}, { pathname: '/login' }, '/livetv')).toBe(false)
+    expect(destination({}, { pathname: '/livetv' }, '/livetv')).toBe(true)
+  })
+})

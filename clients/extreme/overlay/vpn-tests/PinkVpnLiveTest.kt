@@ -109,8 +109,12 @@ class PinkVpnLiveTest {
         // Completion is the next page checkpoint, not a callback from the old page.
         activity.onActivity { host ->
             checkNotNull(webView(host.findViewById(android.R.id.content)))
-                .evaluateJavascript("location.assign(" + JSONObject.quote(path) + ")", null)
+                .evaluateJavascript("window.__pinkProofNavigationPending=true;location.assign(" + JSONObject.quote(path) + ")", null)
         }
+        // A form already present in the old /login document is not a destination
+        // checkpoint. Only the new document loses this transient marker.
+        waitJs(activity, "location.pathname===" + JSONObject.quote(path) +
+            " && window.__pinkProofNavigationPending!==true", 45)
     }
 
     private fun uiLoginAndCatalog(activity: ActivityScenario<MainActivity>, fixture: JSONObject, report: (String) -> Unit) {

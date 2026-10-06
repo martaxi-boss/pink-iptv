@@ -381,9 +381,17 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
         }
-        val controlNetwork = candidates.firstOrNull {
-            cm.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
-        } ?: candidates.firstOrNull() ?: throw IllegalStateException("Connection unavailable")
+        // Android's VALIDATED flag describes general Internet access, not DNS
+        // reachability for this fixed control host. Enumeration order can pick
+        // an unusable cellular underlay even while Wi-Fi resolves the host.
+        // Probe DNS on the candidate Network itself, before any POST. This
+        // never moves provider traffic or the process off the captured VPN.
+        val controlNetwork = selectPinkControlNetwork(candidates, cm.activeNetwork,
+            { cm.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true },
+            { network ->
+                try { network.getAllByName("pink-iptv.duckdns.org").isNotEmpty() }
+                catch (_: java.net.UnknownHostException) { false }
+            }) ?: throw java.net.UnknownHostException("Protected control DNS unavailable")
         val route = "PINNED_HTTPS_CONTROL"
         val capabilities = cm.getNetworkCapabilities(controlNetwork)
         val transport = when {

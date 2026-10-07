@@ -77,7 +77,7 @@ class PinkWebBridgeTest {
             val pulseDeadline = System.currentTimeMillis()+2000
             while (PinkWebBridge.rendererPulseForTests() == beforePulse && System.currentTimeMillis()<pulseDeadline) Thread.sleep(50)
             assertTrue(PinkWebBridge.rendererPulseForTests()>beforePulse)
-            for (phase in listOf("pulling_first", "decode_small", "decode_medium", "decode_large", "decoded_first", "pulling_next")) {
+            for (phase in listOf("categories", "channels", "response", "reading", "body", "parsing", "painting", "painted", "failed")) {
                 evaluate(view, "PinkNative.postMessage(JSON.stringify({id:'0',operation:'livePhase',payload:{phase:'"+phase+"'}}));true")
                 val deadline = System.currentTimeMillis()+2000
                 while (PinkWebBridge.livePhaseForTests()!=phase && System.currentTimeMillis()<deadline) Thread.sleep(50)

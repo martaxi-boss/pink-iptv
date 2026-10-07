@@ -25,14 +25,21 @@ class PinkVpnLiveTest {
     private val ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     private fun encoded(value: String): String = URLEncoder.encode(value,"UTF-8").replace("+","%20")
 
+    private var catalogBoundary = "not_started"
+    private var catalogStatus = -1
+    private var catalogKind = "not_started"
     private fun catalog(url: String): JSONArray {
+        catalogBoundary = "connect"
+        catalogStatus = -1
         val request = URL(url).openConnection() as HttpURLConnection
         request.instanceFollowRedirects = false
         request.connectTimeout = 15000
         request.readTimeout = 15000
         request.setRequestProperty("User-Agent",ua)
         try {
-            check(request.responseCode == 200)
+            catalogStatus = request.responseCode
+            check(catalogStatus == 200)
+            catalogBoundary = "body"
             val output = java.io.ByteArrayOutputStream()
             request.inputStream.use { source ->
                 val buffer = ByteArray(8192)
@@ -43,7 +50,10 @@ class PinkVpnLiveTest {
                 }
             }
             check(output.size() <= 32*1024*1024)
-            return JSONArray(output.toString("UTF-8"))
+            catalogBoundary = "parse"
+            val rows = JSONArray(output.toString("UTF-8"))
+            catalogBoundary = if (rows.length() == 0) "empty" else "complete"
+            return rows
         } finally { request.disconnect() }
     }
 
@@ -309,7 +319,10 @@ class PinkVpnLiveTest {
                 check(identity is VpnIdentityResult.Available)
                 advance("authoritative-catalog")
                 val query = "username="+encoded(fixture.getString("username"))+"&password="+encoded(fixture.getString("password"))
+                catalogKind = "categories"
                 val categories = catalog("$origin/player_api.php?$query&action=get_live_categories")
+                check(categories.length()>0)
+                catalogKind = "channels"
                 val streams = catalog("$origin/player_api.php?$query&action=get_live_streams")
                 check(categories.length()>0 && streams.length()>0)
                 report("AUTHORITATIVE_USERNAME_PASSWORD_LOGIN_AND_CATALOG_VIA_WIREGUARD=PASS")
@@ -388,6 +401,11 @@ class PinkVpnLiveTest {
         } catch (failure: Throwable) {
             primaryFailed = true
             report("PROTECTED_FLOW_FAILURE_PHASE="+phase)
+            if (phase == "authoritative-catalog") {
+                report("PROTECTED_CATALOG_BOUNDARY="+catalogKind+":"+catalogBoundary+";status="+catalogStatus+
+                    ";failure="+PinkVpnRuntime.healthFailureKind(failure as? Exception ?: Exception()))
+                report("PROTECTED_CATALOG_RUNTIME="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
+            }
             if (phase == "protected-login-enrollment") report("PROTECTED_ACTIVATION_DIAGNOSTIC="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
             if (phase == "webview-login-catalog") {
                 val category = when (failure) {

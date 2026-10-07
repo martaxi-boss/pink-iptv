@@ -58,20 +58,6 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
           pnpm run build
-      - name: Inspect real provider subtitle metadata when existing read access is available
-        env:
-          SSHPASS: ${{ secrets.VPS_SSH_PASSWORD }}
-        run: |
-          set -euo pipefail
-          if [ -z "$SSHPASS" ]; then
-            echo REAL_PROVIDER_VOD_METADATA=NO_EXISTING_CREDENTIAL
-            exit 0
-          fi
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq sshpass >/dev/null
-          if ! sshpass -e ssh -T -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 ubuntu@146.59.145.3 'sudo -n python3 -' < clients/extreme/inspect_vod_metadata.py; then
-            echo REAL_PROVIDER_VOD_METADATA=READ_NOT_COMPLETED
-          fi
       - name: Generate real test-only VOD media with multiple tracks
         run: |
           command -v ffmpeg >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq ffmpeg >/dev/null; }
@@ -137,7 +123,10 @@ jobs:
           grep -q 'OK (1 test)' "$RUNNER_TEMP/pink053-startup.txt"
           adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVodTracksTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink-vod-tracks.txt"
           cat "$RUNNER_TEMP/pink-vod-tracks.txt"
-          grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink-vod-tracks.txt"
+          if ! grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink-vod-tracks.txt"; then
+            adb logcat -b crash -d -t 100
+            exit 1
+          fi
           grep -q 'REAL_MEDIA3_MULTI_AUDIO_MULTI_SUBTITLE_FORCED_SELECTION_AND_PRESENTED_VIDEO=PASS' "$RUNNER_TEMP/pink-vod-tracks.txt"
           grep -q 'REAL_MEDIA3_SINGLE_AUDIO_NO_SUBTITLES_AND_PROTECTED_LAUNCH_FALLBACK=PASS' "$RUNNER_TEMP/pink-vod-tracks.txt"
           adb shell am force-stop com.pinkiptv.extreme

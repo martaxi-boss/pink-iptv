@@ -11,6 +11,8 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.TrackGroup
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.ui.DefaultTrackNameProvider
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.TrackSelectionView
@@ -71,7 +73,12 @@ class PinkVodTracksTest {
                 container = created
                 root.addView(created)
                 view = created.findViewById(R.id.player_view)
-                player = ExoPlayer.Builder(host).build()
+                // Avoid the host H.264 decoder implicated by this emulator's crash log.
+                // Exercise real guest codecs; this test policy does not change the APK player.
+                val renderers = DefaultRenderersFactory(host).setMediaCodecSelector { mime, secure, tunnel ->
+                    MediaCodecSelector.DEFAULT.getDecoderInfos(mime, secure, tunnel).sortedBy { !it.softwareOnly }
+                }
+                player = ExoPlayer.Builder(host, renderers).build()
                 view.player = player
                 player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
                     .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true).build()

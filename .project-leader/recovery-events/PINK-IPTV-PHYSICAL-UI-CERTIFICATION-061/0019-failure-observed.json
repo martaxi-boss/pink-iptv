@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 19,
+  "recorded_at": "2026-10-07T04:17:18.420824+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 8,
+  "action_fingerprint": "061;native-view-diagnostic-owned-scenario-scope-fix",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "fb055ca59434d38ee3c5dfe559d669394a33cffbef6f6e64dde0118cc333b068",
+  "detail": "Android CI37569885694 on4cd7067 fails compileUniversalDebugAndroidTestKotlin: new native-view failure diagnostic used activity outside launch let scope. Backend37569885685 and75 frontend tests/build PASS; APK build PASS but no certified deliverable. No operational proof/emulator host effects. Kotlin diagnostic scope must be repaired; no unchanged CI rerun."
+}

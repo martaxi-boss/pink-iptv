@@ -258,8 +258,10 @@ class PinkVpnLiveTest {
         var enrolled = false
         val retainForRestart = InstrumentationRegistry.getArguments().getString("pinkRetainGrant") == "true"
         var primaryFailed = false
+        var uiActivityForDiagnostics: ActivityScenario<MainActivity>? = null
         try {
             ActivityScenario.launch(MainActivity::class.java).let { activity ->
+                uiActivityForDiagnostics = activity
                 advance("normal-consent")
                 val device = UiDevice.getInstance(instrumentation)
                 val consentDeadline = System.currentTimeMillis()+60000
@@ -402,14 +404,18 @@ class PinkVpnLiveTest {
                 val mainPulse = java.util.concurrent.CountDownLatch(1)
                 android.os.Handler(android.os.Looper.getMainLooper()).post { mainPulse.countDown() }
                 report("ACTUAL_UI_ANDROID_MAIN_QUEUE="+(if (mainPulse.await(250,java.util.concurrent.TimeUnit.MILLISECONDS)) "RESPONSIVE" else "QUIET"))
-                activity.onActivity { host ->
-                    val view = webView(host.findViewById(android.R.id.content))
-                    val renderer = if (android.os.Build.VERSION.SDK_INT >= 29 && view?.webViewRenderProcess != null) "PRESENT" else "ABSENT"
-                    report("ACTUAL_UI_NATIVE_VIEW_FIXED_STATE=renderer="+renderer+
-                        ";attached="+(view?.isAttachedToWindow==true)+";shown="+(view?.isShown==true)+
-                        ";windowVisible="+(view?.windowVisibility==android.view.View.VISIBLE)+
-                        ";focused="+(view?.hasWindowFocus()==true))
-                }
+                var nativeViewState = "UNAVAILABLE"
+                try {
+                    uiActivityForDiagnostics?.onActivity { host ->
+                        val view = webView(host.findViewById(android.R.id.content))
+                        val renderer = if (android.os.Build.VERSION.SDK_INT >= 29 && view?.webViewRenderProcess != null) "PRESENT" else "ABSENT"
+                        nativeViewState = "renderer="+renderer+
+                            ";attached="+(view?.isAttachedToWindow==true)+";shown="+(view?.isShown==true)+
+                            ";windowVisible="+(view?.windowVisibility==android.view.View.VISIBLE)+
+                            ";focused="+(view?.hasWindowFocus()==true)
+                    }
+                } catch (_: Exception) { }
+                report("ACTUAL_UI_NATIVE_VIEW_FIXED_STATE="+nativeViewState)
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
                 val cacheState = try {
                     val raw = PinkVault(context).readValidated()

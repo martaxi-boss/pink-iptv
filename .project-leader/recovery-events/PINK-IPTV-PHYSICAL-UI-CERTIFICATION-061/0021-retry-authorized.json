@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 21,
+  "recorded_at": "2026-10-07T04:17:18.421047+00:00",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 9,
+  "action_fingerprint": "061;native-view-diagnostic-owned-scenario-scope-fix",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "23800b57f4362815fbd84898bf8b3fcdf9fe9846fdd076cfffeb4eb9b10495be",
+  "detail": "Prospective covered exact-source compilation repair after objective CI error. New Backend/Android CI must certify Kotlin instrumentation, native fixed-phase origin tests, payload, lint/privacy and APK checksums before060 preparation/proof. Existing75 meaningful frontend tests/build remain passed for unchanged reader/JS. No blind same-run retry, fixture/provider output, host changes, timeout increase or physical claim."
+}

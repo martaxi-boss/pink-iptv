@@ -24,13 +24,13 @@ with tempfile.TemporaryDirectory(prefix='pink-vod-fixtures-') as tmp:
         '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '32k', '-c:s', 'srt',
         '-metadata:s:a:0', 'language=por', '-metadata:s:a:1', 'language=eng',
         '-metadata:s:s:0', 'language=por', '-metadata:s:s:1', 'language=eng',
-        '-disposition:s:1', 'forced', str(multi)], check=True)
+        '-disposition:s:1', 'forced', str(multi)], check=True, timeout=120)
     subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y',
         '-i', str(multi), '-map', '0:v', '-map', '0:a:0', '-c', 'copy',
-        str(output / 'single-audio.mp4')], check=True)
+        str(output / 'single-audio.mp4')], check=True, timeout=120)
 for name, audio_count, text_count in [('multi-tracks.mkv', 2, 2), ('single-audio.mp4', 1, 0)]:
     streams = json.loads(subprocess.check_output(['ffprobe', '-v', 'error',
-        '-show_streams', '-of', 'json', str(output / name)], text=True))['streams']
+        '-show_streams', '-of', 'json', str(output / name)], text=True, timeout=30))['streams']
     assert sum(s['codec_type'] == 'audio' for s in streams) == audio_count
     assert sum(s['codec_type'] == 'subtitle' for s in streams) == text_count
     if text_count:

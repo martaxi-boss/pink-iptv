@@ -69,8 +69,9 @@ jobs:
           target.write_text('/_astro/' + workers[0].name)
           PY
       - name: Generate real test-only VOD media with multiple tracks
+        timeout-minutes: 5
         run: |
-          command -v ffmpeg >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq ffmpeg >/dev/null; }
+          command -v ffmpeg >/dev/null || { timeout 120s sudo apt-get update -qq; timeout 120s sudo apt-get install -y -qq ffmpeg >/dev/null; }
           python clients/extreme/generate_vod_test_media.py "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/src/androidTest/assets/pink-vod"
       - name: Generate PINK launcher resources
         working-directory: ${{ runner.temp }}/pink-extreme

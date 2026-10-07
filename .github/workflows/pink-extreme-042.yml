@@ -111,7 +111,7 @@ jobs:
           adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkWebBridgeTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink055-origin.txt"
           cat "$RUNNER_TEMP/pink055-origin.txt"
           grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink055-origin.txt"
-          adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVpnStartupTest,com.pinkiptv.extreme.PinkVodTracksTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink053-startup.txt"
+          adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVodIntegrationSuite com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink053-startup.txt"
           cat "$RUNNER_TEMP/pink053-startup.txt"
           if ! grep -q 'OK (3 tests)' "$RUNNER_TEMP/pink053-startup.txt"; then
             adb logcat -b crash -d -t 100

@@ -11,6 +11,7 @@ describe('Android VOD native tracks and genuine launch fallback', () => {
     const source = readFileSync(`src/scripts/${kind}/detail.ts`, 'utf8')
     expect(source).toContain('preferAndroidNativeVod(nativePlaySrc) &&')
     expect(source).toContain('getAndroidLocalUri')
+    expect(source).toContain('const nativeLocalSrc = await getAndroidLocalUri')
     expect(source).toContain('const nativePlaySrc = nativeLocalSrc || playSrc')
     expect(source).toContain('url: nativePlaySrc')
     expect(source).not.toContain('tryAndroidIntentPlayback')

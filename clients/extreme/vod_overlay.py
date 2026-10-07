@@ -31,7 +31,7 @@ function pushTvOverscan(): void {''')
         replace(path, f'  if (await tryAndroidIntentPlayback({source})) return\n', '')
         replace(path, f'  const localDownloadPath = localSrc ? await getLocalDownloadPath({source}) : null',
                 f'  const localDownloadPath = localSrc ? await getLocalDownloadPath({source}) : null\n'
-                f'  const nativeLocalSrc = localSrc ? await getAndroidLocalUri({source}) : null\n'
+                f'  const nativeLocalSrc = await getAndroidLocalUri({source})\n'
                 '  const nativePlaySrc = nativeLocalSrc || playSrc')
         replace(path, '    androidNativePlayerAvailable &&\n    getAndroidNativePlayerEnabled() &&',
                 '    preferAndroidNativeVod(nativePlaySrc) &&')

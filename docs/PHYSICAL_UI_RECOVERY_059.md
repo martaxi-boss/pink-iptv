@@ -119,3 +119,9 @@ removed with the substituted Live TV transport. Product admission, account,
 origin, UI, presented-video/audio, cold-start, network-recovery and own-peer
 cleanup assertions remain. Source CI and the direct exact-artifact functional
 proof must pass before this correction can be described as certified.
+
+### Current direct execution: physical HTTPS selection
+
+The exact 81728bde proof reached system consent but failed on the selected cellular control network at response headers (SocketException/ABORT); the current real account returned SUCCESS from the same fixed HTTPS endpoint on the server. DNS and Android VALIDATED alone therefore do not qualify a physical control route. Candidate selection now requires a credential-free HEAD on the POST-only session endpoint to return 405 with normal TLS verification, within fixed four-second connect/read limits, before sending a control POST. This probe is restricted to PINK control; provider/catalog/media remain on the owned VPN network.
+
+The Live TV catalog now arrives through the native vault/VPN bridge. Removed the superseded binary chunk decoder and its decode-size/pull observers and observer-only tests; retained actual catalogue, login, row-click, presented-video and audio assertions. The local frontend/regression suite has 75 passing tests. Functional certification remains pending a new exact-artifact proof.

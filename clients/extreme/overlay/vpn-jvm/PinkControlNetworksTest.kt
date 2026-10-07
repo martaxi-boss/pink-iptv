@@ -5,7 +5,18 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class PinkControlNetworksTest {
-    @Test fun validatedDoesNotGuaranteeControlDns() {
+    @Test fun dnsSuccessWithoutHttpsCannotSelectAnUnusableValidatedUnderlay() {
+        val dns = setOf("cellular", "wifi")
+        val probes = mutableListOf<String>()
+        val selected = selectPinkControlNetwork(listOf("cellular", "wifi"), "vpn", { it == "cellular" }) {
+            probes.add(it)
+            it in dns && it == "wifi"
+        }
+        assertEquals("wifi", selected)
+        assertEquals(listOf("cellular", "wifi"), probes)
+    }
+
+    @Test fun validatedDoesNotGuaranteeControlReachability() {
         val probes = mutableListOf<String>()
         val selected = selectPinkControlNetwork(listOf("cellular", "wifi"), null, { true }) {
             probes.add(it)
@@ -28,7 +39,7 @@ class PinkControlNetworksTest {
         assertEquals("wifi", selectPinkControlNetwork(listOf("wifi"), "vpn", { true }) { true })
     }
 
-    @Test fun unresolvedCandidatesFailClosedAndEachIsProbedOnlyOnce() {
+    @Test fun unreachableCandidatesFailClosedAndEachIsProbedOnlyOnce() {
         val probes = mutableListOf<String>()
         assertNull(selectPinkControlNetwork(listOf("wifi", "wifi", "cellular"), null, { true }) {
             probes.add(it)

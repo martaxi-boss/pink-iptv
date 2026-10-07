@@ -418,17 +418,23 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
         }
-        // Android's VALIDATED flag describes general Internet access, not DNS
-        // reachability for this fixed control host. Enumeration order can pick
-        // an unusable cellular underlay even while Wi-Fi resolves the host.
-        // Probe DNS on the candidate Network itself, before any POST. This
+        // VALIDATED and DNS success do not establish HTTPS reachability: a
+        // cellular underlay can resolve the host yet abort its HTTP response.
+        // Probe the fixed POST-only endpoint with a credential-free HEAD on
+        // each candidate before choosing where to send a control POST. This
         // never moves provider traffic or the process off the captured VPN.
         val controlNetwork = selectPinkControlNetwork(candidates, cm.activeNetwork,
             { cm.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true },
             { network ->
-                try { network.getAllByName("pink-iptv.duckdns.org").isNotEmpty() }
-                catch (_: java.net.UnknownHostException) { false }
-            }) ?: throw java.net.UnknownHostException("Protected control DNS unavailable")
+                try {
+                    val probe = network.openConnection(URL("https://pink-iptv.duckdns.org/v1/session/resolve")) as javax.net.ssl.HttpsURLConnection
+                    probe.instanceFollowRedirects = false
+                    probe.requestMethod = "HEAD"
+                    probe.connectTimeout = 4000
+                    probe.readTimeout = 4000
+                    try { probe.responseCode == 405 } finally { probe.disconnect() }
+                } catch (_: java.io.IOException) { false }
+            }) ?: throw java.net.ConnectException("Protected control HTTPS unavailable")
         val route = "PINNED_HTTPS_CONTROL"
         val capabilities = cm.getNetworkCapabilities(controlNetwork)
         val transport = when {

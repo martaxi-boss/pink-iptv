@@ -249,37 +249,6 @@ function pinkLivePhase(value) {
     window.addEventListener?.("pagehide", () => clearInterval(pinkLivePulseTimer), {once:true})
   }
 }
-async function pinkLiveBody(response) {
-  const reader = response.body?.getReader?.()
-  if (!reader) return response.text()
-  const decoder = new TextDecoder("utf-8")
-  const chunks = []
-  let received = false
-  let nextPullMarked = false
-  try {
-    while (true) {
-      if (!received) pinkLivePhase("pulling_first")
-      else if (!nextPullMarked) { nextPullMarked = true; pinkLivePhase("pulling_next") }
-      const {done, value} = await reader.read()
-      if (done) break
-      if (value?.byteLength) {
-        const first = !received
-        if (first) {
-          received = true
-          pinkLivePhase("streaming")
-          // Fixed size buckets locate first-chunk decode versus later IPC pulls.
-          // Neither exact lengths nor content cross the diagnostic boundary.
-          pinkLivePhase(value.byteLength <= 65536 ? "decode_small" :
-            value.byteLength <= 1048576 ? "decode_medium" : "decode_large")
-        }
-        chunks.push(decoder.decode(value, {stream:true}))
-        if (first) pinkLivePhase("decoded_first")
-      }
-    }
-    chunks.push(decoder.decode())
-    return chunks.join("")
-  } finally { reader.releaseLock() }
-}
 async function loadChannels() {
   pinkLivePhase("account")''')
 replace('src/scripts/stream/stream.ts', '  await Promise.allSettled([',
@@ -290,7 +259,7 @@ replace('src/scripts/stream/stream.ts',
         '        const r = await xtreamApiFetch("get_live_streams")',
         '        const r = await xtreamApiFetch("get_live_streams")\n        pinkLivePhase("response")')
 replace('src/scripts/stream/stream.ts', '        const body = await r.text()',
-        '        pinkLivePhase("reading")\n        const body = await pinkLiveBody(r)\n        pinkLivePhase("body")')
+        '        pinkLivePhase("reading")\n        const body = await r.text()\n        pinkLivePhase("body")')
 replace('src/scripts/stream/stream.ts', '        const parsed = JSON.parse(body)',
         '        pinkLivePhase("parsing")\n        const parsed = JSON.parse(body)')
 replace('src/scripts/stream/stream.ts', '    paintChannels(data, fromCache, age, false)',

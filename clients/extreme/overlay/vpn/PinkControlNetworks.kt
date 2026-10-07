@@ -5,7 +5,7 @@ internal fun <T> selectPinkControlNetwork(
     candidates: List<T>,
     preferred: T?,
     validated: (T) -> Boolean,
-    resolvesControlHost: (T) -> Boolean,
+    reachesControlEndpoint: (T) -> Boolean,
 ): T? {
     val ordered = candidates.distinct().sortedBy {
         when {
@@ -15,5 +15,5 @@ internal fun <T> selectPinkControlNetwork(
             else -> 3
         }
     }
-    return ordered.firstOrNull(resolvesControlHost)
+    return ordered.firstOrNull(reachesControlEndpoint)
 }

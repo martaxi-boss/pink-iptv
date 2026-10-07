@@ -104,7 +104,7 @@ class PinkVpnLiveTest {
             val raw = js(activity, """JSON.stringify({
                 matched:document.readyState==='complete' && Boolean($expression),
                 phase:(()=>{const value=document.documentElement?.dataset.pinkLivePhase;
-                    return ['boot','account','preferences','categories','channels','response','reading','streaming','pulling_first','decode_small','decode_medium','decode_large','decoded_first','pulling_next','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
+                    return ['boot','account','preferences','categories','channels','response','reading','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
             })""")
             // A document can be replaced between native readiness and evaluation.
             // WebView's null response is pending, never a successful checkpoint.

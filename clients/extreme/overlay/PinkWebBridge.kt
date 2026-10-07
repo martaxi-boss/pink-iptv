@@ -15,6 +15,7 @@ object PinkWebBridge {
     private val workers = Executors.newSingleThreadExecutor()
     private val catalogWorkers = Executors.newSingleThreadExecutor()
     private val vodCatalogWorkers = Executors.newSingleThreadExecutor()
+    private var vodOwner: PinkVodCatalog? = null
     @Volatile private var livePhase = "absent"
     @Volatile private var rendererPulse = 0L
     internal fun rendererPulseForTests(): Long = rendererPulse
@@ -30,6 +31,8 @@ object PinkWebBridge {
         val app = context.applicationContext
         val vault = PinkVault(app)
         val vodCatalog = PinkVodCatalog(app, vault, PinkVpnRuntime.get(app))
+        vodOwner?.dispose()
+        vodOwner = vodCatalog
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
             setOf("http://tauri.localhost", "https://tauri.localhost")) { _, message, sourceOrigin, mainFrame, reply ->
             if (!mainFrame || sourceOrigin.host != "tauri.localhost" ||

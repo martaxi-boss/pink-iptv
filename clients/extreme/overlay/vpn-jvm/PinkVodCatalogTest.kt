@@ -77,5 +77,20 @@ class PinkVodCatalogTest {
             assertFalse(file.exists())
         } finally { file.delete() }
     }
+    @Test fun aRecreatedDocumentCancelsOldIoAndCannotReuseItsLease() {
+        val old = PinkCatalogTransfer.Lease()
+        val request = Reply(ByteArrayInputStream("[]".toByteArray()))
+        old.attach(request)
+        assertTrue(old.active())
+        old.close()
+        assertTrue(request.disconnected)
+        assertFalse(old.active())
+        try { old.attach(Reply(ByteArrayInputStream(byteArrayOf()))); fail("Disposed document reused") }
+        catch (_: IllegalStateException) {}
+        val fresh = PinkCatalogTransfer.Lease()
+        assertTrue(fresh.active())
+        fresh.attach(Reply(ByteArrayInputStream("[]".toByteArray())))
+        fresh.release(); fresh.close()
+    }
     private data class Failure(val code:Int,val body:ByteArray,val limit:Int,val admitted:Boolean)
 }

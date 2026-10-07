@@ -114,7 +114,7 @@ describe('protected Movies/Series transport', () => {
   it('keeps native admission, selected-account binding and owned Network opener mandatory', () => {
     const native = readFileSync(new URL('../src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVodCatalog.kt',import.meta.url),'utf8')
     expect(native).toContain('runtime.openProtectedConnection(url)')
-    expect(native).toContain('check(PinkVpnRuntime.isReady())')
+    expect(native).toContain('check(lease.active() && PinkVpnRuntime.isReady())')
     expect(native).toContain('account.getString("selectedId") == entryId')
     expect(native).not.toContain('url.openConnection')
     expect(native).not.toMatch(/(?<!get)JSONArray\(/)

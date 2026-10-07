@@ -18,9 +18,10 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     private val directory = File(context.cacheDir, "pink-catalog").apply { mkdirs() }
     private data class Stage(val entryId: String, val file: File, val reader: RandomAccessFile)
     private val stages = mutableMapOf<String, Stage>()
+    private val lease = PinkCatalogTransfer.Lease()
     init { directory.listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 300000 }?.forEach { it.delete() } }
     private fun selected(entryId: String): JSONObject {
-        check(PinkVpnRuntime.isReady())
+        check(lease.active() && PinkVpnRuntime.isReady())
         val account = JSONObject(vault.readValidated())
         check(account.getString("selectedId") == entryId)
         val entries = account.getJSONArray("entries")
@@ -35,7 +36,11 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
         val token = UUID.randomUUID().toString()
         val file = File(directory, token)
         try {
-            PinkCatalogTransfer.download(runtime.openProtectedConnection(url), file, policy) { PinkVpnRuntime.isReady() }
+            val request = runtime.openProtectedConnection(url)
+            try {
+                lease.attach(request)
+                PinkCatalogTransfer.download(request, file, policy) { lease.active() && PinkVpnRuntime.isReady() }
+            } finally { request.disconnect(); lease.release() }
             selected(entryId)
             synchronized(stages) {
                 check(stages.size < 4)
@@ -53,7 +58,7 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
                 check(stage.entryId == entryId)
                 val buffer = ByteArray(128 * 1024)
                 val count = stage.reader.read(buffer)
-                check(PinkVpnRuntime.isReady())
+                check(lease.active() && PinkVpnRuntime.isReady())
                 if (count < 0) { close(token); JSONObject().put("done", true) }
                 else JSONObject().put("data", Base64.getEncoder().encodeToString(buffer.copyOf(count)))
             }
@@ -62,6 +67,13 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     fun close(token: String): Boolean = synchronized(stages) {
         stages.remove(token)?.let { try { it.reader.close() } finally { it.file.delete() } }
         true
+    }
+    fun dispose() {
+        lease.invalidate()
+        cleanup.execute {
+            lease.close()
+            synchronized(stages) { stages.keys.toList().forEach { close(it) } }
+        }
     }
     companion object {
         private val cleanup = Executors.newSingleThreadScheduledExecutor()
@@ -80,6 +92,17 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
 
 /** Bounded disk transfer; no full native String or JSONArray for large catalogs. */
 internal object PinkCatalogTransfer {
+    // A new document cancels the previous owner's I/O rather than waiting for
+    // its timeout. No pending transfer/token is inherited after recreation.
+    class Lease {
+        @Volatile private var alive = true
+        private var request: HttpURLConnection? = null
+        fun active() = alive
+        fun invalidate() { alive = false }
+        @Synchronized fun attach(value: HttpURLConnection) { check(alive); request = value }
+        @Synchronized fun release() { request = null }
+        @Synchronized fun close() { alive = false; request?.disconnect(); request = null }
+    }
     data class Policy(val maxBytes: Long, val seconds: Long)
     fun policy(action: String): Policy = when (action) {
         "get_vod_categories", "get_series_categories" -> Policy(8L * 1024 * 1024, 30)

@@ -11,12 +11,11 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.TrackGroup
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.ui.DefaultTrackNameProvider
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.TrackSelectionView
-import androidx.test.core.app.ActivityScenario
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
@@ -56,16 +55,18 @@ class PinkVodTracksTest {
     private fun descendants(root: View): List<View> = listOf(root) +
         if (root is ViewGroup) (0 until root.childCount).flatMap { descendants(root.getChildAt(it)) } else emptyList()
 
-    private fun fixture(name: String, verify: (ActivityScenario<MainActivity>) -> Unit) {
+    private fun fixture(name: String, verify: (MainActivity) -> Unit) {
         val context = instrumentation.targetContext
         val file = context.cacheDir.resolve(name)
         instrumentation.context.assets.open("pink-vod/$name").use { source ->
             file.outputStream().use { source.copyTo(it) }
         }
-        val activity = ActivityScenario.launch(MainActivity::class.java)
+        lateinit var host: MainActivity
         var container: View? = null
         try {
-            activity.onActivity { host ->
+            instrumentation.runOnMainSync {
+                host = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
+                    .filterIsInstance<MainActivity>().single()
                 val root = host.findViewById<ViewGroup>(android.R.id.content)
                 // Test-only local media in the real host window, with the production layout
                 // and selector. VideoActivity's protected-provider readiness guard is unchanged.
@@ -73,12 +74,7 @@ class PinkVodTracksTest {
                 container = created
                 root.addView(created)
                 view = created.findViewById(R.id.player_view)
-                // Avoid the host H.264 decoder implicated by this emulator's crash log.
-                // Exercise real guest codecs; this test policy does not change the APK player.
-                val renderers = DefaultRenderersFactory(host).setMediaCodecSelector { mime, secure, tunnel ->
-                    MediaCodecSelector.DEFAULT.getDecoderInfos(mime, secure, tunnel).sortedBy { !it.softwareOnly }
-                }
-                player = ExoPlayer.Builder(host, renderers).build()
+                player = ExoPlayer.Builder(host).build()
                 view.player = player
                 player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
                     .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true).build()
@@ -92,17 +88,17 @@ class PinkVodTracksTest {
                     (player.videoDecoderCounters?.renderedOutputBufferCount ?: 0) > 0 &&
                     (player.audioDecoderCounters?.renderedOutputBufferCount ?: 0) > 0
             }
-            verify(activity)
-            activity.onActivity { host ->
+            verify(host)
+            instrumentation.runOnMainSync {
                 assertFalse(host.isFinishing)
                 assertTrue(descendants(host.findViewById(android.R.id.content)).any { it is WebView })
             }
         } finally {
-            activity.onActivity { host ->
+            instrumentation.runOnMainSync {
                 if (::player.isInitialized) { view.player = null; player.release() }
                 container?.let { host.findViewById<ViewGroup>(android.R.id.content).removeView(it) }
             }
-            activity.close()
+            // Keep the existing Tauri host alive; CI stops the disposable app after results.
             file.delete()
         }
     }
@@ -135,7 +131,7 @@ class PinkVodTracksTest {
         }
     }
 
-    @Test fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4") { activity ->
+    @Test fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4") { host ->
         lateinit var audio: List<Track>
         instrumentation.runOnMainSync {
             audio = tracks(C.TRACK_TYPE_AUDIO)
@@ -144,7 +140,7 @@ class PinkVodTracksTest {
         }
         await("trackless CC is disabled") { !view.findViewById<View>(androidx.media3.ui.R.id.exo_subtitle).isEnabled }
         choose(C.TRACK_TYPE_AUDIO, audio.single(), audio)
-        activity.onActivity { host ->
+        instrumentation.runOnMainSync {
             assertFalse(PinkVpnRuntime.isReady())
             assertFalse(AndroidVideoBridge(host, { null }).launchVod("fixture", "https://example.invalid/fixture.mp4",
                 "", "", "fixture", "", 0))

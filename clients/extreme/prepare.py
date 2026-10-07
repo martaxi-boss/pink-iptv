@@ -64,16 +64,16 @@ for base in [DEST / 'src', DEST / 'src-tauri/gen/android/app/src/main/res']:
 
 for src, dst in {
     'pink-session.js': 'src/scripts/lib/pink-session.js',
-    'pink-body-ipc.js': 'src/scripts/lib/pink-body-ipc.js',
-    'pink-body-ipc-plugin.mjs': 'src/plugins/pink-body-ipc-plugin.mjs',
     'pink-login.js': 'src/scripts/lib/pink-login.js',
     'login.astro': 'src/pages/login.astro',
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
     'pink-bridge.js': 'src/scripts/lib/pink-bridge.js',
+    'pink-catalog.js': 'src/scripts/lib/pink-catalog.js',
     'pink-presentation.js': 'src/scripts/lib/pink-presentation.js',
     'pink-runtime-policy.ts': 'src/scripts/lib/pink-runtime-policy.ts',
     'PinkWebBridge.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkWebBridge.kt',
     'PinkVault.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVault.kt',
+    'PinkCatalog.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkCatalog.kt',
 }.items():
     shutil.copyfile(ROOT / 'overlay' / src, DEST / dst)
 shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-session.test.ts')
@@ -81,6 +81,7 @@ shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storag
 shutil.copyfile(ROOT / 'overlay/pink-home.test.ts', DEST / 'tests/pink-home.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-login.test.ts', DEST / 'tests/pink-login.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-catalog.test.ts', DEST / 'tests/pink-catalog.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink-runtime-policy.test.ts')
 
@@ -211,13 +212,21 @@ welcome = DEST / 'src/components/WelcomeCard.astro'
 welcome.write_text('''<div aria-hidden="true"></div>
 ''')
 
-# Observe only the existing pinned HTTP body's synchronous dispatch and promise.
-replace('astro.config.mjs',
-        'import svelte from "@astrojs/svelte"\n',
-        'import svelte from "@astrojs/svelte"\nimport { pinkHttpBodyObserver } from "./src/plugins/pink-body-ipc-plugin.mjs"\n')
-replace('astro.config.mjs',
-        'plugins: [tailwindcss(), optimizeTablerIconsImport()]',
-        'plugins: [pinkHttpBodyObserver(), tailwindcss(), optimizeTablerIconsImport()]')
+# Live TV uses the working native protected HTTP path rather than streaming its
+# body through the Android Tauri binary IPC boundary that repeatedly stalls.
+replace('src/scripts/lib/xtream-api.js',
+        'import { providerFetch } from "@/scripts/lib/provider-fetch.js"',
+        'import { providerFetch } from "@/scripts/lib/provider-fetch.js"\nimport { fetchPinkLiveCatalog } from "./pink-catalog.js"')
+replace('src/scripts/lib/xtream-api.js',
+        '  const startIndex = Math.min(getMirrorPin(entry._id), candidates.length - 1)\n\n  const lastAllFailed',
+        '''  if (typeof window !== "undefined" && window.PinkNative &&
+      ["get_live_categories", "get_live_streams"].includes(action)) {
+    if (Object.keys(params).length) throw new Error("Catálogo PINK inválido.")
+    return fetchPinkLiveCatalog(action, entry._id, fetchOpts.signal)
+  }
+  const startIndex = Math.min(getMirrorPin(entry._id), candidates.length - 1)
+
+  const lastAllFailed''')
 
 # Fixed progress markers let the Android proof distinguish a disposed callback
 # from a catalog stall without recording provider data or JavaScript errors.

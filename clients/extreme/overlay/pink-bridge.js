@@ -41,5 +41,8 @@ export function installPinkBridge() {
     markValidated: (value) => call("vaultMarkValidated", { value }),
     write: (value) => call("vaultWrite", { value }),
   }
+  window.PinkCatalog = {
+    read: (action, entryId) => call("liveCatalog", { action, entryId }, 60000),
+  }
   return true
 }

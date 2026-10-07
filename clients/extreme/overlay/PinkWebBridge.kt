@@ -13,10 +13,9 @@ import org.json.JSONObject
 object PinkWebBridge {
     private val main = Handler(Looper.getMainLooper())
     private val workers = Executors.newSingleThreadExecutor()
+    private val catalogWorkers = Executors.newSingleThreadExecutor()
     @Volatile private var livePhase = "absent"
     @Volatile private var rendererPulse = 0L
-    @Volatile private var bodyIpc = "absent"
-    internal fun bodyIpcForTests(): String = bodyIpc
     internal fun rendererPulseForTests(): Long = rendererPulse
     internal fun livePhaseForTests(): String = livePhase
     private val livePhases = setOf("boot", "account", "preferences", "categories", "channels",
@@ -27,7 +26,6 @@ object PinkWebBridge {
             throw IllegalStateException("Connection unavailable")
         livePhase = "absent"
         rendererPulse = 0L
-        bodyIpc = "absent"
         val app = context.applicationContext
         val vault = PinkVault(app)
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
@@ -48,18 +46,18 @@ object PinkWebBridge {
                 livePhase = if (value in livePhases) value!! else "absent"
                 return@addWebMessageListener
             }
-            if (request.optString("operation") == "bodyIpc") {
-                val value = request.optJSONObject("payload")?.optString("stage")
-                bodyIpc = if (value in setOf("calling", "returned", "resolved", "rejected", "threw")) value!! else "absent"
-                return@addWebMessageListener
-            }
             val id = request.getString("id")
-            workers.execute {
+            // A bounded catalog read must not queue readiness/vault requests
+            // behind network I/O or block account/control-plane operations.
+            val executor = if (request.optString("operation") == "liveCatalog") catalogWorkers else workers
+            executor.execute {
                 val response = JSONObject().put("id", id)
                 try {
                     val payload = request.getJSONObject("payload")
                     val result: Any = when (request.getString("operation")) {
                         "ready" -> PinkVpnRuntime.isReady()
+                        "liveCatalog" -> PinkCatalog.read(vault, PinkVpnRuntime.get(app),
+                            payload.getString("action"), payload.getString("entryId"))
                         "resolve" -> PinkVpnRuntime.get(app).resolve(
                             payload.getString("username"), payload.getString("password")).toString()
                         "vaultRead" -> vault.read()
@@ -70,9 +68,10 @@ object PinkWebBridge {
                     }
                     response.put("ok", true).put("result", result)
                 } catch (_: Exception) { response.put("ok", false) }
+                val encodedResponse = response.toString()
                 main.post {
                     if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-                        try { reply.postMessage(response.toString()) } catch (_: Exception) { }
+                        try { reply.postMessage(encodedResponse) } catch (_: Exception) { }
                     }
                 }
             }

@@ -93,3 +93,29 @@ immediately enters the existing authenticating/busy state. Any later UI failure
 reports only native account-cache category VALID/EMPTY/MALFORMED and encrypted
 account presence, alongside existing fixed phase/route flags. No account values,
 credentials, origin, raw errors or blob are returned.
+
+## Direct technical continuation: protected native Live TV catalog
+
+The source at `03cdfdd` retained repeated `/livetv`, complete-document,
+`pulling_next` failures while the Android main queue and admitted WireGuard
+route remained responsive. Its latest operational proof failed earlier at the
+native authoritative catalog and did not identify HTTP status, empty data,
+parsing or transport failure. The bounded test now reports those fixed
+categories without URLs, credentials, response contents or exception messages.
+
+The functional correction uses the existing origin-restricted native bridge for
+only `get_live_categories` and `get_live_streams`. Native code derives the
+provider origin and credentials from the process-validated encrypted account;
+the page submits only the fixed action and selected account ID. Reads explicitly
+use the current owned VPN Network, reject redirects and non-array responses,
+and retain bounded size and read deadlines. No physical/provider fallback is
+introduced. Catalog I/O uses its own serial worker so it cannot queue readiness,
+vault or control requests behind a body read. Response serialization happens
+outside the Android main thread. Extreme still renders categories/channels and
+handles the actual channel click and playback.
+
+The ineffective Vite HTTP body IPC observer and its diagnostic-only tests are
+removed with the substituted Live TV transport. Product admission, account,
+origin, UI, presented-video/audio, cold-start, network-recovery and own-peer
+cleanup assertions remain. Source CI and the direct exact-artifact functional
+proof must pass before this correction can be described as certified.

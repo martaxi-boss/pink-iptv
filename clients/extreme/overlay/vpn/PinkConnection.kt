@@ -104,6 +104,12 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     internal fun initialServiceStopAcknowledgedForTests(): Boolean = initialServiceStopAcknowledged
     internal fun initialPeerReplacementCountForTests(): Int = initialPeerReplacements
     internal fun controlPlaneRequestCountForTests(): Int = controlPlaneRequests
+    internal fun openProtectedConnection(url: URL): HttpURLConnection {
+        check(isReady())
+        val owned = checkNotNull(boundVpn)
+        check(ownsCapturedAddress(cm.getLinkProperties(owned)?.linkAddresses?.map { it.address }, captureAddress))
+        return owned.openConnection(url) as HttpURLConnection
+    }
     // Only fixed stages and exception class names; no exception messages, keys,
     // grants, account data or provider origins may enter diagnostic output.
     internal fun startupDiagnosticForTests(): String =

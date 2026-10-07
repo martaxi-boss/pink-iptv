@@ -417,7 +417,6 @@ class PinkVpnLiveTest {
                 report("ACTUAL_UI_FAILURE_CHECKPOINT="+uiCheckpoint+";js="+uiJsBoundary+";category="+category)
                 report("ACTUAL_UI_LAST_FIXED_OBSERVATION=route="+uiNativeRoute+";progress="+uiNativeProgress+";livePhase="+uiLivePhase)
                 report("ACTUAL_UI_NATIVE_LIVE_PHASE="+PinkWebBridge.livePhaseForTests())
-                report("ACTUAL_UI_HTTP_BODY_IPC_STAGE="+PinkWebBridge.bodyIpcForTests())
                 report("ACTUAL_UI_RENDERER_PULSE_DURING_CALLBACK="+
                     (if (PinkWebBridge.rendererPulseForTests()>uiPulseAtEvaluation) "ADVANCING" else "QUIET"))
                 val mainPulse = java.util.concurrent.CountDownLatch(1)

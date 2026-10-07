@@ -83,13 +83,6 @@ class PinkWebBridgeTest {
                 while (PinkWebBridge.livePhaseForTests()!=phase && System.currentTimeMillis()<deadline) Thread.sleep(50)
                 assertEquals(phase,PinkWebBridge.livePhaseForTests())
             }
-            for (stage in listOf("calling", "returned", "resolved", "rejected", "threw", "private-account-url")) {
-                evaluate(view, "PinkNative.postMessage(JSON.stringify({id:'0',operation:'bodyIpc',payload:{stage:'"+stage+"'}}));true")
-                val expected = if (stage == "private-account-url") "absent" else stage
-                val deadline = System.currentTimeMillis()+2000
-                while (PinkWebBridge.bodyIpcForTests()!=expected && System.currentTimeMillis()<deadline) Thread.sleep(50)
-                assertEquals(expected,PinkWebBridge.bodyIpcForTests())
-            }
             instrumentation.runOnMainSync {
                 view.loadDataWithBaseURL("https://tauri.localhost.foreign.example",
                     "<script>window.marker=String(typeof window.PinkNative)</script>",

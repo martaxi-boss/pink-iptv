@@ -81,10 +81,23 @@ def apply(root, dest, replace):
             '    if (true) return false // App-scoped PINK cannot protect another player package.\n    val uri = parseUri(url) ?: return false', count=3)
     replace(native + 'MainActivity.kt', '    val uri = parseUri(url) ?: return "[]"',
             '    if (true) return "[]" // No unprotected external player handoff.\n    val uri = parseUri(url) ?: return "[]"')
-    replace(native + 'MainActivity.kt', '  private fun tryLaunch(mode: String, configure: (android.content.Intent) -> Unit): Boolean {',
-            '  private fun tryLaunch(mode: String, configure: (android.content.Intent) -> Unit): Boolean {\n    if (!PinkVpnRuntime.isReady()) return false')
-    replace(native + 'VideoActivity.kt', '    super.onCreate(savedInstanceState)',
-            '    super.onCreate(savedInstanceState)\n    if (!PinkVpnRuntime.isReady()) { finish(); return }')
+    # Remote Live/VOD must stay on the admitted PINK tunnel. A persisted Android
+    # content:// download is local data, so it may use the same native Media3
+    # Activity without weakening the protected provider/media network path.
+    replace(native + 'MainActivity.kt', '''      configure(intent)
+      activity.runOnUiThread {''', '''      configure(intent)
+      val pinkLocalVod = mode == VideoActivity.MODE_VOD &&
+        intent.getStringExtra(VideoActivity.EXTRA_URL)?.let {
+          android.net.Uri.parse(it).scheme?.equals("content", ignoreCase = true) == true
+        } == true
+      if (!pinkLocalVod && !PinkVpnRuntime.isReady()) return false
+      activity.runOnUiThread {''')
+    replace(native + 'VideoActivity.kt', '    super.onCreate(savedInstanceState)', '''    super.onCreate(savedInstanceState)
+    val pinkLocalVod = intent.getStringExtra(EXTRA_MODE) == MODE_VOD &&
+      intent.getStringExtra(EXTRA_URL)?.let {
+        android.net.Uri.parse(it).scheme?.equals("content", ignoreCase = true) == true
+      } == true
+    if (!pinkLocalVod && !PinkVpnRuntime.isReady()) { finish(); return }''')
     replace(native + 'VideoActivity.kt', 'put("message", error.message ?: "")',
             'put("message", "Reprodução temporariamente indisponível")', count=2)
     # Opt in at the implementation boundary instead of propagating an unstable

@@ -6,10 +6,14 @@ vi.mock('../src/scripts/lib/preferences.js', () => ({ setProgress: vi.fn(), mark
 vi.mock('../src/scripts/lib/app-settings.js', () => ({ getTvOverscan: () => 0, TV_OVERSCAN_EVENT: 'overscan' }))
 afterEach(() => { vi.unstubAllGlobals(); vi.resetModules() })
 
-describe('Android VOD preference and genuine launch fallback', () => {
+describe('Android VOD native tracks and genuine launch fallback', () => {
   it.each(['movies', 'series'])('%s uses the native VOD policy without the Live opt-in', (kind) => {
     const source = readFileSync(`src/scripts/${kind}/detail.ts`, 'utf8')
-    expect(source).toContain('preferAndroidNativeVod(playSrc) &&')
+    expect(source).toContain('preferAndroidNativeVod(nativePlaySrc) &&')
+    expect(source).toContain('getAndroidLocalUri')
+    expect(source).toContain('const nativePlaySrc = nativeLocalSrc || playSrc')
+    expect(source).toContain('url: nativePlaySrc')
+    expect(source).not.toContain('tryAndroidIntentPlayback')
     expect(source).not.toContain('getAndroidNativePlayerEnabled')
     expect(source).toContain('if (launched) return')
     expect(source).toContain('await mountVodPlayback({')
@@ -20,6 +24,7 @@ describe('Android VOD preference and genuine launch fallback', () => {
     window.AndroidVideo = { launchVod } as any
     const mod = await import('../src/scripts/lib/android-video-launcher')
     expect(mod.preferAndroidNativeVod('https://provider.example/movie.mkv')).toBe(true)
+    expect(mod.preferAndroidNativeVod('content://media/external/video/media/42')).toBe(true)
     expect(mod.preferAndroidNativeVod('asset://localhost/movie.mkv')).toBe(false)
     expect(mod.preferAndroidNativeVod('file:///movie.mp4')).toBe(false)
     expect(mod.launchAndroidNativeVod({ contentKey: 'vod:1', url: 'https://provider.example/movie.mkv' })).toBe(true)

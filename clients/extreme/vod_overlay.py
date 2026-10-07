@@ -12,14 +12,27 @@ def apply(root, dest, replace):
             '    view.player = player\n    if (mode == MODE_VOD) PinkVodTracks.attach(view, player)')
     shutil.copyfile(root / 'overlay/pink-vod.test.ts', dest / 'tests/pink-vod.test.ts')
     launcher = 'src/scripts/lib/android-video-launcher.ts'
-    replace(launcher, 'function pushTvOverscan(): void {', '''// Native HTTP VOD is the Android default; downloaded asset URLs keep the WebView path.
+    replace(launcher, 'function pushTvOverscan(): void {', '''// Provider HTTP(S) and persisted Android content URIs use native Media3.
+// Asset/file schemes keep the existing WebView fallback when no compatible native URI exists.
 export function preferAndroidNativeVod(url: string): boolean {
-  return androidNativePlayerAvailable && /^https?:\\/\\//i.test(url)
+  return androidNativePlayerAvailable && /^(?:https?:\\/\\/|content:\\/\\/)/i.test(url)
 }
 
 function pushTvOverscan(): void {''')
-    for path in ['src/scripts/movies/detail.ts', 'src/scripts/series/detail.ts']:
+    sources = {
+        'src/scripts/movies/detail.ts': 'detailSrc',
+        'src/scripts/series/detail.ts': 'src',
+    }
+    for path, source in sources.items():
         replace(path, '  androidNativePlayerAvailable,', '  preferAndroidNativeVod,')
         replace(path, '  getAndroidNativePlayerEnabled,\n', '')
+        replace(path, '  getLocalDownloadPath,\n  tryAndroidIntentPlayback,',
+                '  getLocalDownloadPath,\n  getAndroidLocalUri,')
+        replace(path, f'  if (await tryAndroidIntentPlayback({source})) return\n', '')
+        replace(path, f'  const localDownloadPath = localSrc ? await getLocalDownloadPath({source}) : null',
+                f'  const localDownloadPath = localSrc ? await getLocalDownloadPath({source}) : null\n'
+                f'  const nativeLocalSrc = localSrc ? await getAndroidLocalUri({source}) : null\n'
+                '  const nativePlaySrc = nativeLocalSrc || playSrc')
         replace(path, '    androidNativePlayerAvailable &&\n    getAndroidNativePlayerEnabled() &&',
-                '    preferAndroidNativeVod(playSrc) &&')
+                '    preferAndroidNativeVod(nativePlaySrc) &&')
+        replace(path, '      url: playSrc,', '      url: nativePlaySrc,')

@@ -332,4 +332,6 @@ from vpn_overlay import apply as apply_vpn
 apply_vpn(ROOT, DEST, replace)
 from vod_overlay import apply as apply_vod
 apply_vod(ROOT, DEST, replace)
+from catalog_overlay import apply as apply_catalog
+apply_catalog(ROOT, DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

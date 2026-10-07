@@ -56,7 +56,9 @@ jobs:
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec playwright install --with-deps chromium
+          node tests/pink-catalog-browser.mjs
           pnpm run build
       - name: Generate real test-only VOD media with multiple tracks
         run: |

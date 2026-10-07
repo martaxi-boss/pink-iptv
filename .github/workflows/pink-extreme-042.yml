@@ -111,16 +111,16 @@ jobs:
           adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkWebBridgeTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink055-origin.txt"
           cat "$RUNNER_TEMP/pink055-origin.txt"
           grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink055-origin.txt"
-          adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVodIntegrationSuite com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink053-startup.txt"
+          adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVpnStartupTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink053-startup.txt"
           cat "$RUNNER_TEMP/pink053-startup.txt"
-          if ! grep -q 'OK (3 tests)' "$RUNNER_TEMP/pink053-startup.txt"; then
+          if ! grep -q 'OK (1 test)' "$RUNNER_TEMP/pink053-startup.txt"; then
             adb logcat -b crash -d -t 100
             adb shell ip -4 rule
             adb shell ip -6 rule
             adb shell ip -4 route show table all
             adb shell ip -6 route show table all
           fi
-          grep -q 'OK (3 tests)' "$RUNNER_TEMP/pink053-startup.txt"
+          grep -q 'OK (1 test)' "$RUNNER_TEMP/pink053-startup.txt"
           grep -q 'REAL_MEDIA3_MULTI_AUDIO_MULTI_SUBTITLE_FORCED_SELECTION_AND_PRESENTED_VIDEO=PASS' "$RUNNER_TEMP/pink053-startup.txt"
           grep -q 'REAL_MEDIA3_SINGLE_AUDIO_NO_SUBTITLES_AND_PROTECTED_LAUNCH_FALLBACK=PASS' "$RUNNER_TEMP/pink053-startup.txt"
           adb shell am force-stop com.pinkiptv.extreme

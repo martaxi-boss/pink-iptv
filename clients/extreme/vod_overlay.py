@@ -10,6 +10,12 @@ def apply(root, dest, replace):
                          '<string name="pink_vod_subtitles" translatable="false">Legendas / CC</string></resources>\n')
     replace(native + 'VideoActivity.kt', '    view.player = player',
             '    view.player = player\n    if (mode == MODE_VOD) PinkVodTracks.attach(view, player)')
+    # Reuse the existing HTTP factory for network media; add Android content
+    # reads only for the local VOD path introduced by the active workstream.
+    replace(native + 'VideoActivity.kt',
+            'return DefaultMediaSourceFactory(this).setDataSourceFactory(httpFactory)',
+            'return DefaultMediaSourceFactory(this).setDataSourceFactory(\n'
+            '      if (mode == MODE_VOD) androidx.media3.datasource.DefaultDataSource.Factory(this, httpFactory) else httpFactory)')
     shutil.copyfile(root / 'overlay/pink-vod.test.ts', dest / 'tests/pink-vod.test.ts')
     launcher = 'src/scripts/lib/android-video-launcher.ts'
     replace(launcher, 'function pushTvOverscan(): void {', '''// Provider HTTP(S) and persisted Android content URIs use native Media3.

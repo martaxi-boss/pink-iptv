@@ -105,6 +105,10 @@ class PinkVpnStartupTest {
             try { request.responseCode } catch (_: java.io.IOException) { blocked = true }
             finally { request.disconnect() }
             assertTrue("Unadmitted application traffic escaped its capture", blocked)
+            // Media checks must share this live host: AndroidJUnitRunner finishes Activities
+            // between test cases, which tears down the Tauri native runtime.
+            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()
+            PinkVodTracksChecks().singleRealAudioAndNoInventedSubtitles()
             activity.recreate()
             instrumentation.waitForIdleSync()
             assertNull(VpnService.prepare(context))

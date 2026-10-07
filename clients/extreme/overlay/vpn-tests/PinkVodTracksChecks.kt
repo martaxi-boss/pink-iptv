@@ -1,8 +1,8 @@
 package com.pinkiptv.extreme
 
-import android.net.Uri
+import android.content.ContentValues
+import android.provider.MediaStore
 import android.os.SystemClock
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -15,6 +15,7 @@ import androidx.media3.ui.PlayerView
 import androidx.media3.ui.TrackSelectionView
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
+import androidx.test.uiautomator.UiDevice
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
@@ -22,11 +23,10 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.*
-import org.junit.Test
 
 /** Real container extraction, real controller dialogs and decoder output; no provider fixture or VPN bypass. */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class PinkVodTracksTest {
+class PinkVodTracksChecks {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private lateinit var player: ExoPlayer
     private lateinit var view: PlayerView
@@ -56,31 +56,37 @@ class PinkVodTracksTest {
 
     private fun fixture(name: String, verify: (MainActivity) -> Unit) {
         val context = instrumentation.targetContext
-        val file = context.cacheDir.resolve(name)
-        instrumentation.context.assets.open("pink-vod/$name").use { source ->
-            file.outputStream().use { source.copyTo(it) }
+        val resolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, name)
+            put(MediaStore.Video.Media.MIME_TYPE, if (name.endsWith("mkv")) "video/x-matroska" else "video/mp4")
+            put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/PINK-fixture")
+            put(MediaStore.Video.Media.IS_PENDING, 1)
         }
+        val uri = requireNotNull(resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values))
+        instrumentation.context.assets.open("pink-vod/$name").use { source ->
+            requireNotNull(resolver.openOutputStream(uri)).use { source.copyTo(it) }
+        }
+        resolver.update(uri, ContentValues().apply { put(MediaStore.Video.Media.IS_PENDING, 0) }, null, null)
         lateinit var host: MainActivity
-        var container: View? = null
+        var video: VideoActivity? = null
         try {
             instrumentation.runOnMainSync {
                 host = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
                     .filterIsInstance<MainActivity>().single()
-                val root = host.findViewById<ViewGroup>(android.R.id.content)
-                // Test-only local media in the real host window, with the production layout
-                // and selector. VideoActivity's protected-provider readiness guard is unchanged.
-                val created = LayoutInflater.from(host).inflate(R.layout.activity_video, root, false)
-                container = created
-                root.addView(created)
-                view = created.findViewById(R.id.player_view)
-                player = ExoPlayer.Builder(host).build()
-                view.player = player
-                player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
-                    .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true).build()
-                PinkVodTracks.attach(view, player)
-                player.setMediaItem(androidx.media3.common.MediaItem.fromUri(Uri.fromFile(file)))
-                player.prepare()
-                player.playWhenReady = true
+                // Exercise the real native bridge, VideoActivity, MediaItem and selector.
+                // This is local test media; the remote provider VPN guard stays enabled.
+                assertTrue(AndroidVideoBridge(host, { null }).launchVod("fixture", uri.toString(),
+                    "", "", "fixture", "", 0))
+            }
+            await("production native VOD Activity") {
+                video = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
+                    .filterIsInstance<VideoActivity>().singleOrNull()
+                val nativeView = video?.findViewById<PlayerView>(R.id.player_view)
+                val nativePlayer = nativeView?.player as? ExoPlayer
+                if (nativePlayer == null) false else {
+                    view = requireNotNull(nativeView); player = nativePlayer; true
+                }
             }
             await("presented video and decoded audio") {
                 player.playerError == null && player.isPlaying && player.currentPosition > 1000 &&
@@ -88,17 +94,22 @@ class PinkVodTracksTest {
                     (player.audioDecoderCounters?.renderedOutputBufferCount ?: 0) > 0
             }
             verify(host)
+            // The existing approved player hides visible controls on the first Back.
+            instrumentation.runOnMainSync { view.showController() }
+            UiDevice.getInstance(instrumentation).pressBack()
+            await("Back hides native controls") { !view.isControllerFullyVisible }
+            UiDevice.getInstance(instrumentation).pressBack()
+            await("native Back returns to the same WebView host") {
+                ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).contains(host)
+            }
             instrumentation.runOnMainSync {
                 assertFalse(host.isFinishing)
                 assertTrue(descendants(host.findViewById(android.R.id.content)).any { it is WebView })
             }
         } finally {
-            instrumentation.runOnMainSync {
-                if (::player.isInitialized) { view.player = null; player.release() }
-                container?.let { host.findViewById<ViewGroup>(android.R.id.content).removeView(it) }
-            }
-            // Keep the existing Tauri host alive; CI stops the disposable app after results.
-            file.delete()
+            instrumentation.runOnMainSync { video?.let { if (!it.isFinishing) it.finish() } }
+            resolver.delete(uri, null, null)
+            // Keep Tauri alive until the combined startup/media case publishes its result.
         }
     }
 
@@ -130,7 +141,7 @@ class PinkVodTracksTest {
         }
     }
 
-    @Test fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4") { host ->
+    fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4") { host ->
         lateinit var audio: List<Track>
         instrumentation.runOnMainSync {
             audio = tracks(C.TRACK_TYPE_AUDIO)
@@ -148,7 +159,7 @@ class PinkVodTracksTest {
         report("REAL_MEDIA3_SINGLE_AUDIO_NO_SUBTITLES_AND_PROTECTED_LAUNCH_FALLBACK=PASS")
     }
 
-    @Test fun allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo() = fixture("multi-tracks.mkv") {
+    fun allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo() = fixture("multi-tracks.mkv") {
         lateinit var audio: List<Track>
         lateinit var text: List<Track>
         instrumentation.runOnMainSync {

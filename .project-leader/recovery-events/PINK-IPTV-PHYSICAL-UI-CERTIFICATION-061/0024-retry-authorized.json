@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 24,
+  "recorded_at": "2026-10-07T05:25:54.612Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 10,
+  "action_fingerprint": "061;owned-grant-address-capture-and-fixed-protected-health-cause",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "057caed44c17b6eba70818f5c89bc090b8e99c6f84fee92de7962aa4449ae77d",
+  "detail": "Prospective direct technical repair within immutable061 scope. Require new Backend and Android CI SUCCESS on exact source, native Kotlin compile and augmented owned-selection/privacy cases plus original real non-root consent/offline/recreation/failclosure, frontend75/build/payload/lint/privacy/checksums before any060 preparation or runtime proof. Next proof must consume new exact artifact, retain read-only native IPC observer previously unexecuted at UI, strict real rowclick presentedvideo+audio/nativeAV/cold/roam/protected before-after/own cleanup. No blind repeat, timeout increase, physical/provider fallback, source fixtureURL, persistent host changes or physical claim."
+}

@@ -40,6 +40,8 @@ class PinkVpnIdentityTest {
     }
 
     @Test fun officialBackendAndMergedVpnServiceAreAvailable() {
+        assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture()
+        assertProtectedHealthFailuresEmitFixedKindsWithoutExceptionMessages()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         assertTrue(GoBackend(context).version.isNotBlank())
         @Suppress("DEPRECATION")
@@ -49,5 +51,39 @@ class PinkVpnIdentityTest {
         assertFalse(service.exported)
         assertEquals("android.permission.BIND_VPN_SERVICE", service.permission)
         assertFalse(service.metaData.getBoolean("android.net.VpnService.SUPPORTS_ALWAYS_ON", true))
+    }
+
+    private fun assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture() {
+        fun link(vararg addresses: String) = android.net.LinkProperties().apply {
+            interfaceName = "tun0"
+            addresses.forEach { addLinkAddress(android.net.LinkAddress(it)) }
+        }
+        val grant = "10.66.0.3"
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(null, grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(link(), grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(
+            link("10.66.0.254/32", "fd66:7069:6e6b::fe/128"), grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(link("10.66.0.4/32"), grant))
+        assertTrue(PinkVpnRuntime.ownsCapturedAddress(
+            link("10.66.0.3/32", "fd66:7069:6e6b::3/128"), grant))
+        assertTrue(PinkVpnRuntime.ownsCapturedAddress(
+            link("10.66.0.254/32", "fd66:7069:6e6b::fe/128"), "10.66.0.254"))
+    }
+
+    private fun assertProtectedHealthFailuresEmitFixedKindsWithoutExceptionMessages() {
+        val privateMessage = "fixture_user:fixture_password@private-provider"
+        val fixtures = listOf(
+            java.net.UnknownHostException(privateMessage) to "DNS",
+            java.net.SocketTimeoutException(privateMessage) to "TIMEOUT",
+            javax.net.ssl.SSLException(privateMessage) to "TLS",
+            java.net.SocketException(privateMessage) to "SOCKET",
+            java.io.IOException(privateMessage) to "IO",
+            IllegalStateException(privateMessage) to "OTHER")
+        fixtures.forEach { (failure, expected) ->
+            val actual = PinkVpnRuntime.healthFailureKind(failure)
+            assertEquals(expected, actual)
+            assertFalse(actual.contains("fixture"))
+            assertFalse(actual.contains("provider"))
+        }
     }
 }

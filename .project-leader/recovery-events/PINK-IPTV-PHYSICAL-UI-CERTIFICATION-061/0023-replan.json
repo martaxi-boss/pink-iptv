@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 23,
+  "recorded_at": "2026-10-07T05:25:54.610Z",
+  "event": "REPLAN",
+  "strategy_generation": 10,
+  "action_fingerprint": "061;owned-grant-address-capture-and-fixed-protected-health-cause",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "a1ae5ca1467da451eab60428d7cc645aa5444d3f8e0ff45a6e9aea7508774052",
+  "detail": "Correct objective network selection gap: existing bind chooses first visible VPN/interface without matching current owned address, so an old offline or other visible VPN can be selected. Track offline10.66.0.254 versus validated accepted grant address, update before each respective backendUP, require candidate link owns that exact IPv4 before binding and existing UID v4/v6 route validation. This prevents stale candidate independently; do NOT assert it caused R26 until proof. Preserve service retirement and fail closure. Add fixed health phase/category/status/bodyMatch/captureMatch frozen on failed resolve, never exception message/URL/address. Existing protected4s connection/read deadlines unchanged. Add stale/offline/other/empty/current link and six private-message exception-class regression cases within existing native test suite, required CI test count/workflow unchanged. No JS/provider/player replacement. Local execution transport unavailable; exact CI compile/tests required, no local pass claim."
+}

@@ -44,6 +44,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private val backend by lazy { GoBackend(app) }
     @Volatile private var live = false
     @Volatile private var boundVpn: Network? = null
+    @Volatile private var captureAddress = "10.66.0.254"
+    @Volatile private var latestHealthDiagnostic = "not_started"
+    @Volatile private var protectedHealthDiagnostic = "not_started"
     @Volatile private var admitted = false
     @Volatile private var accepting = false
     @Volatile private var consentRequested = false
@@ -106,7 +109,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     internal fun startupDiagnosticForTests(): String =
         "stage=$startupStage;failure=$failureCategory;live=$live;bound=${boundVpn != null};accepting=$accepting"
     internal fun protectedDiagnosticForTests(): String =
-        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements;control=$protectedControlFailure;controlPlaneRequests=$controlPlaneRequests"
+        "stage=$protectedStage;activation=$protectedActivation;failure=$protectedFailure;live=$live;bound=${boundVpn != null};admitted=$admitted;saved=" + prefs.contains("ciphertext") + ";serviceStopAck=$initialServiceStopAcknowledged;initialReplacements=$initialPeerReplacements;control=$protectedControlFailure;controlPlaneRequests=$controlPlaneRequests;health=$protectedHealthDiagnostic"
 
     private fun bindCapturedNetwork() {
         // Binding also covers future native sockets and DNS. If Android removes
@@ -115,7 +118,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         repeat(200) {
             val network = cm.allNetworks.firstOrNull {
                 cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true &&
-                    cm.getLinkProperties(it)?.interfaceName?.isNotBlank() == true
+                    cm.getLinkProperties(it)?.let { link ->
+                        link.interfaceName?.isNotBlank() == true && ownsCapturedAddress(link, captureAddress)
+                    } == true
             }
             if (network != null && cm.bindProcessToNetwork(network) && defaultRoutesSelect(network)) {
                 boundVpn = network
@@ -161,6 +166,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 protectedStage = "identity"
                 protectedFailure = "none"
                 protectedControlFailure = "none"
+                protectedHealthDiagnostic = "not_started"
                 ensureIdentity()
                 protectedStage = "session_resolve"
                 val reply = control("/v1/session/resolve", JSONObject()
@@ -182,6 +188,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 JSONObject().put("code", "SUCCESS").put("xtream_base_url", reply.getString("xtream_base_url"))
             } catch (failure: Exception) {
                 protectedActivation = activationStage
+                protectedHealthDiagnostic = latestHealthDiagnostic
                 protectedFailure = failure.javaClass.simpleName
                 throw failure
             }
@@ -206,6 +213,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             "Address = 10.66.0.254/32, fd66:7069:6e6b::fe/128\nDNS = 1.1.1.1\n" +
             "MTU = 1380\nIncludedApplications = ${app.packageName}\n" +
             "[Peer]\nPublicKey = $sink\nAllowedIPs = 0.0.0.0/0, ::/0\n").byteInputStream())
+        captureAddress = "10.66.0.254"
         startupStage = "offline_backend"
         check(backend.setState(this, Tunnel.State.UP, offline) == Tunnel.State.UP)
         // Remember the installed offline configuration even if Android's route
@@ -306,6 +314,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             activationStage = "clear_initial_binding"
             check(cm.bindProcessToNetwork(null))
             boundVpn = null
+            captureAddress = address.substringBefore('/')
             activationStage = "authorized_backend_up"
             check(backend.setState(this, Tunnel.State.UP, config) == Tunnel.State.UP)
             activationStage = "bind_authorized_route"
@@ -320,16 +329,38 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         failures = 0
     }
 
-    private fun probe(): Boolean = try {
-        // Default app route, never the physical control path; source IP must be this peer.
-        val connection = URL("http://10.66.0.1:51821/health").openConnection() as HttpURLConnection
-        connection.connectTimeout = 4000
-        connection.readTimeout = 4000
-        connection.instanceFollowRedirects = false
-        try { connection.responseCode == 200 && connection.inputStream.bufferedReader().use {
-            it.readLine() == "PINK_VPN_READY"
-        } } finally { connection.disconnect() }
-    } catch (_: Exception) { false }
+    private fun probe(): Boolean {
+        var phase = "open_connection"
+        var status = -1
+        var bodyMatches = false
+        var category = "none"
+        return try {
+            // Default protected app route only. Keep the original 4s deadlines.
+            val connection = URL("http://10.66.0.1:51821/health").openConnection() as HttpURLConnection
+            connection.connectTimeout = 4000
+            connection.readTimeout = 4000
+            connection.instanceFollowRedirects = false
+            try {
+                phase = "headers"
+                status = connection.responseCode
+                if (status != 200) false else {
+                    phase = "body"
+                    bodyMatches = connection.inputStream.bufferedReader().use {
+                        it.readLine() == "PINK_VPN_READY"
+                    }
+                    bodyMatches
+                }
+            } finally { connection.disconnect() }
+        } catch (failure: Exception) {
+            category = healthFailureKind(failure)
+            false
+        } finally {
+            val captureMatches = try { ownsCapturedAddress(
+                boundVpn?.let { cm.getLinkProperties(it) }, captureAddress) } catch (_: Exception) { false }
+            // Fixed enums/status/booleans only, copied on failed enrollment.
+            latestHealthDiagnostic = "$phase:$category;status=$status;bodyMatches=$bodyMatches;captureMatches=$captureMatches"
+        }
+    }
 
     private fun maintain() {
         if (!accepting || failures >= 6 || System.currentTimeMillis() < nextAttempt) return
@@ -469,6 +500,18 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     companion object {
+        internal fun ownsCapturedAddress(link: android.net.LinkProperties?, expected: String): Boolean =
+            link?.linkAddresses?.any { it.address.hostAddress == expected } == true
+
+        internal fun healthFailureKind(failure: Exception): String = when (failure) {
+            is java.net.UnknownHostException -> "DNS"
+            is java.net.SocketTimeoutException -> "TIMEOUT"
+            is javax.net.ssl.SSLException -> "TLS"
+            is java.net.SocketException -> "SOCKET"
+            is java.io.IOException -> "IO"
+            else -> "OTHER"
+        }
+
         @Volatile private var instance: PinkVpnRuntime? = null
         @Synchronized fun get(context: Context): PinkVpnRuntime = instance ?: PinkVpnRuntime(context).also { instance = it }
         fun isReady(): Boolean = instance?.let { it.live && it.admitted && it.accepting && it.boundVpn != null } == true

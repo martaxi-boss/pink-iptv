@@ -94,7 +94,7 @@ class PinkVpnLiveTest {
             val raw = js(activity, """JSON.stringify({
                 matched:document.readyState==='complete' && Boolean($expression),
                 phase:(()=>{const value=document.documentElement?.dataset.pinkLivePhase;
-                    return ['boot','account','preferences','categories','channels','response','reading','streaming','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
+                    return ['boot','account','preferences','categories','channels','response','reading','streaming','pulling_first','decode_small','decode_medium','decode_large','decoded_first','pulling_next','body','parsing','painting','painted','failed'].includes(value)?value:'absent'})()
             })""")
             // A document can be replaced between native readiness and evaluation.
             // WebView's null response is pending, never a successful checkpoint.
@@ -402,6 +402,14 @@ class PinkVpnLiveTest {
                 val mainPulse = java.util.concurrent.CountDownLatch(1)
                 android.os.Handler(android.os.Looper.getMainLooper()).post { mainPulse.countDown() }
                 report("ACTUAL_UI_ANDROID_MAIN_QUEUE="+(if (mainPulse.await(250,java.util.concurrent.TimeUnit.MILLISECONDS)) "RESPONSIVE" else "QUIET"))
+                activity.onActivity { host ->
+                    val view = webView(host.findViewById(android.R.id.content))
+                    val renderer = if (android.os.Build.VERSION.SDK_INT >= 29 && view?.webViewRenderProcess != null) "PRESENT" else "ABSENT"
+                    report("ACTUAL_UI_NATIVE_VIEW_FIXED_STATE=renderer="+renderer+
+                        ";attached="+(view?.isAttachedToWindow==true)+";shown="+(view?.isShown==true)+
+                        ";windowVisible="+(view?.windowVisibility==android.view.View.VISIBLE)+
+                        ";focused="+(view?.hasWindowFocus()==true))
+                }
                 report("ACTUAL_UI_RUNTIME_FIXED_STATE="+PinkVpnRuntime.get(context).protectedDiagnosticForTests())
                 val cacheState = try {
                     val raw = PinkVault(context).readValidated()

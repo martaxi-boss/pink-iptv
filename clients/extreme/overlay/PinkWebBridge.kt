@@ -18,7 +18,8 @@ object PinkWebBridge {
     internal fun rendererPulseForTests(): Long = rendererPulse
     internal fun livePhaseForTests(): String = livePhase
     private val livePhases = setOf("boot", "account", "preferences", "categories", "channels",
-        "response", "reading", "streaming", "body", "parsing", "painting", "painted", "failed")
+        "response", "reading", "streaming", "pulling_first", "decode_small", "decode_medium",
+        "decode_large", "decoded_first", "pulling_next", "body", "parsing", "painting", "painted", "failed")
     fun attach(context: Context, webView: WebView) {
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
             throw IllegalStateException("Connection unavailable")

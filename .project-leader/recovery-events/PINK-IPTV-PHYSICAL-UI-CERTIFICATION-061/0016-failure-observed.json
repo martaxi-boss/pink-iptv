@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 16,
+  "recorded_at": "2026-10-07T04:06:19.312832+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 7,
+  "action_fingerprint": "061;first-UTF8-decode-vs-next-native-body-pull;renderer-window-state",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "5e0b0fafee448d39357f39b1f10d23c718aab8b04290b21d6d66f5e2530dd9cb",
+  "detail": "R21run37569173425/sourcef44: WebView login/native protected login/catalog/DNS/normal consent PASS; actual live_rows missing evaluate callback10s, route/livetv progress100 nativephase streaming, renderer pulse QUIET while Android main queue RESPONSIVE. Runtime ready/failure none/validated encrypted account. Task fairness between body pulls did not restore real renderer. Protected audits/own-peer cleanup PASS. R20 was pre-emulator stale pipeline control failure, repaired separately in VPS; no app result from R20."
+}

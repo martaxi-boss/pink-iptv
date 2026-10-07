@@ -94,7 +94,7 @@ describe('bounded live progress diagnostics', () => {
       documentElement: { dataset: { pinkLivePhase: phase } },
     }))
     expect(observe('categories')).toEqual({ matched: false, phase: 'categories' })
-    for (const phase of ['channels', 'response', 'reading', 'streaming', 'body', 'parsing']) {
+    for (const phase of ['channels', 'response', 'reading', 'streaming', 'pulling_first', 'decode_small', 'decode_medium', 'decode_large', 'decoded_first', 'pulling_next', 'body', 'parsing']) {
       expect(observe(phase)).toEqual({ matched: false, phase })
     }
     expect(observe('https://private-sub.example/fixture-user/fixture-pass')).toEqual({ matched: false, phase: 'absent' })
@@ -145,45 +145,45 @@ describe('bounded live progress diagnostics', () => {
     const values = [bytes.slice(0,19), bytes.slice(19)]
     const reader = { read: vi.fn(async () => values.length ? {done:false,value:values.shift()} : {done:true}), releaseLock }
     expect(await (await read)({body:{getReader:()=>reader}})).toBe('[{"name":"televisão"}]')
-    expect(phase).toHaveBeenCalledExactlyOnceWith('streaming')
+    expect(phase.mock.calls.map(([value]) => value)).toEqual(['pulling_first', 'streaming', 'decode_small', 'decoded_first', 'pulling_next'])
     expect(releaseLock).toHaveBeenCalledOnce()
     const failedReader = { read: vi.fn().mockRejectedValue(new Error('synthetic body failure')), releaseLock:vi.fn() }
     await expect((await read)({body:{getReader:()=>failedReader}})).rejects.toThrow('synthetic body failure')
     expect(failedReader.releaseLock).toHaveBeenCalledOnce()
   })
-  it('lets a queued browser task run before an immediately-ready catalog is fully drained', async () => {
+  it('distinguishes a completed first decode from a still-pending next native pull', async () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
     const drain = live.slice(live.indexOf('async function pinkLiveBody'), live.indexOf('async function loadChannels'))
-    const read = await new AsyncFunction('pinkLivePhase', drain+';return pinkLiveBody')(vi.fn())
-    let browserTaskRan = false
-    let reads = 0
-    let taskObservedBeforeEnd = false
-    const task = new Promise<void>(resolve => setTimeout(() => { browserTaskRan = true; resolve() }, 0))
-    const reader = {
-      read: async () => {
-        if (reads++ === 4) return { done: true }
-        taskObservedBeforeEnd ||= browserTaskRan
-        return { done: false, value: new Uint8Array([65]) }
-      }, releaseLock: vi.fn(),
-    }
-    expect(await read({body:{getReader:()=>reader}})).toBe('AAAA')
-    await task
-    expect(taskObservedBeforeEnd).toBe(true)
+    const phase = vi.fn()
+    const read = await new AsyncFunction('pinkLivePhase', drain+';return pinkLiveBody')(phase)
+    let end: (value: {done: boolean}) => void = () => { throw new Error('pending native pull missing') }
+    const pending = new Promise(resolve => { end = resolve })
+    const reader = { read: vi.fn()
+      .mockResolvedValueOnce({done:false,value:new Uint8Array([65])})
+      .mockReturnValueOnce(pending), releaseLock:vi.fn() }
+    const completion = read({body:{getReader:()=>reader}})
+    await vi.waitFor(() => expect(phase).toHaveBeenLastCalledWith('pulling_next'))
+    expect(phase.mock.calls.map(([value]) => value)).toEqual(['pulling_first','streaming','decode_small','decoded_first','pulling_next'])
+    expect(reader.releaseLock).not.toHaveBeenCalled()
+    end({done:true})
+    expect(await completion).toBe('A')
     expect(reader.releaseLock).toHaveBeenCalledOnce()
-    // Exercise the old drain as a counterfactual: yielding only to already
-    // fulfilled read promises does not let the queued browser task run.
-    const oldDrain = drain.replace('await new Promise(resolve => setTimeout(resolve, 0))', '')
-    const readOld = await new AsyncFunction('pinkLivePhase', oldDrain+';return pinkLiveBody')(vi.fn())
-    browserTaskRan = false; reads = 0; taskObservedBeforeEnd = false
-    const oldTask = new Promise<void>(resolve => setTimeout(() => { browserTaskRan = true; resolve() }, 0))
-    expect(await readOld({body:{getReader:()=>reader}})).toBe('AAAA')
-    expect(taskObservedBeforeEnd).toBe(false)
-    await oldTask
   })
+  it.each([[65536,'decode_small'],[65537,'decode_medium'],[1048577,'decode_large']])(
+    'reports only a fixed first-chunk size bucket for %i bytes', async (size, bucket) => {
+      const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
+      const drain = live.slice(live.indexOf('async function pinkLiveBody'), live.indexOf('async function loadChannels'))
+      const phase = vi.fn()
+      const read = await new AsyncFunction('pinkLivePhase', drain+';return pinkLiveBody')(phase)
+      const reader = {read:vi.fn().mockResolvedValueOnce({done:false,value:new Uint8Array(Number(size))}).mockResolvedValue({done:true}),releaseLock:vi.fn()}
+      await read({body:{getReader:()=>reader}})
+      expect(phase.mock.calls.map(([value]) => value)).toEqual(['pulling_first','streaming',bucket,'decoded_first','pulling_next'])
+      expect(reader.releaseLock).toHaveBeenCalledOnce()
+    })
   it('marks the generated live fetch and paint boundaries using only fixed values', () => {
     const live = readFileSync('src/scripts/stream/stream.ts', 'utf8')
     const values = [...live.matchAll(/pinkLivePhase\("([^"]+)"\)/g)].map(match => match[1])
-    expect(values).toEqual(['streaming', 'account', 'preferences', 'categories', 'channels', 'response', 'reading', 'body', 'parsing', 'painting', 'painted', 'failed', 'boot'])
+    expect(values).toEqual(['pulling_first', 'pulling_next', 'streaming', 'decoded_first', 'account', 'preferences', 'categories', 'channels', 'response', 'reading', 'body', 'parsing', 'painting', 'painted', 'failed', 'boot'])
     expect(live.indexOf('pinkLivePhase("categories")')).toBeLessThan(live.indexOf('const catMap = await ensureCategoryMap()'))
     expect(live.indexOf('pinkLivePhase("painted")')).toBeGreaterThan(live.indexOf('paintChannels(data, fromCache, age, false)'))
   })

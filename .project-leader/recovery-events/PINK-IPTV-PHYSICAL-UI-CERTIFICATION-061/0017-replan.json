@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 17,
+  "recorded_at": "2026-10-07T04:06:19.312964+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 8,
+  "action_fingerprint": "061;first-UTF8-decode-vs-next-native-body-pull;renderer-window-state",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "879b4fd27f2a9525a9d88d2eff1584653ead061ca2f92ca0742f274b7878d43b",
+  "detail": "Remove ineffective body-pull task delay and its counterfactual-only regression. New bounded fixed first-chunk size bucket and completed-decode/next-pull boundaries answer whether UTF8 decoding completes before renderer silence or next native IPC pull blocks. Read full original response through same protected transport; preserve split UTF8 and resource cleanup. Add native renderer handle/window visibility flags on failure only, no account/body/exact length. Existing origin restrictions and unchanged deadlines retained; no speculation treated as cause."
+}

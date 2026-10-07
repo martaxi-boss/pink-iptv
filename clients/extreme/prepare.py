@@ -236,16 +236,25 @@ async function pinkLiveBody(response) {
   const decoder = new TextDecoder("utf-8")
   const chunks = []
   let received = false
+  let nextPullMarked = false
   try {
     while (true) {
-      // Native IPC can supply many already-ready chunks. Leave a browser task
-      // between pulls so input, paint and callbacks cannot starve behind the drain.
-      await new Promise(resolve => setTimeout(resolve, 0))
+      if (!received) pinkLivePhase("pulling_first")
+      else if (!nextPullMarked) { nextPullMarked = true; pinkLivePhase("pulling_next") }
       const {done, value} = await reader.read()
       if (done) break
       if (value?.byteLength) {
-        if (!received) { received = true; pinkLivePhase("streaming") }
+        const first = !received
+        if (first) {
+          received = true
+          pinkLivePhase("streaming")
+          // Fixed size buckets locate first-chunk decode versus later IPC pulls.
+          // Neither exact lengths nor content cross the diagnostic boundary.
+          pinkLivePhase(value.byteLength <= 65536 ? "decode_small" :
+            value.byteLength <= 1048576 ? "decode_medium" : "decode_large")
+        }
         chunks.push(decoder.decode(value, {stream:true}))
+        if (first) pinkLivePhase("decoded_first")
       }
     }
     chunks.push(decoder.decode())

@@ -54,20 +54,19 @@ class PinkVpnIdentityTest {
     }
 
     private fun assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture() {
-        fun link(vararg addresses: String) = android.net.LinkProperties().apply {
-            interfaceName = "tun0"
-            addresses.forEach { addLinkAddress(android.net.LinkAddress(it)) }
-        }
+        // Public Java numeric-address API only. Android LinkProperties mutation
+        // and its LinkAddress(String) constructor are hidden from the app SDK.
+        fun addresses(vararg values: String) = values.map { java.net.InetAddress.getByName(it) }
         val grant = "10.66.0.3"
         assertFalse(PinkVpnRuntime.ownsCapturedAddress(null, grant))
-        assertFalse(PinkVpnRuntime.ownsCapturedAddress(link(), grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(emptyList(), grant))
         assertFalse(PinkVpnRuntime.ownsCapturedAddress(
-            link("10.66.0.254/32", "fd66:7069:6e6b::fe/128"), grant))
-        assertFalse(PinkVpnRuntime.ownsCapturedAddress(link("10.66.0.4/32"), grant))
+            addresses("10.66.0.254", "fd66:7069:6e6b::fe"), grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(addresses("10.66.0.4"), grant))
         assertTrue(PinkVpnRuntime.ownsCapturedAddress(
-            link("10.66.0.3/32", "fd66:7069:6e6b::3/128"), grant))
+            addresses("10.66.0.3", "fd66:7069:6e6b::3"), grant))
         assertTrue(PinkVpnRuntime.ownsCapturedAddress(
-            link("10.66.0.254/32", "fd66:7069:6e6b::fe/128"), "10.66.0.254"))
+            addresses("10.66.0.254", "fd66:7069:6e6b::fe"), "10.66.0.254"))
     }
 
     private fun assertProtectedHealthFailuresEmitFixedKindsWithoutExceptionMessages() {

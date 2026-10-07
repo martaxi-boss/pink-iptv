@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 26,
+  "recorded_at": "2026-10-07T05:38:16.297Z",
+  "event": "REPLAN",
+  "strategy_generation": 11,
+  "action_fingerprint": "061;public-numeric-address-owned-capture-regression",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "4927a7c0c8d3cbd49bc1116c0a3effb4188564a9bd939bef40925a1f25615169",
+  "detail": "Use public List<InetAddress> as owned-capture predicate boundary; real candidate/diagnostic map actual LinkProperties.linkAddresses into that list. Preserve exact owned expected IPv4 check and original UID v4/v6 validation. Fixture uses only existing public InetAddress.getByName on fixed numeric v4/v6 literals; remove hidden LinkProperties.addLinkAddress/LinkAddress(String) construction. All null/empty/stale-offline/other/current/own-offline cases and private-message error classes retained within same two required native tests; CI workflow count unchanged. No production admission/timeouts/JS/provider/player changes beyond original owned-selection repair."
+}

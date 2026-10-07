@@ -119,7 +119,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             val network = cm.allNetworks.firstOrNull {
                 cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true &&
                     cm.getLinkProperties(it)?.let { link ->
-                        link.interfaceName?.isNotBlank() == true && ownsCapturedAddress(link, captureAddress)
+                        link.interfaceName?.isNotBlank() == true && ownsCapturedAddress(link.linkAddresses.map { it.address }, captureAddress)
                     } == true
             }
             if (network != null && cm.bindProcessToNetwork(network) && defaultRoutesSelect(network)) {
@@ -356,7 +356,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             false
         } finally {
             val captureMatches = try { ownsCapturedAddress(
-                boundVpn?.let { cm.getLinkProperties(it) }, captureAddress) } catch (_: Exception) { false }
+                boundVpn?.let { cm.getLinkProperties(it)?.linkAddresses?.map { link -> link.address } }, captureAddress) } catch (_: Exception) { false }
             // Fixed enums/status/booleans only, copied on failed enrollment.
             latestHealthDiagnostic = "$phase:$category;status=$status;bodyMatches=$bodyMatches;captureMatches=$captureMatches"
         }
@@ -500,8 +500,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     companion object {
-        internal fun ownsCapturedAddress(link: android.net.LinkProperties?, expected: String): Boolean =
-            link?.linkAddresses?.any { it.address.hostAddress == expected } == true
+        internal fun ownsCapturedAddress(addresses: List<InetAddress>?, expected: String): Boolean =
+            addresses?.any { it.hostAddress == expected } == true
 
         internal fun healthFailureKind(failure: Exception): String = when (failure) {
             is java.net.UnknownHostException -> "DNS"

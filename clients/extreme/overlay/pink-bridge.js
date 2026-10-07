@@ -15,7 +15,14 @@ export function installPinkBridge() {
     pending.delete(reply.id)
     clearTimeout(waiting.timer)
     if (reply.ok === true) waiting.resolve(reply.result)
-    else waiting.reject(new Error("Serviço PINK temporariamente indisponível."))
+    else {
+      const error = new Error("Serviço PINK temporariamente indisponível.")
+      if (waiting.operation.startsWith("vodCatalog") && ["CONNECT", "HTTP_STATUS", "READ_IDLE", "TOTAL_DEADLINE", "MAX_BYTES", "VPN_LOST", "STAGE"].includes(reply.code)) {
+        error.code = reply.code
+        console.warn("PINK_CATALOG_PHASE=" + reply.code)
+      }
+      waiting.reject(error)
+    }
   }
   const call = (operation, payload = {}, timeout = 5000) => new Promise((resolve, reject) => {
     const id = String(++sequence)
@@ -23,7 +30,7 @@ export function installPinkBridge() {
       pending.delete(id)
       reject(new Error("Serviço PINK temporariamente indisponível."))
     }, timeout)
-    pending.set(id, { resolve, reject, timer })
+    pending.set(id, { resolve, reject, timer, operation })
     try { native.postMessage(JSON.stringify({ id, operation, payload })) }
     catch {
       clearTimeout(timer)
@@ -43,7 +50,8 @@ export function installPinkBridge() {
   }
   window.PinkCatalog = {
     read: (action, entryId) => call("liveCatalog", { action, entryId }, 60000),
-    openVod: (action, entryId) => call("vodCatalog", {action, entryId}, 200000),
+    // 15s connect + 20s response idle + 180s body + 5s bridge margin.
+    openVod: (action, entryId) => call("vodCatalog", {action, entryId}, 220000),
     readVodChunk: (token, entryId) => call("vodCatalogChunk", {token, entryId}, 15000),
     closeVod: (token) => call("vodCatalogClose", {token}, 15000),
   }

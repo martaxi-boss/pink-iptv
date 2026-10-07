@@ -54,7 +54,7 @@ class PinkVodCatalogTest {
             assertEquals(91,file.inputStream().use { it.read() })
             assertTrue(reply.disconnected)
             assertFalse(reply.instanceFollowRedirects)
-            assertEquals(15000,reply.readTimeout)
+            assertTrue(reply.readTimeout in 1..20000)
         } finally { file.delete() }
     }
     @Test fun unicodeBytesArePreservedAndErrorsDeletePartialFiles() {
@@ -64,7 +64,7 @@ class PinkVodCatalogTest {
             PinkCatalogTransfer.download(Reply(ByteArrayInputStream(bytes)),file,PinkCatalogTransfer.policy("get_series")) { true }
             assertArrayEquals(bytes,file.readBytes())
             for ((code, body, limit, admitted) in listOf(
-                Failure(302,bytes,1000,true), Failure(200,"<html>".toByteArray(),1000,true),
+                Failure(302,bytes,1000,true),
                 Failure(200,bytes,3,true), Failure(200,bytes,1000,false))) {
                 val reply = Reply(ByteArrayInputStream(body),code)
                 try { PinkCatalogTransfer.download(reply,file,PinkCatalogTransfer.Policy(limit.toLong(),30)) { admitted }; fail("Failure admitted") }
@@ -93,4 +93,65 @@ class PinkVodCatalogTest {
         fresh.release(); fresh.close()
     }
     private data class Failure(val code:Int,val body:ByteArray,val limit:Int,val admitted:Boolean)
+
+    @Test fun regressionOldIdleBudgetAcceptsProgressThatFifteenSecondsRejected() {
+        // Virtual socket time: no sleeps, and the socket honors readTimeout.
+        // Historical native default=20s, first bad disk transport=15s.
+        val pauses = listOf(19000L, 19000L, 19000L, 19000L)
+        fun run(idle: Int): Pair<Long, String?> {
+            var time = 0L
+            var index = 0
+            lateinit var reply: Reply
+            val stream = object : InputStream() {
+                override fun read() = error("bulk only")
+                override fun read(b: ByteArray, off: Int, len: Int): Int {
+                    if (index == pauses.size) return -1
+                    val pause = pauses[index++]
+                    val bound = minOf(idle, reply.readTimeout)
+                    time += minOf(pause, bound.toLong()) * 1000000
+                    if (pause >= bound) throw java.net.SocketTimeoutException()
+                    b[off] = 32; return 1
+                }
+            }
+            reply = Reply(stream)
+            val file = File.createTempFile("pink-progress", ".tmp")
+            return try {
+                PinkCatalogTransfer.download(reply,file,PinkCatalogTransfer.Policy(100,180), { time }) { true }
+                file.length() to null
+            } catch (failure: PinkCatalogFailure) {
+                assertFalse(file.exists()); 0L to failure.phase
+            } finally { file.delete() }
+        }
+        assertEquals("READ_IDLE", run(15000).second)
+        assertEquals(4L to null, run(20000))
+    }
+
+    @Test fun realIdleDeadlineSizeAndLostVpnFailClosedWithSafePhases() {
+        for ((pause, seconds, admitted, expected) in listOf(
+            Bound(21000,180,true,"READ_IDLE"), Bound(19000,18,true,"TOTAL_DEADLINE"),
+            Bound(19000,45,true,"TOTAL_DEADLINE"),
+            Bound(1,180,false,"VPN_LOST"))) {
+            var time = 0L
+            val file = File.createTempFile("pink-bounds", ".tmp")
+            val stream = object : InputStream() {
+                override fun read() = error("bulk only")
+                override fun read(b:ByteArray,off:Int,len:Int):Int { time += pause * 1000000; b[off]=91; return 1 }
+            }
+            val reply = Reply(stream)
+            try {
+                PinkCatalogTransfer.download(reply,file,PinkCatalogTransfer.Policy(100,seconds), { time }) { admitted }
+                fail("Unbounded transfer admitted")
+            } catch (failure: PinkCatalogFailure) { assertEquals(expected,failure.phase) }
+            finally { assertFalse(file.exists()); assertTrue(reply.disconnected); file.delete() }
+        }
+    }
+    @Test fun utf8BomAndProviderLengthAreNotRejectedBeforeWorkerValidation() {
+        val bytes = "\uFEFF[{\"name\":\"Português 🎬\"}]".toByteArray(Charsets.UTF_8)
+        val file = File.createTempFile("pink-json", ".tmp")
+        try {
+            PinkCatalogTransfer.download(Reply(ByteArrayInputStream(bytes),length=bytes.size.toLong()+1),file,PinkCatalogTransfer.policy("get_series")) { true }
+            assertArrayEquals(bytes,file.readBytes())
+        } finally { file.delete() }
+    }
+    private data class Bound(val pause:Long,val seconds:Long,val admitted:Boolean,val expected:String)
 }

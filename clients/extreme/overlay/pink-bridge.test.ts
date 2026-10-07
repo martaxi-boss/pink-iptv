@@ -56,6 +56,17 @@ describe('origin-restricted native transport', () => {
     native.onmessage({ data: JSON.stringify({ id: request.id, ok: false, error: 'private detail' }) })
     await waiting
   })
+  it('exposes only fixed safe catalog phases and does not accept provider error text', async () => {
+    const { native, host } = create()
+    for (const [code, expected] of [['READ_IDLE','READ_IDLE'], ['private URL or credentials',undefined]]) {
+      const waiting = host.PinkCatalog.openVod('get_series', 'fixture')
+      const request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+      const assertion = expect(waiting).rejects.toMatchObject({message:'Serviço PINK temporariamente indisponível.', ...(expected ? {code:expected} : {})})
+      native.onmessage({data:JSON.stringify({id:request.id,ok:false,code,error:'private body'})})
+      await assertion
+      try { await waiting } catch (error: any) { expect(error.code).toBe(expected) }
+    }
+  })
   it('bounds a missing native response and ignores its later arrival', async () => {
     vi.useFakeTimers()
     const { native, host } = create()

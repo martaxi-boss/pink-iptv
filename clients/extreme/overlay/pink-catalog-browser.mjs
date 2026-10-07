@@ -22,9 +22,6 @@ try {
     const cache = await import('/src/scripts/lib/cache.js')
     const catalog = await import('/src/scripts/lib/catalog.js')
     const {parsePinkCatalog} = await import('/src/scripts/lib/pink-catalog-worker.js')
-    const start = performance.now()
-    await catalog.warmupActive('fixture', {background: true})
-    const homeMs = performance.now() - start
     let count = 0
     let release
     const loader = () => { count++; return new Promise(resolve => { release = resolve }) }
@@ -81,7 +78,7 @@ try {
       const elapsedMs = performance.now() - begin
       await new Promise(resolve => setTimeout(resolve, 20))
       clearInterval(timer)
-      return {rows: result.length, maxGapMs: maxGap, ticks, elapsedMs}
+    return {rows: result.length, maxGapMs: maxGap, ticks, elapsedMs}
     }
     const baseline = await measure(() => parsePinkCatalog(body, 'vod', categories))
     const worker = await measure(async () => {
@@ -106,6 +103,24 @@ try {
     const saved = await new Promise((resolve, reject) => {const req = db.transaction('entries').objectStore('entries').get('xt_cache:fixture:vod'); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error)})
     if (saved.data.length !== rows.length) failures.push('incomplete persisted cache')
     db.close()
+    // Exercise the production raw fetcher/retry policy, not just bridge mocks.
+    const originalNative = window.PinkNative
+    let rejectedRequests = 0
+    window.PinkNative = {onmessage:null, postMessage(text) {
+      const request = JSON.parse(text)
+      if (request.operation !== 'vodCatalog') return originalNative.postMessage(text)
+      rejectedRequests++
+      queueMicrotask(() => window.PinkNative.onmessage({data:JSON.stringify({id:request.id,ok:false,code:'HTTP_STATUS',error:'must remain private'})}))
+    }}
+    try { await catalog.fetchPinkVodRows('fixture'); failures.push('failure swallowed') }
+    catch (error) { if (error.code !== 'HTTP_STATUS') failures.push('failure phase lost') }
+    if (rejectedRequests !== 1) failures.push('deterministic failure retried')
+    window.PinkNative = originalNative
+    const start = performance.now()
+    await catalog.warmupActive('fixture', {background: true})
+    const homeMs = performance.now() - start
+    await pipeline.backgroundPinkCatalog('fixture', () => { throw Error('duplicate background') })
+    if ([...bodies.keys()].some(action=>opens[action]!==1)) failures.push('hot background re-downloaded')
     return {homeMs, duplicateRequests: count, nativeCatalogRequests:opens, bodyBytes: body.length, baseline, worker, failures}
   })
   assert.deepEqual(result.failures, [])

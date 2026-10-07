@@ -79,7 +79,12 @@ object PinkWebBridge {
                         else -> throw IllegalArgumentException("Unavailable operation")
                     }
                     response.put("ok", true).put("result", result)
-                } catch (_: Exception) { response.put("ok", false) }
+                } catch (error: Exception) {
+                    response.put("ok", false)
+                    if (request.optString("operation") in setOf("vodCatalog", "vodCatalogChunk", "vodCatalogClose")) {
+                        response.put("code", if (error is PinkCatalogFailure) error.phase else "STAGE")
+                    }
+                }
                 val encodedResponse = response.toString()
                 main.post {
                     if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {

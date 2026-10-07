@@ -3,6 +3,27 @@ export function pinkCatalogRuntime() {
   return typeof window !== "undefined" && !!window.PinkNative
 }
 
+// Completion drives the next stage. Callers never have to await background work.
+// Document-local ownership also prevents a recreated WebView inheriting jobs.
+export function createCatalogBackground() {
+  const active = new Map()
+  return (key, load) => {
+    if (active.has(key)) return active.get(key)
+    const job = Promise.resolve().then(async () => {
+      const errors = {}
+      for (const kind of ["live", "vod", "series"]) {
+        try { await load(kind) }
+        catch (error) { errors[kind] = error?.code || "CATALOG_FAILED" }
+      }
+      return errors
+    }).finally(() => active.delete(key))
+    active.set(key, job)
+    return job
+  }
+}
+
+export const backgroundPinkCatalog = createCatalogBackground()
+
 export function createCatalogQueue(selectedKind = () => "") {
   const pending = new Map()
   const queue = []

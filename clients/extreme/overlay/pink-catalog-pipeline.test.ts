@@ -1,11 +1,49 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { createCatalogQueue } from '../src/scripts/lib/pink-catalog-pipeline.js'
+import { createCatalogQueue, createCatalogBackground } from '../src/scripts/lib/pink-catalog-pipeline.js'
 import { parsePinkCatalog } from '../src/scripts/lib/pink-catalog-worker.js'
 
 afterEach(() => vi.unstubAllGlobals())
 const source = (path: string) => readFileSync(new URL('../src/' + path, import.meta.url), 'utf8')
 describe('demand-first catalog ownership', () => {
+  it('advances Live → Movies → Series only on completion, joins triggers and continues after failure', async () => {
+    const background = createCatalogBackground()
+    const order: string[] = []
+    let release: any
+    const load = vi.fn(async (kind: string) => {
+      order.push(kind)
+      if (kind === 'live') await new Promise(resolve => { release = resolve })
+      if (kind === 'vod') throw Object.assign(Error('bounded failure'), {code:'READ_IDLE'})
+    })
+    const a = background('account', load)
+    expect(background('account', load)).toBe(a)
+    await Promise.resolve()
+    expect(order).toEqual(['live'])
+    release()
+    expect(await a).toEqual({vod:'READ_IDLE'})
+    expect(order).toEqual(['live', 'vod', 'series'])
+  })
+  it('places an explicit Series request immediately after active Live without duplicating background work', async () => {
+    const queue = createCatalogQueue(() => 'series')
+    const background = createCatalogBackground()
+    const hot = new Set<string>()
+    const order: string[] = []
+    let release: any
+    const load = (kind: string) => hot.has(kind) ? Promise.resolve() : queue(kind, kind, async () => {
+      order.push(kind)
+      if (kind === 'live') await new Promise(resolve => { release = resolve })
+      hot.add(kind)
+    })
+    const job = background('account', load)
+    await Promise.resolve(); await Promise.resolve()
+    const page = load('series')
+    release()
+    await Promise.all([job, page])
+    expect(order).toEqual(['live', 'series', 'vod'])
+    await background('account', load)
+    expect(order).toEqual(['live', 'series', 'vod'])
+    expect(createCatalogBackground.toString()).not.toMatch(/setTimeout|setInterval/)
+  })
   it('joins a page and warmup request and serializes different catalogs', async () => {
     const queue = createCatalogQueue()
     let release: any
@@ -42,7 +80,8 @@ describe('demand-first catalog ownership', () => {
     const catalog = source('scripts/lib/catalog.js')
     const background = catalog.slice(catalog.indexOf('export async function warmupActive'), catalog.indexOf('  let creds', catalog.indexOf('export async function warmupActive')))
     expect(background).toContain('opts.background')
-    expect(background).not.toContain('await')
+    expect(background).toContain('void backgroundPinkCatalog')
+    expect(background).not.toContain('await backgroundPinkCatalog')
     expect(catalog.match(/if \(isTauri && !pinkCatalogRuntime\(\)\)/g)).toHaveLength(5)
     expect(source('components/Sidebar.astro')).toContain('background: true')
   })

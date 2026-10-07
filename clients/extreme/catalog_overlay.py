@@ -25,13 +25,22 @@ def apply(root: Path, destination: Path):
          '            PinkCatalogWorkerChecks().verify(activity)\n            report("STRICT_OFFLINE_CAPTURE_AND_RECREATION=PASS")')
 
     edit("src/scripts/lib/catalog.js", '// Shared catalog fetch + parse + cache',
-         '// Shared catalog fetch + parse + cache\nimport { pinkCatalogRuntime, processPinkCatalog } from "./pink-catalog-pipeline.js"')
+         '// Shared catalog fetch + parse + cache\nimport { pinkCatalogRuntime, processPinkCatalog, backgroundPinkCatalog } from "./pink-catalog-pipeline.js"')
     # The Rust staging job must never race the page/cache-owned Android request.
     edit("src/scripts/lib/catalog.js", 'if (isTauri) {', 'if (isTauri && !pinkCatalogRuntime()) {', 5)
     edit("src/scripts/lib/catalog.js", 'export async function warmupActive(playlistId, opts = {}) {',
          '''export async function warmupActive(playlistId, opts = {}) {
   if (pinkCatalogRuntime() && opts.background && !opts.force) {
-    // Home/Sidebar can render immediately. Opening a view loads its own kind.
+    // Resolving the selected account and the sequence never blocks Home.
+    void backgroundPinkCatalog(playlistId || "selected", async (kind) => {
+      const creds = await loadCreds()
+      const { getActiveEntry } = await import("@/scripts/lib/creds.js")
+      const active = await getActiveEntry()
+      const pid = playlistId || active?._id
+      if (!pid || active?._id !== pid) throw new Error("CATALOG_CANCELLED")
+      const load = { live: ensureLive, vod: ensureVod, series: ensureSeries }[kind]
+      await load(creds, pid)
+    })
     return { live: [], vod: [], series: [], errors: {} }
   }''')
     # Check before JSON.parse: all heavy VOD work belongs to the worker.
@@ -72,6 +81,14 @@ def apply(root: Path, destination: Path):
         text = text.replace('import { xtreamApiFetch } from "@/scripts/lib/xtream-api.js"\n', '')
         target.write_text(text)
 
+    # A fresh full Android response already contains all provider metadata.
+    # Re-downloading it cannot fill fields the provider omitted, and would race
+    # the next background stage. Explicit refresh remains available.
+    edit("src/scripts/lib/tmdb-backfill.ts", 'import { cachedFetch, CACHE_REVALIDATED_EVENT }',
+         'import { pinkCatalogRuntime } from "./pink-catalog-pipeline.js"\nimport { cachedFetch, CACHE_REVALIDATED_EVENT }')
+    edit("src/scripts/lib/tmdb-backfill.ts", '  const key = `${playlistId}:${kind}`',
+         '  if (pinkCatalogRuntime()) return\n  const key = `${playlistId}:${kind}`')
+
     # Export reusable uncached fetchers; the cache/queue owns deduplication.
     target = destination / "src/scripts/lib/catalog.js"
     text = target.read_text()
@@ -83,6 +100,7 @@ def apply(root: Path, destination: Path):
         begin = text.index(start_marker, section)
         end = text.index(end_marker, begin)
         body = text[begin:end].replace('  const fetcher = () =>', '  return', 1)
+        body = body.replace('  })', '  }, { tries: pinkCatalogRuntime() ? 1 : 3 })')
         body = body.replace(f'fetch{title}CategoryMap()', f'fetch{title}CategoryMap(playlistId)')
         helper = f'export async function fetchPink{title}Rows(playlistId) {{\n  const onBytes = makeBytesEmitter(playlistId, "{kind}")\n' + body + '}\n\n'
         text = text[:begin] + f'  const fetcher = () => fetchPink{title}Rows(playlistId)\n' + text[end:]

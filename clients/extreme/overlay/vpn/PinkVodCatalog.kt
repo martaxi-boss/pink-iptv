@@ -4,6 +4,7 @@ import android.content.Context
 import java.io.File
 import java.io.RandomAccessFile
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.URL
 import java.net.URLEncoder
@@ -90,6 +91,9 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     }
 }
 
+// Only fixed phase codes cross the bridge; never exception messages or provider data.
+internal class PinkCatalogFailure(val phase: String) : IllegalStateException(phase)
+
 /** Bounded disk transfer; no full native String or JSONArray for large catalogs. */
 internal object PinkCatalogTransfer {
     // A new document cancels the previous owner's I/O rather than waiting for
@@ -109,40 +113,62 @@ internal object PinkCatalogTransfer {
         "get_vod_streams", "get_series" -> Policy(256L * 1024 * 1024, 180)
         else -> throw IllegalArgumentException("Invalid catalog action")
     }
-    fun download(request: HttpURLConnection, file: File, policy: Policy, ready: () -> Boolean) {
+    // Restore the historical native client's default idle budget (20s).
+    // Socket idle and total body duration are different bounds: progress resets
+    // only idle, never the total deadline. Live's transport is unchanged.
+    fun download(request: HttpURLConnection, file: File, policy: Policy,
+                 now: () -> Long = System::nanoTime, ready: () -> Boolean) {
         request.connectTimeout = 15000
-        request.readTimeout = 15000
+        request.readTimeout = 20000
         request.instanceFollowRedirects = false
         request.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(policy.seconds)
+        fun admitted() { if (!ready()) throw PinkCatalogFailure("VPN_LOST") }
+        var phase = "CONNECT"
         try {
-            check(ready() && request.responseCode == 200)
-            check(request.contentLengthLong <= policy.maxBytes)
+            admitted()
+            if (request.responseCode != 200) throw PinkCatalogFailure("HTTP_STATUS")
+            if (request.contentLengthLong > policy.maxBytes) throw PinkCatalogFailure("MAX_BYTES")
+            // Like Live, the body deadline starts after the response headers.
+            val deadline = now() + TimeUnit.SECONDS.toNanos(policy.seconds)
+            val idleBudget = TimeUnit.SECONDS.toNanos(20)
+            var lastProgress = now()
             var total = 0L
-            var sawArray = false
+            phase = "READ_IDLE"
             request.inputStream.use { input ->
                 file.outputStream().use { output ->
                     val buffer = ByteArray(64 * 1024)
                     while (true) {
-                        check(ready() && System.nanoTime() < deadline)
-                        val count = input.read(buffer)
-                        if (count < 0) break
-                        if (!sawArray) {
-                            for (i in 0 until count) {
-                                val byte = buffer[i].toInt() and 255
-                                if (byte == 9 || byte == 10 || byte == 13 || byte == 32) continue
-                                check(byte == 91 || byte == 123); sawArray = true; break
-                            }
+                        admitted()
+                        val time = now()
+                        if (time >= deadline) throw PinkCatalogFailure("TOTAL_DEADLINE")
+                        val idleRemaining = idleBudget - (time - lastProgress)
+                        if (idleRemaining <= 0) throw PinkCatalogFailure("READ_IDLE")
+                        request.readTimeout = maxOf(1, TimeUnit.NANOSECONDS.toMillis(minOf(idleRemaining, deadline - time)).toInt())
+                        val count = try { input.read(buffer) }
+                        catch (_: SocketTimeoutException) {
+                            admitted()
+                            throw PinkCatalogFailure(if (now() >= deadline) "TOTAL_DEADLINE" else "READ_IDLE")
                         }
+                        admitted()
+                        if (now() >= deadline) throw PinkCatalogFailure("TOTAL_DEADLINE")
+                        if (now() - lastProgress >= idleBudget) throw PinkCatalogFailure("READ_IDLE")
+                        if (count < 0) break
+                        if (count == 0) continue
+                        lastProgress = now()
                         total += count
-                        check(total <= policy.maxBytes)
+                        if (total > policy.maxBytes) throw PinkCatalogFailure("MAX_BYTES")
                         output.write(buffer, 0, count)
                     }
                 }
             }
-            check(request.contentLengthLong < 0 || request.contentLengthLong == total)
-            check(sawArray && ready() && System.nanoTime() < deadline)
-        } catch (error: Exception) { file.delete(); throw error }
-        finally { request.disconnect() }
+            if (total == 0L) throw PinkCatalogFailure("STAGE")
+            // Actual EOF size is the bridge integrity bound. Provider length is
+            // not a JSON validation rule; the Worker validates the whole body.
+            // This also admits UTF-8 BOM exactly as the streaming decoder does.
+        } catch (error: Exception) {
+            file.delete()
+            if (error is PinkCatalogFailure) throw error
+            throw PinkCatalogFailure(if (!ready()) "VPN_LOST" else phase)
+        } finally { request.disconnect() }
     }
 }

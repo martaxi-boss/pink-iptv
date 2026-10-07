@@ -15,6 +15,8 @@ object PinkWebBridge {
     private val workers = Executors.newSingleThreadExecutor()
     @Volatile private var livePhase = "absent"
     @Volatile private var rendererPulse = 0L
+    @Volatile private var bodyIpc = "absent"
+    internal fun bodyIpcForTests(): String = bodyIpc
     internal fun rendererPulseForTests(): Long = rendererPulse
     internal fun livePhaseForTests(): String = livePhase
     private val livePhases = setOf("boot", "account", "preferences", "categories", "channels",
@@ -25,6 +27,7 @@ object PinkWebBridge {
             throw IllegalStateException("Connection unavailable")
         livePhase = "absent"
         rendererPulse = 0L
+        bodyIpc = "absent"
         val app = context.applicationContext
         val vault = PinkVault(app)
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
@@ -43,6 +46,11 @@ object PinkWebBridge {
             if (request.optString("operation") == "livePhase") {
                 val value = request.optJSONObject("payload")?.optString("phase")
                 livePhase = if (value in livePhases) value!! else "absent"
+                return@addWebMessageListener
+            }
+            if (request.optString("operation") == "bodyIpc") {
+                val value = request.optJSONObject("payload")?.optString("stage")
+                bodyIpc = if (value in setOf("calling", "returned", "resolved", "rejected", "threw")) value!! else "absent"
                 return@addWebMessageListener
             }
             val id = request.getString("id")

@@ -64,6 +64,8 @@ for base in [DEST / 'src', DEST / 'src-tauri/gen/android/app/src/main/res']:
 
 for src, dst in {
     'pink-session.js': 'src/scripts/lib/pink-session.js',
+    'pink-body-ipc.js': 'src/scripts/lib/pink-body-ipc.js',
+    'pink-body-ipc-plugin.mjs': 'src/plugins/pink-body-ipc-plugin.mjs',
     'pink-login.js': 'src/scripts/lib/pink-login.js',
     'login.astro': 'src/pages/login.astro',
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
@@ -208,6 +210,14 @@ p.write_text(text)
 welcome = DEST / 'src/components/WelcomeCard.astro'
 welcome.write_text('''<div aria-hidden="true"></div>
 ''')
+
+# Observe only the existing pinned HTTP body's synchronous dispatch and promise.
+replace('astro.config.mjs',
+        'import svelte from "@astrojs/svelte"\n',
+        'import svelte from "@astrojs/svelte"\nimport { pinkHttpBodyObserver } from "./src/plugins/pink-body-ipc-plugin.mjs"\n')
+replace('astro.config.mjs',
+        'plugins: [tailwindcss(), optimizeTablerIconsImport()]',
+        'plugins: [pinkHttpBodyObserver(), tailwindcss(), optimizeTablerIconsImport()]')
 
 # Fixed progress markers let the Android proof distinguish a disposed callback
 # from a catalog stall without recording provider data or JavaScript errors.

@@ -330,4 +330,6 @@ settings.write_text(text)
 shutil.copyfile(ROOT / 'NOTICE.md', DEST / 'PINK-NOTICE.md')
 from vpn_overlay import apply as apply_vpn
 apply_vpn(ROOT, DEST, replace)
+from vod_overlay import apply as apply_vod
+apply_vod(ROOT, DEST, replace)
 print('Applied PINK overlay to pinned complete Extreme application')

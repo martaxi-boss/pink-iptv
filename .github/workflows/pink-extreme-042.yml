@@ -56,8 +56,26 @@ jobs:
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
           pnpm run build
+      - name: Inspect real provider subtitle metadata when existing read access is available
+        env:
+          SSHPASS: ${{ secrets.VPS_SSH_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SSHPASS" ]; then
+            echo REAL_PROVIDER_VOD_METADATA=NO_EXISTING_CREDENTIAL
+            exit 0
+          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass >/dev/null
+          if ! sshpass -e ssh -T -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 ubuntu@146.59.145.3 'sudo -n python3 -' < clients/extreme/inspect_vod_metadata.py; then
+            echo REAL_PROVIDER_VOD_METADATA=READ_NOT_COMPLETED
+          fi
+      - name: Generate real test-only VOD media with multiple tracks
+        run: |
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq ffmpeg >/dev/null; }
+          python clients/extreme/generate_vod_test_media.py "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/src/androidTest/assets/pink-vod"
       - name: Generate PINK launcher resources
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
@@ -117,6 +135,11 @@ jobs:
             adb shell ip -6 route show table all
           fi
           grep -q 'OK (1 test)' "$RUNNER_TEMP/pink053-startup.txt"
+          adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVodTracksTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink-vod-tracks.txt"
+          cat "$RUNNER_TEMP/pink-vod-tracks.txt"
+          grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink-vod-tracks.txt"
+          grep -q 'REAL_MEDIA3_MULTI_AUDIO_MULTI_SUBTITLE_FORCED_SELECTION_AND_PRESENTED_VIDEO=PASS' "$RUNNER_TEMP/pink-vod-tracks.txt"
+          grep -q 'REAL_MEDIA3_SINGLE_AUDIO_NO_SUBTITLES_AND_PROTECTED_LAUNCH_FALLBACK=PASS' "$RUNNER_TEMP/pink-vod-tracks.txt"
           adb shell am force-stop com.pinkiptv.extreme
           echo KEYSTORE_NORMAL_CONSENT_OFFLINE_FAIL_CLOSED_RECREATION=PASS
           SCRIPT
@@ -176,5 +199,42 @@ jobs:
         with:
           name: PINK-IPTV-Extreme-042
           path: ${{ runner.temp }}/pink-deliverable
+          if-no-files-found: error
+          retention-days: 30
+      - name: Prepare exact tested APK delivery
+        id: vod_package
+        run: python clients/extreme/package_vod_apk.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: PINK-VOD-APK-manifest
+          path: ${{ runner.temp }}/pink-vod-delivery/manifest.json
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ steps.vod_package.outputs.part_count > 0 }}
+        with:
+          name: PINK-VOD-APK-part-00
+          path: ${{ runner.temp }}/pink-vod-delivery/part-00
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ steps.vod_package.outputs.part_count > 1 }}
+        with:
+          name: PINK-VOD-APK-part-01
+          path: ${{ runner.temp }}/pink-vod-delivery/part-01
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ steps.vod_package.outputs.part_count > 2 }}
+        with:
+          name: PINK-VOD-APK-part-02
+          path: ${{ runner.temp }}/pink-vod-delivery/part-02
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ steps.vod_package.outputs.part_count > 3 }}
+        with:
+          name: PINK-VOD-APK-part-03
+          path: ${{ runner.temp }}/pink-vod-delivery/part-03
           if-no-files-found: error
           retention-days: 30

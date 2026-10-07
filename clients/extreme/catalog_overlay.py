@@ -15,6 +15,11 @@ def apply(root: Path, destination: Path):
         shutil.copyfile(root / "overlay" / name, destination / "src/scripts/lib" / name)
     shutil.copyfile(root / "overlay/pink-catalog-pipeline.test.ts", destination / "tests/pink-catalog-pipeline.test.ts")
     shutil.copyfile(root / "overlay/pink-catalog-browser.mjs", destination / "tests/pink-catalog-browser.mjs")
+    android_tests = destination / "src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme"
+    shutil.copyfile(root / "overlay/vpn-tests/PinkCatalogWorkerChecks.kt", android_tests / "PinkCatalogWorkerChecks.kt")
+    edit("src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme/PinkVpnStartupTest.kt",
+         '            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()',
+         '            PinkCatalogWorkerChecks().verify(activity)\n            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()')
 
     edit("src/scripts/lib/catalog.js", '// Shared catalog fetch + parse + cache',
          '// Shared catalog fetch + parse + cache\nimport { pinkCatalogRuntime, processPinkCatalog } from "./pink-catalog-pipeline.js"')

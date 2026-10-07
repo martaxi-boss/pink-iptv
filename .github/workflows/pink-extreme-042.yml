@@ -60,6 +60,14 @@ jobs:
           pnpm exec playwright install --with-deps chromium
           node tests/pink-catalog-browser.mjs
           pnpm run build
+          python - <<'PY'
+          from pathlib import Path
+          workers = list(Path('dist/_astro').glob('pink-catalog-worker-*.js'))
+          assert len(workers) == 1
+          target = Path('src-tauri/gen/android/app/src/androidTest/assets/pink-catalog-worker-path.txt')
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_text('/_astro/' + workers[0].name)
+          PY
       - name: Generate real test-only VOD media with multiple tracks
         run: |
           command -v ffmpeg >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq ffmpeg >/dev/null; }

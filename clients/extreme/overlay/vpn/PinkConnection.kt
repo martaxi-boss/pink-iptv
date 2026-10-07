@@ -106,6 +106,10 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     internal fun controlPlaneRequestCountForTests(): Int = controlPlaneRequests
     internal fun openProtectedConnection(url: URL): HttpURLConnection {
         check(isReady())
+        return openOwnedVpnConnection(url)
+    }
+    private fun openOwnedVpnConnection(url: URL): HttpURLConnection {
+        check(live && accepting)
         val owned = checkNotNull(boundVpn)
         check(ownsCapturedAddress(cm.getLinkProperties(owned)?.linkAddresses?.map { it.address }, captureAddress))
         return owned.openConnection(url) as HttpURLConnection
@@ -341,8 +345,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         var bodyMatches = false
         var category = "none"
         return try {
-            // Default protected app route only. Keep the original 4s deadlines.
-            val connection = URL("http://10.66.0.1:51821/health").openConnection() as HttpURLConnection
+            // Select the owned VPN explicitly across the initial TUN replacement;
+            // this bootstrap check precedes admission. Never use a physical route.
+            val connection = openOwnedVpnConnection(URL("http://10.66.0.1:51821/health"))
             connection.connectTimeout = 4000
             connection.readTimeout = 4000
             connection.instanceFollowRedirects = false
@@ -364,7 +369,11 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             val captureMatches = try { ownsCapturedAddress(
                 boundVpn?.let { cm.getLinkProperties(it)?.linkAddresses?.map { link -> link.address } }, captureAddress) } catch (_: Exception) { false }
             // Fixed enums/status/booleans only, copied on failed enrollment.
-            latestHealthDiagnostic = "$phase:$category;status=$status;bodyMatches=$bodyMatches;captureMatches=$captureMatches"
+            val transfer = if (status != 200 || !bodyMatches) try {
+                val stats = backend.getStatistics(this)
+                ";tunnelTx=${stats.totalTx() > 0};tunnelRx=${stats.totalRx() > 0}"
+            } catch (_: Exception) { ";tunnelTransfer=unavailable" } else ""
+            latestHealthDiagnostic = "$phase:$category;status=$status;bodyMatches=$bodyMatches;captureMatches=$captureMatches$transfer"
         }
     }
 

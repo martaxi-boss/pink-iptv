@@ -72,6 +72,13 @@ class PinkWebBridgeTest {
             val loaded = JSONObject(waitValue(view,"window.result||''"))
             assertTrue(loaded.getBoolean("ok"))
             assertEquals("synthetic-account-blob",loaded.getString("result"))
+            // Protected catalog actions must fail closed before account/VPN admission.
+            for ((index, action) in listOf("get_vod_categories", "get_vod_streams", "get_series_categories", "get_series").withIndex()) {
+                evaluate(view, "window.result='';PinkNative.postMessage(JSON.stringify({id:'"+(index+10)+"',operation:'vodCatalog',payload:{action:'"+action+"',entryId:'fixture'}}));true")
+                val denied = JSONObject(waitValue(view,"window.result||''"))
+                assertFalse(denied.getBoolean("ok"))
+                assertFalse(denied.has("result"))
+            }
             val beforePulse = PinkWebBridge.rendererPulseForTests()
             evaluate(view, "PinkNative.postMessage(JSON.stringify({id:'0',operation:'livePulse',payload:{}}));true")
             val pulseDeadline = System.currentTimeMillis()+2000

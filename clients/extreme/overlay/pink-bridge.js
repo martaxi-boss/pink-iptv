@@ -43,6 +43,9 @@ export function installPinkBridge() {
   }
   window.PinkCatalog = {
     read: (action, entryId) => call("liveCatalog", { action, entryId }, 60000),
+    openVod: (action, entryId) => call("vodCatalog", {action, entryId}, 200000),
+    readVodChunk: (token, entryId) => call("vodCatalogChunk", {token, entryId}, 15000),
+    closeVod: (token) => call("vodCatalogClose", {token}, 15000),
   }
   return true
 }

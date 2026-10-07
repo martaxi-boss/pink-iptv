@@ -36,6 +36,42 @@ try {
     const rows = Array.from({length: 100000}, (_, i) => ({stream_id: i + 1, series_id: i + 1, name: `Português 🎬 ${100000-i}`, category_id: '7', genre: 'Drama', tmdb: i + 10, plot: 'Synthetic plot '.repeat(12)}))
     const body = JSON.stringify(rows)
     const categories = new Map([['7', 'Português']])
+    // Exercise the production routing, bounded bridge stream, page fetchers,
+    // worker and cache together. Only the network endpoint is synthetic.
+    const bodies = new Map([
+      ['get_vod_categories', JSON.stringify([{category_id:'7',category_name:'Português'}])],
+      ['get_series_categories', JSON.stringify([{category_id:'7',category_name:'Português'}])],
+      ['get_vod_streams', body],
+      ['get_series', JSON.stringify(rows.slice(0,5000))],
+    ])
+    const stages = new Map(), opens = {}
+    window.PinkNative = {onmessage:null, postMessage(text) {
+      const request = JSON.parse(text)
+      setTimeout(() => {
+        let result = true
+        if (request.operation === 'vaultReadValidated') {
+          result = JSON.stringify({selectedId:'fixture',entries:[{_id:'fixture',type:'xtream',serverUrl:'https://fixture.invalid',username:'synthetic',password:'synthetic'}]})
+        } else if (request.operation === 'vodCatalog') {
+          const action = request.payload.action
+          opens[action] = (opens[action] || 0) + 1
+          const bytes = new TextEncoder().encode(bodies.get(action))
+          stages.set(action,{bytes,offset:0})
+          result = {token:action,size:bytes.length}
+        } else if (request.operation === 'vodCatalogChunk') {
+          const stage = stages.get(request.payload.token)
+          if (stage.offset >= stage.bytes.length) result = {done:true}
+          else {
+            const chunk = stage.bytes.slice(stage.offset,stage.offset+65536)
+            stage.offset += chunk.length
+            result = {data:btoa(String.fromCharCode(...chunk))}
+          }
+        } else if (request.operation === 'vodCatalogClose') {
+          stages.delete(request.payload.token)
+        } else throw Error('Unexpected transport operation')
+        window.PinkNative.onmessage({data:JSON.stringify({id:request.id,ok:true,result})})
+      },0)
+    }}
+
     const measure = async (fn) => {
       let maxGap = 0, ticks = 0, previous = performance.now()
       const timer = setInterval(() => { const now = performance.now(); maxGap = Math.max(maxGap, now - previous); previous = now; ticks++ }, 5)
@@ -49,14 +85,20 @@ try {
     }
     const baseline = await measure(() => parsePinkCatalog(body, 'vod', categories))
     const worker = await measure(async () => {
-      const mapped = await pipeline.processPinkCatalog(body, 'vod', categories, 'fixture', 86400000)
-      cache.setCached('fixture', 'vod', mapped, 86400000)
-      return mapped
+      const load = () => catalog.fetchPinkVodRows('fixture')
+      const results = await Promise.all([
+        cache.cachedFetch('fixture','vod',86400000,load),
+        cache.cachedFetch('fixture','vod',86400000,load,{force:true}),
+      ])
+      return results[0].data
     })
-    const series = await pipeline.processPinkCatalog(JSON.stringify(rows.slice(0, 5000)), 'series', categories, 'fixture', 86400000)
-    cache.setCached('fixture', 'series', series, 86400000)
+    const seriesLoad = () => catalog.fetchPinkSeriesRows('fixture')
+    const [seriesResult] = await Promise.all([cache.cachedFetch('fixture','series',86400000,seriesLoad),cache.cachedFetch('fixture','series',86400000,seriesLoad,{force:true})])
+    const series = seriesResult.data
     const failures = []
     if (count !== 1) failures.push('duplicate live catalog')
+    if ([...bodies.keys()].some(action=>opens[action]!==1)) failures.push('duplicate or missing Movies/Series request')
+    if (stages.size) failures.push('native stage not released')
     if (worker.rows !== rows.length || series.length !== 5000) failures.push('lost rows')
     if (cache.getCached('fixture', 'series').data[0].genre !== 'Drama') failures.push('lost genre')
     // Read the actual persisted value, independent of the in-memory cache.
@@ -64,7 +106,7 @@ try {
     const saved = await new Promise((resolve, reject) => {const req = db.transaction('entries').objectStore('entries').get('xt_cache:fixture:vod'); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error)})
     if (saved.data.length !== rows.length) failures.push('incomplete persisted cache')
     db.close()
-    return {homeMs, duplicateRequests: count, bodyBytes: body.length, baseline, worker, failures}
+    return {homeMs, duplicateRequests: count, nativeCatalogRequests:opens, bodyBytes: body.length, baseline, worker, failures}
   })
   assert.deepEqual(result.failures, [])
   assert.ok(result.homeMs < 100, 'Home should not wait for catalog work')

@@ -216,13 +216,18 @@ welcome.write_text('''<div aria-hidden="true"></div>
 # body through the Android Tauri binary IPC boundary that repeatedly stalls.
 replace('src/scripts/lib/xtream-api.js',
         'import { providerFetch } from "@/scripts/lib/provider-fetch.js"',
-        'import { providerFetch } from "@/scripts/lib/provider-fetch.js"\nimport { fetchPinkLiveCatalog } from "./pink-catalog.js"')
+        'import { providerFetch } from "@/scripts/lib/provider-fetch.js"\nimport { fetchPinkLiveCatalog, fetchPinkVodCatalog } from "./pink-catalog.js"')
 replace('src/scripts/lib/xtream-api.js',
         '  const startIndex = Math.min(getMirrorPin(entry._id), candidates.length - 1)\n\n  const lastAllFailed',
         '''  if (typeof window !== "undefined" && window.PinkNative &&
       ["get_live_categories", "get_live_streams"].includes(action)) {
     if (Object.keys(params).length) throw new Error("Catálogo PINK inválido.")
     return fetchPinkLiveCatalog(action, entry._id, fetchOpts.signal)
+  }
+  if (typeof window !== "undefined" && window.PinkNative &&
+      ["get_vod_categories", "get_vod_streams", "get_series_categories", "get_series"].includes(action)) {
+    if (Object.keys(params).length) throw new Error("Catálogo PINK inválido.")
+    return fetchPinkVodCatalog(action, entry._id, fetchOpts.signal)
   }
   const startIndex = Math.min(getMirrorPin(entry._id), candidates.length - 1)
 

@@ -14,6 +14,7 @@ object PinkWebBridge {
     private val main = Handler(Looper.getMainLooper())
     private val workers = Executors.newSingleThreadExecutor()
     private val catalogWorkers = Executors.newSingleThreadExecutor()
+    private val vodCatalogWorkers = Executors.newSingleThreadExecutor()
     @Volatile private var livePhase = "absent"
     @Volatile private var rendererPulse = 0L
     internal fun rendererPulseForTests(): Long = rendererPulse
@@ -28,6 +29,7 @@ object PinkWebBridge {
         rendererPulse = 0L
         val app = context.applicationContext
         val vault = PinkVault(app)
+        val vodCatalog = PinkVodCatalog(app, vault, PinkVpnRuntime.get(app))
         WebViewCompat.addWebMessageListener(webView, "PinkNative",
             setOf("http://tauri.localhost", "https://tauri.localhost")) { _, message, sourceOrigin, mainFrame, reply ->
             if (!mainFrame || sourceOrigin.host != "tauri.localhost" ||
@@ -49,12 +51,19 @@ object PinkWebBridge {
             val id = request.getString("id")
             // A bounded catalog read must not queue readiness/vault requests
             // behind network I/O or block account/control-plane operations.
-            val executor = if (request.optString("operation") == "liveCatalog") catalogWorkers else workers
+            val executor = when (request.optString("operation")) {
+                "liveCatalog" -> catalogWorkers
+                "vodCatalog", "vodCatalogChunk", "vodCatalogClose" -> vodCatalogWorkers
+                else -> workers
+            }
             executor.execute {
                 val response = JSONObject().put("id", id)
                 try {
                     val payload = request.getJSONObject("payload")
                     val result: Any = when (request.getString("operation")) {
+                        "vodCatalog" -> vodCatalog.open(payload.getString("action"), payload.getString("entryId"))
+                        "vodCatalogChunk" -> vodCatalog.chunk(payload.getString("token"), payload.getString("entryId"))
+                        "vodCatalogClose" -> vodCatalog.close(payload.getString("token"))
                         "ready" -> PinkVpnRuntime.isReady()
                         "liveCatalog" -> PinkCatalog.read(vault, PinkVpnRuntime.get(app),
                             payload.getString("action"), payload.getString("entryId"))

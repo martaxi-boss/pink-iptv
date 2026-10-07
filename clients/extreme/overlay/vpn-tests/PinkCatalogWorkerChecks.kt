@@ -22,6 +22,13 @@ class PinkCatalogWorkerChecks {
         activity.onActivity { host ->
             web = descendants(host.window.decorView).filterIsInstance<WebView>().single()
         }
+        val readyDeadline = System.currentTimeMillis() + 15000
+        var ready = false
+        while (!ready && System.currentTimeMillis() < readyDeadline) {
+            instrumentation.runOnMainSync { ready = web.progress == 100 && web.url?.startsWith("http") == true }
+            if (!ready) Thread.sleep(100)
+        }
+        assertTrue("Recreated WebView did not load its local document", ready)
         val path = instrumentation.context.assets.open("pink-catalog-worker-path.txt").bufferedReader().use { it.readText().trim() }
         val script = """
           (() => {

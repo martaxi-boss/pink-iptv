@@ -20,6 +20,9 @@ def apply(root: Path, destination: Path):
     edit("src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme/PinkVpnStartupTest.kt",
          '            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()',
          '            PinkCatalogWorkerChecks().verify(activity)\n            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()')
+    edit("src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme/PinkVpnStartupTest.kt",
+         '            report("STRICT_OFFLINE_CAPTURE_AND_RECREATION=PASS")',
+         '            PinkCatalogWorkerChecks().verify(activity)\n            report("STRICT_OFFLINE_CAPTURE_AND_RECREATION=PASS")')
 
     edit("src/scripts/lib/catalog.js", '// Shared catalog fetch + parse + cache',
          '// Shared catalog fetch + parse + cache\nimport { pinkCatalogRuntime, processPinkCatalog } from "./pink-catalog-pipeline.js"')

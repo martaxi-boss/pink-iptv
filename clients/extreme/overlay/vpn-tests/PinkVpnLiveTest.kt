@@ -277,15 +277,20 @@ class PinkVpnLiveTest {
                 val consentDeadline = System.currentTimeMillis()+60000
                 var launcherDialogs = 0
                 while (VpnService.prepare(context) != null && System.currentTimeMillis()<consentDeadline) {
+                    try {
                     if (device.hasObject(By.pkg("com.android.vpndialogs")) ||
                         device.hasObject(By.text("Connection request"))) {
-                        device.findObject(By.res("android","button1"))?.click()
+                        device.findObject(By.pkg("com.android.vpndialogs").res("android","button1"))?.click()
                     } else if (launcherDialogs < 2 && device.hasObject(By.text("Pixel Launcher isn't responding"))) {
                         device.findObject(By.res("android", "aerr_close"))?.let {
                             it.click()
                             launcherDialogs++
                             report("EMULATOR_LAUNCHER_ANR_NORMAL_CLOSE=OBSERVED")
                         }
+                    }
+                    } catch (_: androidx.test.uiautomator.StaleObjectException) {
+                        // Dialog dismissal/replacement invalidates UiObject2. Reacquire
+                        // within the original deadline; never bypass system consent.
                     }
                     Thread.sleep(100)
                 }
@@ -401,6 +406,7 @@ class PinkVpnLiveTest {
         } catch (failure: Throwable) {
             primaryFailed = true
             report("PROTECTED_FLOW_FAILURE_PHASE="+phase)
+            if (phase == "normal-consent") report("NORMAL_CONSENT_FAILURE_KIND="+failure.javaClass.simpleName)
             if (phase == "authoritative-catalog") {
                 report("PROTECTED_CATALOG_BOUNDARY="+catalogKind+":"+catalogBoundary+";status="+catalogStatus+
                     ";failure="+PinkVpnRuntime.healthFailureKind(failure as? Exception ?: Exception()))

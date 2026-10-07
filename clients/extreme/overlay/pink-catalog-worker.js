@@ -1,5 +1,6 @@
 import { mapXtreamVodRows, mapXtreamSeriesRows } from "./catalog-mappers.js"
 import { persistPinkCatalog } from "./pink-catalog-store.js"
+import { isTrustedWorkerMessage } from "./worker-origin.ts"
 
 export function parsePinkCatalog(body, kind, categories) {
   const parsed = JSON.parse(body)
@@ -16,7 +17,9 @@ if (typeof self !== "undefined" && typeof document === "undefined") {
   let offset = 0
   let persisted = null
   let fetchedAt = 0
-  self.onmessage = async ({data}) => {
+  self.onmessage = async (event) => {
+    if (!isTrustedWorkerMessage(event)) return
+    const {data} = event
     try {
       if (!data.next) {
         rows = parsePinkCatalog(data.body, data.kind, data.categories); offset = 0

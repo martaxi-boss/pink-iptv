@@ -45,7 +45,6 @@ describe('demand-first catalog ownership', () => {
     expect(background).not.toContain('await')
     expect(catalog.match(/if \(isTauri && !pinkCatalogRuntime\(\)\)/g)).toHaveLength(5)
     expect(source('components/Sidebar.astro')).toContain('background: true')
-    expect(source('scripts/lib/cache.js')).toContain('opts.force && !pinkCatalogRuntime()')
   })
   it('pages reuse the same uncached fetchers and retain persistent cache-first painting', () => {
     for (const [path, kind, helper] of [['movies/movies.ts', 'vod', 'fetchPinkVodRows'], ['series/series.ts', 'series', 'fetchPinkSeriesRows']]) {

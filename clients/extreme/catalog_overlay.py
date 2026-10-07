@@ -61,6 +61,7 @@ def apply(root: Path, destination: Path):
         end = text.index('\n}', begin) + 2
         text = text[:begin] + text[end:]
         text = text.replace('  fetchCategoryMap,\n', '').replace('let categoryMap = null\n', '')
+        text = text.replace('import { xtreamApiFetch } from "@/scripts/lib/xtream-api.js"\n', '')
         target.write_text(text)
 
     # Export reusable uncached fetchers; the cache/queue owns deduplication.
@@ -125,6 +126,6 @@ const FETCHED_AT_INDEX = "fetchedAt"
   if (persisted && persisted.ttl === ttlMs) return
   idbPut(key, payload)''')
     edit("src/scripts/lib/cache.js", 'makeKey(entryId, kind) + (opts.force ? ":force" : "")',
-         'makeKey(entryId, kind) + (opts.force && !pinkCatalogRuntime() ? ":force" : "")')
+         'makeKey(entryId, kind) + (opts.force && !(pinkCatalogRuntime() && ["live", "vod", "series"].includes(kind)) ? ":force" : "")')
     edit("src/scripts/lib/cache.js", '      const data = await fetcher()',
          '      const data = await schedulePinkCatalog(makeKey(entryId, kind), kind, fetcher)', 2)

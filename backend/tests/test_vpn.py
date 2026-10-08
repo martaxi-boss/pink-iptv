@@ -177,8 +177,32 @@ def test_expired_installation_or_account_removes_peer(vpn, db, future_mapping):
 def test_account_installation_cap(vpn):
     for number in range(1, 6):
         assert enroll(vpn, number).status_code == 200
-    assert enroll(vpn, 6).status_code == 429
+    denied = enroll(vpn, 6)
+    assert denied.status_code == 429
+    assert denied.headers["cache-control"] == "no-store"
+    assert 1 <= int(denied.headers["retry-after"]) <= 86400
+    assert "public_key" not in denied.text and "device_token" not in denied.text
+    # An existing installation still reuses its lease even at the account cap.
     assert enroll(vpn).status_code == 200
+
+
+def test_vpn_capacity_retry_after_uses_earliest_expiry_without_identifiers(vpn, db):
+    for number in range(1, 6):
+        assert enroll(vpn, number).status_code == 200
+    previous = db.scalar(select(VpnInstallation).where(VpnInstallation.public_key == key(2)))
+    assert previous is not None
+    previous.expires_at = datetime.now(UTC) + timedelta(seconds=75)
+    db.commit()
+    blocked = enroll(vpn, 6)
+    assert blocked.status_code == 429
+    assert 1 <= int(blocked.headers["retry-after"]) <= 75
+    assert blocked.headers["cache-control"] == "no-store"
+    assert blocked.json() == {"detail": "PINK connection unavailable"}
+    # Wrong/no session cannot inspect another account's capacity timing.
+    anonymous = vpn.client.post("/v1/vpn/enroll", json={"public_key": key(6)})
+    assert anonymous.status_code == 401
+    assert "retry-after" not in anonymous.headers
+    assert enroll(vpn, 2).status_code == 200
 
 
 def test_gateway_failure_never_releases_configuration(vpn):

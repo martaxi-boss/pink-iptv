@@ -1,7 +1,7 @@
 import { catalogFailure } from "./pink-catalog-diagnostic.js"
 // Only the local main document receives the origin-restricted native message object.
 let installedFor = null
-const safeLoginCodes = new Set(["VPN_PERMISSION", "CONTROL_HTTPS", "VPN_ENROLL", "VPN_ACTIVATION", "DEVICE_SECURITY", "LOGIN_UNAVAILABLE"])
+const safeLoginCodes = new Set(["VPN_PERMISSION", "CONTROL_HTTPS", "VPN_ENROLL", "VPN_LIMIT", "VPN_ACTIVATION", "DEVICE_SECURITY", "LOGIN_UNAVAILABLE"])
 export function installPinkBridge() {
   const native = typeof window !== "undefined" && window.PinkNative
   if (typeof native?.postMessage !== "function") return false

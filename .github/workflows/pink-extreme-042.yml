@@ -1,7 +1,7 @@
 name: PINK Extreme Android 042
 on:
   push:
-    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059", "builder/device-login-recovery-062"]
+    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059", "builder/device-login-recovery-062", "builder/vpn-quota-recovery-066"]
     paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml", "docs/PHYSICAL_UI_RECOVERY_059.md"]
   workflow_dispatch:
 permissions:
@@ -20,9 +20,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Audit immutable certification061 or bounded login recovery062
+      - name: Audit immutable certification061, login recovery062 or bounded VPN quota066
         run: |
-          if [ "${{ github.ref_name }}" = 'builder/device-login-recovery-062' ]; then
+          if [ "${{ github.ref_name }}" = 'builder/vpn-quota-recovery-066' ]; then
+            python clients/extreme/audit_066.py
+          elif [ "${{ github.ref_name }}" = 'builder/device-login-recovery-062' ]; then
             python clients/extreme/audit_062.py
           elif [ "${{ github.ref_name }}" = 'builder/physical-ui-recovery-059' ]; then
             test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json

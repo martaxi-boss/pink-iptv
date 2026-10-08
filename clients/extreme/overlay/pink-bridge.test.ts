@@ -80,6 +80,7 @@ describe('origin-restricted native transport', () => {
     ['VPN_PERMISSION','VPN_PERMISSION'],
     ['CONTROL_HTTPS','CONTROL_HTTPS'],
     ['VPN_ENROLL','VPN_ENROLL'],
+    ['VPN_LIMIT','VPN_LIMIT'],
     ['VPN_ACTIVATION','VPN_ACTIVATION'],
     ['DEVICE_SECURITY','DEVICE_SECURITY'],
     ['private host and token','LOGIN_UNAVAILABLE'],

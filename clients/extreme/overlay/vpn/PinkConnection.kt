@@ -109,14 +109,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     /** Fixed public codes only: never propagate account data, URLs or exceptions. */
-    internal fun loginFailureCode(): String = when {
-        !accepting -> "VPN_PERMISSION"
-        protectedStage == "session_resolve" -> "CONTROL_HTTPS"
-        protectedStage == "vpn_enroll" -> "VPN_ENROLL"
-        protectedStage == "activate_tunnel" -> "VPN_ACTIVATION"
-        protectedStage in setOf("identity", "save_grant") -> "DEVICE_SECURITY"
-        else -> "LOGIN_UNAVAILABLE"
-    }
+    internal fun loginFailureCode(): String =
+        classifyLoginFailure(protectedStage, protectedControlFailure, accepting)
 
     fun resume() { work.execute { failures = 0; nextAttempt = 0; maintain() } }
     internal fun hasCapturedRouteForTests(): Boolean = live && boundVpn != null
@@ -540,6 +534,21 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     companion object {
+        /** Only an authenticated enrollment HTTP 429 identifies exhausted lease quota.
+         * The diagnostic is a fixed private enum assembled by control(); never
+         * forward the HTTP body, account details or endpoint in UI messages. */
+        internal fun classifyLoginFailure(stage: String, controlFailure: String, authorized: Boolean): String = when {
+            !authorized -> "VPN_PERMISSION"
+            stage == "session_resolve" -> "CONTROL_HTTPS"
+            stage == "vpn_enroll" &&
+                controlFailure.startsWith("ENROLL:PINNED_HTTPS_CONTROL:") &&
+                controlFailure.contains(";status=429;") -> "VPN_LIMIT"
+            stage == "vpn_enroll" -> "VPN_ENROLL"
+            stage == "activate_tunnel" -> "VPN_ACTIVATION"
+            stage in setOf("identity", "save_grant") -> "DEVICE_SECURITY"
+            else -> "LOGIN_UNAVAILABLE"
+        }
+
         internal fun ownsCapturedAddress(addresses: List<InetAddress>?, expected: String): Boolean =
             addresses?.any { it.hostAddress == expected } == true
 

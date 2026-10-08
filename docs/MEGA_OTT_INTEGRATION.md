@@ -9,7 +9,10 @@ Official references reviewed for this architecture:
 
 Mega documents Bearer-token authentication and `GET /v1/subscriptions/{id}`. The documented M3U subscription response includes `type`, `id`, `username`, `password`, `expiring_at`, `dns_link`, and `dns_link_for_samsung_lg`.
 
-Order 001 uses only retrieve-by-ID in production code.
+Order 001 originally used only retrieve-by-ID. Current backend code also implements
+bounded pagination of `GET /v1/subscriptions` for first-login discovery,
+followed by retrieve-by-ID. This is code-backed behavior, not a claim that
+the historical reviewed Mega documentation included a username-search endpoint.
 
 ## Existing-line bootstrap
 
@@ -24,9 +27,21 @@ An internal CLI receives a known `mega_subscription_id`, calls `GET /v1/subscrip
 
 Import is idempotent and refreshes authoritative metadata for the same subscription id.
 
-## No username lookup assumption
+## Current discovery contract
 
-The reviewed public documentation does not establish a subscription search/list endpoint by username. The backend therefore does not invent or call one. Username-only customer login works only after a line has a local mapping populated by the known-ID bootstrap (or a separately approved future provisioning mechanism).
+The historical public documentation did not establish a username-filter lookup.
+Current code lists subscriptions by page (bounded to at most 100 pages,
+100 items each), matches the exact username and then verifies the returned ID
+using the authoritative single-subscription response. Duplicate username
+matches with different IDs fail closed. Existing local mappings never trigger
+the scan. A scan that does not find an exact mapping returns invalid credentials.
+The scan requires the configured backend-only Mega token.
+
+The backend does not call an invented username-filter endpoint, expose Mega
+credentials to the client, or derive a provider hostname. Operational support
+for the list endpoint must be verified for the relevant Mega deployment.
+Excessive unknown-login scans are now addressed by shared login admission
+budgets; list responses are capped in size. Public launch remains NO.
 
 ## Password handling
 

@@ -56,7 +56,15 @@ Request-validation failures retain HTTP 422 but return only `{"detail":"Invalid 
 
 The public PINK Backend is HTTPS-only. TLS certificate validation must remain enabled for backend and provider HTTPS connections.
 
-Authentication and enrollment endpoints require rate limiting as an architectural security control before production exposure. Order 001/R1 does not implement enrollment or a production rate-limiter; it preserves this requirement for the phase that exposes those surfaces.
+The current backend has authenticated per-installation VPN lease quotas.
+Post-foundation backend changes introduce a PostgreSQL-backed global plus
+keyed-per-username admission limit on `/v1/session/resolve` ahead of any Mega
+or Xtream call, with identical HTTP 429 behavior for mapped and unknown
+usernames. Bucket identifiers use HMAC digests; no plaintext account names
+or passwords are stored in budget rows. Deployments must apply the additive
+Alembic migration before running the changed backend. These controls do not
+establish production protection at the reverse proxy or independent
+rate limiting on VPN refresh/revoke/enroll endpoints; those remain gates.
 
 ## Outbound connection binding
 

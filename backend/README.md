@@ -1,6 +1,8 @@
 # PINK Backend
 
-Order 001 establishes only the backend proof path. It does not implement Android, Windows, VPN, playback, deployment, or public administration.
+The Order 001 text below describes the historical foundation. The current backend also
+supports authenticated device VPN enrollment/refresh/revocation and bounded Mega
+username discovery. The backend does not relay IPTV video. Public launch: NO.
 
 ## Stack
 
@@ -49,7 +51,13 @@ pink-backend import-subscription --id <mega_subscription_id>
 
 The command fetches `GET /v1/subscriptions/{id}`, requires an M3U subscription, checks the returned id, and upserts the mapping. Output contains only the subscription id, internal mapping id, SHA-256 username evidence, SHA-256 dns-link evidence, and the `http`/`https` scheme. It never prints the Mega raw payload or password.
 
-There is no username-search Mega endpoint in this implementation.
+Current runtime behavior after Order 001: when a submitted username is not locally
+mapped, the backend scans a bounded number (at most 100) of paged
+`GET /v1/subscriptions` responses for the exact username, then fetches
+`GET /v1/subscriptions/{id}` and imports the authoritative origin.
+This is a current-code observation, not independent proof of official endpoint
+availability for every Mega installation. It never invents a username-filter
+endpoint or guesses a provider host.
 
 ## Session resolve
 
@@ -82,3 +90,17 @@ Live proof is deliberately separate from CI. With an Owner-authorized test line 
 4. Repeat with a wrong password and require `INVALID_CREDENTIALS`.
 
 Do not paste credentials into shell history, fixtures, GitHub Actions, issue/PR text, screenshots, or logs.
+
+## Current login abuse controls (code pending integration)
+
+The post-foundation backend uses PostgreSQL-backed global and keyed-per-username
+fixed-window budgets before Mega/Xtream calls. All worker processes share an
+advisory transaction lock and bucket table; raw usernames/passwords/IP addresses
+are not retained there. Exhaustion yields a generic HTTP 429, `Retry-After`
+and `Cache-Control: no-store` for mapped and unmapped usernames alike.
+Environment settings: `AUTH_RATE_WINDOW_SECONDS` (60),
+`AUTH_RATE_PER_USERNAME` (10) and `AUTH_RATE_GLOBAL` (120).
+**Run `alembic upgrade head` before deploying this code**, with rollback
+authorization/verification. No deployment is performed by the repository PR.
+Additional endpoint-specific VPN/edge controls and measured production capacity
+remain separate security requirements.

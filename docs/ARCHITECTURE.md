@@ -44,7 +44,11 @@ client username + password
   -> classified PINK response
 ```
 
-The backend does not search Mega by username. No such search endpoint is assumed or implemented.
+The historical Order 001 path did not search Mega by username.
+The current backend performs bounded `GET /v1/subscriptions` page enumeration
+for previously unknown usernames, imports only the exact validated match,
+and preserves known-ID import. No undocumented username-filter endpoint is
+invented; authenticated calls remain backend-only.
 
 ## Subscription mapping
 
@@ -117,7 +121,14 @@ Auth, Catalog, Live TV, VOD, Series, EPG, Search, Favorites, History, Player, VP
 
 ### Android stack
 
-The implemented Android stack uses Kotlin, Jetpack Compose, Media3 1.11.1, Android Keystore/DataStore and Room schema 1. API 24 is the current minimum. WireGuard 004A is merged; identity/permission/read-only adapter work in PR #13 remains unmerged. No real tunnel is certified.
+The historical `android/` client uses Kotlin/Compose/Media3 and is retained
+for provenance. The current Android application is the pinned full Extreme
+InfiniTV 1.9.0 source with PINK overlays in `clients/extreme/`, including
+Tauri/WebView/native Android playback and official WireGuard GoBackend.
+The replacement Android host targets minimum API 26. Task055 certifies
+scoped staging native Live A/V over WireGuard; Owner physical device/TV
+acceptance, VPN account quota recovery and production readiness remain
+separate. Windows has not started.
 
 ### Windows stack
 

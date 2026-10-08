@@ -64,6 +64,9 @@ def apply(root, dest, replace):
     replace(native + 'MainActivity.kt', 'class MainActivity : TauriActivity() {', '''class MainActivity : TauriActivity() {
   private val pinkPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
     PinkVpnRuntime.get(applicationContext).permissionResult(it.resultCode == android.app.Activity.RESULT_OK)
+  }
+  internal fun retryPinkVpnConsentFromLogin() {
+    PinkVpnRuntime.get(applicationContext).retryPermission(this, pinkPermission)
   }''')
     replace(native + 'MainActivity.kt', '    super.onResume()',
             '    super.onResume()\n    PinkVpnRuntime.get(applicationContext).startup(this, pinkPermission)\n    PinkVpnRuntime.get(applicationContext).resume()')

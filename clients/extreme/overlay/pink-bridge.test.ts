@@ -67,6 +67,33 @@ describe('origin-restricted native transport', () => {
       try { await waiting } catch (error: any) { expect(error.code).toBe(expected) }
     }
   })
+
+  it('offers only the native Android consent request before login', async () => {
+    const { native, host } = create()
+    const waiting = host.PinkConnection.requestVpnConsent()
+    const request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request).toMatchObject({ operation: 'vpnPermissionRetry', payload: {} })
+    native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: true }) })
+    expect(await waiting).toBe(true)
+  })
+  it.each([
+    ['VPN_PERMISSION','VPN_PERMISSION'],
+    ['CONTROL_HTTPS','CONTROL_HTTPS'],
+    ['VPN_ENROLL','VPN_ENROLL'],
+    ['VPN_ACTIVATION','VPN_ACTIVATION'],
+    ['DEVICE_SECURITY','DEVICE_SECURITY'],
+    ['private host and token','LOGIN_UNAVAILABLE'],
+  ])('only forwards whitelisted native login failure %s', async (raw, expected) => {
+    const { native, host } = create()
+    const waiting = host.PinkConnection.resolve('fixture-user', 'fixture-password')
+    const request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    const assertion = expect(waiting).rejects.toMatchObject({
+      message: 'Serviço PINK temporariamente indisponível.', code: expected,
+    })
+    native.onmessage({ data: JSON.stringify({ id: request.id, ok: false, code: raw, error: 'private token' }) })
+    await assertion
+  })
+
   it('bounds a missing native response and ignores its later arrival', async () => {
     vi.useFakeTimers()
     const { native, host } = create()

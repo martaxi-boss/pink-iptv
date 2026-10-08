@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 from typing import Any
@@ -7,6 +8,7 @@ import httpx
 from pydantic import BaseModel, ConfigDict, SecretStr, ValidationError, field_validator
 
 logger = logging.getLogger(__name__)
+_MAX_MEGA_JSON_BYTES = 2 * 1024 * 1024
 
 
 class MegaClientError(RuntimeError):
@@ -122,19 +124,33 @@ class MegaOTTClient:
     def __exit__(self, *_args: object) -> None:
         self.close()
 
+    def _read_bounded_json(
+        self,
+        url: str,
+        *,
+        operation: str,
+        params: dict[str, str] | None = None,
+    ) -> Any:
+        # Client.get() buffers unbounded bodies before application checks.
+        try:
+            with self._client.stream("GET", url, params=params) as response:
+                if response.status_code != 200:
+                    raise MegaUpstreamError(f"Mega subscription {operation} failed")
+                data = bytearray()
+                for chunk in response.iter_bytes():
+                    if len(data) + len(chunk) > _MAX_MEGA_JSON_BYTES:
+                        raise MegaProtocolError("Mega response exceeded size limit")
+                    data.extend(chunk)
+        except (httpx.TimeoutException, httpx.RequestError) as exc:
+            raise MegaUpstreamError(f"Mega subscription {operation} failed") from exc
+        try:
+            return json.loads(data)
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise MegaProtocolError("Mega returned invalid JSON") from exc
+
     def get_subscription(self, mega_subscription_id: int) -> MegaSubscription:
         url = f"{self._base_url}/v1/subscriptions/{mega_subscription_id}"
-        try:
-            response = self._client.get(url)
-        except (httpx.TimeoutException, httpx.RequestError) as exc:
-            raise MegaUpstreamError("Mega subscription retrieval failed") from exc
-
-        if response.status_code >= 400:
-            raise MegaUpstreamError("Mega subscription retrieval failed")
-        try:
-            payload = response.json()
-        except ValueError as exc:
-            raise MegaProtocolError("Mega returned invalid JSON") from exc
+        payload = self._read_bounded_json(url, operation="retrieval")
         try:
             subscription = MegaSubscription.model_validate(payload)
         except ValidationError as exc:
@@ -160,20 +176,11 @@ class MegaOTTClient:
             raise ValueError("per_page must be between 1 and 100")
 
         url = f"{self._base_url}/v1/subscriptions"
-        try:
-            response = self._client.get(
-                url,
-                params={"page": str(page), "per_page": str(per_page)},
-            )
-        except (httpx.TimeoutException, httpx.RequestError) as exc:
-            raise MegaUpstreamError("Mega subscription listing failed") from exc
-
-        if response.status_code >= 400:
-            raise MegaUpstreamError("Mega subscription listing failed")
-        try:
-            payload = response.json()
-        except ValueError as exc:
-            raise MegaProtocolError("Mega returned invalid JSON") from exc
+        payload = self._read_bounded_json(
+            url,
+            operation="listing",
+            params={"page": str(page), "per_page": str(per_page)},
+        )
 
         raw_items: Any
         if isinstance(payload, list):
@@ -192,6 +199,8 @@ class MegaOTTClient:
 
         if raw_items is None:
             raise MegaProtocolError("Mega returned an unsupported subscription-list schema")
+        if len(raw_items) > per_page:
+            raise MegaProtocolError("Mega returned an oversized subscription-list page")
 
         try:
             return [MegaSubscriptionRef.model_validate(item) for item in raw_items]

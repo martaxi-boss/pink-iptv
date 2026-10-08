@@ -3,6 +3,7 @@ name: Backend CI
 on:
   push:
     branches:
+      - "main"
       - "builder/**"
   pull_request:
     paths:
@@ -67,7 +68,9 @@ jobs:
 
       - name: Ruff format check
         working-directory: backend
-        run: ruff format --check .
+        run: |
+          ruff format --diff . || true
+          ruff format --check .
 
       - name: Alembic upgrade from clean PostgreSQL
         working-directory: backend

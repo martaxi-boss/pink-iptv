@@ -184,3 +184,30 @@ def test_non_m3u_subscription_rejected(mega_payload) -> None:
     ) as client:
         with pytest.raises(MegaProtocolError):
             client.get_subscription(121)
+
+
+def test_subscription_response_size_limit_applies_before_json_parse(mega_payload) -> None:
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(200, content=b"x" * (2 * 1024 * 1024 + 1))
+    )
+    with MegaOTTClient(
+        base_url="https://megaott.net/api",
+        token="test-token",  # pragma: allowlist secret
+        transport=transport,
+    ) as client:
+        with pytest.raises(MegaProtocolError, match="size limit"):
+            client.get_subscription(121)
+
+
+def test_subscription_listing_rejects_oversized_page_without_identifiers() -> None:
+    response_items = [{"id": x, "username": f"user{x}"} for x in range(4)]
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(200, json={"data": response_items})
+    )
+    with MegaOTTClient(
+        base_url="https://megaott.net/api",
+        token="test-token",  # pragma: allowlist secret
+        transport=transport,
+    ) as client:
+        with pytest.raises(MegaProtocolError, match="oversized"):
+            client.list_subscription_refs(page=1, per_page=2)

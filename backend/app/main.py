@@ -3,6 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from app.auth_rate_limit import charge_auth_attempt
 from app.clients.mega import MegaOTTClient
 from app.clients.xtream import XtreamClient
 from app.config import Settings, get_settings
@@ -45,6 +46,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         session: Session = Depends(get_db),
     ) -> ResolveResponse:
         response.headers["Cache-Control"] = "no-store"
+        charge_auth_attempt(session, runtime_settings, payload.username)
         xtream_client: XtreamClient = request.app.state.xtream_client_factory()
         try:
             return SessionResolver(

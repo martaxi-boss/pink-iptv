@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-AUDIT-BACKEND-HARDENING-068-MERGE",
+  "task_id": "PINK-IPTV-AUDIT-BACKEND-HARDENING-068",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-08T19:36:53.991Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "summary": "Owner explicitly directed Project Leader to correct the audited PINK IPTV gaps. Scope limited to PR48 at source implementation 55010e2287c63fa485f8102908a14985a7b80839, target main e26749ee396585b7335730f9389406b7b5c52a42. Supervisor verified both exact-implementation Backend CI contexts success (37833005160 push, 37833013472 pull_request), PostgreSQL concurrent regression, migration, lint, secret scan, no conflicts, no direct deploy/release/VPS/keys or app installation. This authorizes repository merge only; separately controlled migrations and production deployment are excluded.",
+    "binding_mode": "EXACT_REVISION_BOUND"
+  },
+  "target": {
+    "kind": "pull_request",
+    "identifier": "48",
+    "revision": "55010e2287c63fa485f8102908a14985a7b80839",
+    "base_revision": "e26749ee396585b7335730f9389406b7b5c52a42",
+    "environment": "repository_main"
+  }
+}

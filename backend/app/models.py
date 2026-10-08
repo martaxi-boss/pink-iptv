@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, Text, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -16,6 +16,16 @@ class VpnInstallation(Base):
     token_sha256: Mapped[str] = mapped_column(Text, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class AuthRateWindow(Base):
+    """Shared PostgreSQL-backed login budgets; no plaintext identifiers."""
+
+    __tablename__ = "auth_rate_windows"
+
+    bucket_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    window_number: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class SubscriptionMapping(Base):

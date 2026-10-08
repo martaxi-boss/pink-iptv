@@ -73,9 +73,7 @@ def test_authentication_budget_serializes_postgres_connections(settings) -> None
     database_url = os.environ["DATABASE_URL"]
     assert database_url.rsplit("/", 1)[-1] == "pink_test"
     engine = create_engine(database_url)
-    limited = settings.model_copy(
-        update={"auth_rate_per_username": 2, "auth_rate_global": 100}
-    )
+    limited = settings.model_copy(update={"auth_rate_per_username": 2, "auth_rate_global": 100})
     fixed = datetime(2026, 10, 8, 12, 0, tzinfo=UTC)
 
     with engine.begin() as connection:
@@ -84,9 +82,7 @@ def test_authentication_budget_serializes_postgres_connections(settings) -> None
     def attempt(_number: int) -> int:
         with Session(engine) as session:
             try:
-                charge_auth_attempt(
-                    session, limited, "concurrent-pseudonym", now=fixed
-                )
+                charge_auth_attempt(session, limited, "concurrent-pseudonym", now=fixed)
             except HTTPException as blocked:
                 return blocked.status_code
             return 200

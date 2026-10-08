@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061-MERGE",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "https://github.com/martaxi-boss/pink-iptv/pull/44",
+    "revision": "152f3471fc66803b382df67fe2e63475ee9e581d",
+    "base_revision": "8bacd377d929dde9cb11ba5bc63c2530fed93eb7",
+    "environment": "main"
+  },
+  "observed_at": "2026-10-08T16:37:24.378Z",
+  "final_state": {
+    "status": "PR44_MERGED_VERIFIED",
+    "revision": "958b9e928e888e3ecf7b3c5d8140d37077f89b3c"
+  },
+  "evidence": [
+    "Prior exact standing authorization f3895096d41e9445c5a3a4f9f28dbd8102b8bd4a",
+    "https://github.com/martaxi-boss/pink-iptv/pull/44",
+    "Android source CI success https://github.com/martaxi-boss/pink-iptv/actions/runs/37805248042",
+    "Backend source CI success https://github.com/martaxi-boss/pink-iptv/actions/runs/37805248131",
+    "Final evidence-only Backend CI success https://github.com/martaxi-boss/pink-iptv/actions/runs/37809949335",
+    "Native authenticated real proof https://github.com/martaxi-boss/VPS/actions/runs/37808275533",
+    "GitHub verified merged true and main exact 958b9e928e888e3ecf7b3c5d8140d37077f89b3c"
+  ],
+  "residual_blockers": [
+    "Owner physical Android phone/Android TV D-pad and real provider Movies/Series/EPG playback acceptance pending.",
+    "No public release; candidate APK is debug-signed."
+  ]
+}

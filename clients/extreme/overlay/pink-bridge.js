@@ -17,7 +17,7 @@ export function installPinkBridge() {
     if (reply.ok === true) waiting.resolve(reply.result)
     else {
       const error = new Error("Serviço PINK temporariamente indisponível.")
-      if (waiting.operation.startsWith("vodCatalog") && ["CONNECT", "HTTP_STATUS", "READ_IDLE", "TOTAL_DEADLINE", "MAX_BYTES", "VPN_LOST", "STAGE"].includes(reply.code)) {
+      if (waiting.operation.startsWith("vodCatalog") && ["CONNECT", "HTTP_STATUS", "READ", "READ_IDLE", "TOTAL_DEADLINE", "MAX_BYTES", "VPN_LOST", "STAGE"].includes(reply.code)) {
         error.code = reply.code
         console.warn("PINK_CATALOG_PHASE=" + reply.code)
       }

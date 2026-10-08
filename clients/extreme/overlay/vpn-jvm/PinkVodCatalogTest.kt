@@ -9,12 +9,12 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class PinkVodCatalogTest {
-    private class Reply(val stream: InputStream, val code: Int = 200, val length: Long = -1) : HttpURLConnection(URL("https://fixture.invalid")) {
+    private class Reply(val stream: InputStream, val code: Int = 200, val length: Long = -1, val headers: () -> Unit = {}) : HttpURLConnection(URL("https://fixture.invalid")) {
         var disconnected = false
         override fun connect() {}
         override fun usingProxy() = false
         override fun disconnect() { disconnected = true }
-        override fun getResponseCode() = code
+        override fun getResponseCode(): Int { headers(); return code }
         override fun getContentLengthLong() = length
         override fun getInputStream() = stream
     }
@@ -154,4 +154,22 @@ class PinkVodCatalogTest {
         } finally { file.delete() }
     }
     private data class Bound(val pause:Long,val seconds:Long,val admitted:Boolean,val expected:String)
+
+    @Test fun hardDeadlineCoversHeadersAndIsCancelledAfterEveryTransfer() {
+        val file = File.createTempFile("pink-deadline", ".tmp")
+        var expire: () -> Unit = {}
+        var cancelled = false
+        val reply = Reply(ByteArrayInputStream("[]".toByteArray()), headers={ expire() })
+        try {
+            PinkCatalogTransfer.download(reply,file,PinkCatalogTransfer.policy("get_series"),
+                watchdog={ seconds, stop ->
+                    assertEquals(215L,seconds)
+                    expire=stop
+                    val cancel = { cancelled=true }
+                    cancel
+                }) { true }
+            fail("Expired headers admitted")
+        } catch (failure: PinkCatalogFailure) { assertEquals("TOTAL_DEADLINE",failure.phase) }
+        finally { assertTrue(cancelled); assertTrue(reply.disconnected); assertFalse(file.exists()); file.delete() }
+    }
 }

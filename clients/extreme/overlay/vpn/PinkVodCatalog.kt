@@ -12,6 +12,7 @@ import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import org.json.JSONObject
 
 /** Movies/Series only: fixed provider reads through the existing admitted VPN. */
@@ -96,6 +97,13 @@ internal class PinkCatalogFailure(val phase: String) : IllegalStateException(pha
 
 /** Bounded disk transfer; no full native String or JSONArray for large catalogs. */
 internal object PinkCatalogTransfer {
+    private val deadlines = Executors.newSingleThreadScheduledExecutor { job ->
+        Thread(job, "pink-catalog-deadline").apply { isDaemon = true }
+    }
+    private fun watch(seconds: Long, stop: () -> Unit): () -> Unit {
+        val task = deadlines.schedule(Runnable { stop() }, seconds, TimeUnit.SECONDS)
+        return { task.cancel(false); Unit }
+    }
     // A new document cancels the previous owner's I/O rather than waiting for
     // its timeout. No pending transfer/token is inherited after recreation.
     class Lease {
@@ -117,24 +125,39 @@ internal object PinkCatalogTransfer {
     // Socket idle and total body duration are different bounds: progress resets
     // only idle, never the total deadline. Live's transport is unchanged.
     fun download(request: HttpURLConnection, file: File, policy: Policy,
-                 now: () -> Long = System::nanoTime, ready: () -> Boolean) {
+                 now: () -> Long = System::nanoTime,
+                 watchdog: (Long, () -> Unit) -> (() -> Unit) = ::watch,
+                 ready: () -> Boolean) {
         request.connectTimeout = 15000
         request.readTimeout = 20000
         request.instanceFollowRedirects = false
         request.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        fun admitted() { if (!ready()) throw PinkCatalogFailure("VPN_LOST") }
+        val expired = AtomicBoolean(false)
+        // Hard wall limit includes headers and a blocked socket. This timer is
+        // transfer protection, never a timer used to advance the catalog queue.
+        val cancelDeadline = watchdog(policy.seconds + 35) {
+            expired.set(true)
+            request.disconnect()
+        }
+        fun admitted() {
+            if (expired.get()) throw PinkCatalogFailure("TOTAL_DEADLINE")
+            if (!ready()) throw PinkCatalogFailure("VPN_LOST")
+        }
         var phase = "CONNECT"
         try {
             admitted()
-            if (request.responseCode != 200) throw PinkCatalogFailure("HTTP_STATUS")
+            val status = request.responseCode
+            admitted()
+            if (status != 200) throw PinkCatalogFailure("HTTP_STATUS")
             if (request.contentLengthLong > policy.maxBytes) throw PinkCatalogFailure("MAX_BYTES")
             // Like Live, the body deadline starts after the response headers.
             val deadline = now() + TimeUnit.SECONDS.toNanos(policy.seconds)
             val idleBudget = TimeUnit.SECONDS.toNanos(20)
             var lastProgress = now()
             var total = 0L
-            phase = "READ_IDLE"
+            phase = "READ"
             request.inputStream.use { input ->
+                phase = "STAGE"
                 file.outputStream().use { output ->
                     val buffer = ByteArray(64 * 1024)
                     while (true) {
@@ -144,6 +167,7 @@ internal object PinkCatalogTransfer {
                         val idleRemaining = idleBudget - (time - lastProgress)
                         if (idleRemaining <= 0) throw PinkCatalogFailure("READ_IDLE")
                         request.readTimeout = maxOf(1, TimeUnit.NANOSECONDS.toMillis(minOf(idleRemaining, deadline - time)).toInt())
+                        phase = "READ"
                         val count = try { input.read(buffer) }
                         catch (_: SocketTimeoutException) {
                             admitted()
@@ -157,6 +181,7 @@ internal object PinkCatalogTransfer {
                         lastProgress = now()
                         total += count
                         if (total > policy.maxBytes) throw PinkCatalogFailure("MAX_BYTES")
+                        phase = "STAGE"
                         output.write(buffer, 0, count)
                     }
                 }
@@ -168,7 +193,7 @@ internal object PinkCatalogTransfer {
         } catch (error: Exception) {
             file.delete()
             if (error is PinkCatalogFailure) throw error
-            throw PinkCatalogFailure(if (!ready()) "VPN_LOST" else phase)
-        } finally { request.disconnect() }
+            throw PinkCatalogFailure(if (expired.get()) "TOTAL_DEADLINE" else if (!ready()) "VPN_LOST" else phase)
+        } finally { cancelDeadline(); request.disconnect() }
     }
 }

@@ -1,5 +1,23 @@
 # PINK IPTV - PROJECT STATE
 
+## Current certified integration055 (2026-10-06)
+
+Task055's native Extreme/PINK Android and WireGuard integration was merged to
+main at `8ac154b8578d55cde248afd21dc3afea43c7a7ee`, with certified
+integration records preserved at `a90138b650d6d3415e2fc713fba534bc8d22df49`.
+The exact Task055 Worker Result reports successful Android/Backend CI and a
+separately scoped real staging proof of username/password login, catalogs,
+normal Android VPN consent, native decoded Live audio/video through WireGuard,
+cold restore and roaming/reconnect. Evidence:
+`.project-leader/results/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055.json`.
+
+This does not certify Owner physical phone/TV acceptance, Windows, production
+readiness, deployment, public release, or broad provider compatibility. Public
+launch remains NO. The older sections below are retained as historical state;
+their earlier pending implementation steps must not be resumed without checking
+current live GitHub evidence.
+
+
 ## Current startup refinement045
 
 New-client physical feedback identified upstream first-launch news and login

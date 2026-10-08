@@ -1,18 +1,26 @@
 # Roadmap
 
-## Current client migration042
+## Current certified Android integration (2026-10-06)
 
-Owner selected the complete Extreme InfiniTV client as the new application
-foundation. Current build covers PINK identity/launcher, PINK-only managed login,
-protected account restore and reuse of all upstream catalogs/player/layout.
-The earlier native-client implementation history remains valid for that client;
-it does not certify the replacement Tauri host.
+The complete Extreme InfiniTV-based PINK Android client and native WireGuard
+integration were integrated into main through Task055 (commit
+`8ac154b8578d55cde248afd21dc3afea43c7a7ee`), followed by its
+certification-record preservation commit
+`a90138b650d6d3415e2fc713fba534bc8d22df49`.
 
-Next acceptance: phone/TV installation, restored account, real Live/VOD/Series
-playback and navigation responsiveness. Then port the approved WireGuard client
-contract into the new host. Public launch remains NO. Exact status and source:
-[migration042](EXTREME_MIGRATION_042.md).
+The Task055 Worker Result records exact-source Android and Backend CI success,
+plus a separate real staging proof of username/password login, catalogs,
+decoded native Live audio/video through WireGuard, normal Android VPN consent,
+cold restoration and reconnect/roaming. See
+`.project-leader/results/PINK-IPTV-EXTREME-LIVE-CERTIFICATION-055.json`.
+These are scoped staging/certification observations, not evidence of Owner
+physical-phone/TV acceptance, public release, production deployment, broad
+provider compatibility, or Windows completion.
 
+Remaining work must be selected from fresh live GitHub/runtime evidence and
+independent acceptance gaps, not resumed from superseded migration042 text.
+The earlier Android client and migration042 history remain retained as
+recovery/provenance evidence. Public launch remains NO.
 
 ## Phase 0 — Architecture
 

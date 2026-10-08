@@ -2,7 +2,7 @@
 
 Private project for an original IPTV player for Android/Android TV and Windows.
 
-Status: Phase 3 Android Xtream + Player implementation COMPLETE / MERGED. Phase 4 WireGuard Stage 004A is COMPLETE / MERGED and Stage 004B identity/permission/adapter is ACTIVE; no real VPN tunnel is implemented. Windows has not started.
+Status: Complete Extreme/PINK Android client with native WireGuard integrated into main under certified Task055 (2026-10-06). Exact staging proof includes native decoded Live AV through WireGuard; Owner physical-device/TV acceptance and production readiness remain separate. Windows has not started.
 Public launch: NO.
 Repository must never contain production credentials, Mega OTT tokens, Xtream passwords, WireGuard private keys, or server private keys.
 
@@ -35,7 +35,7 @@ Phase 3 Android implementation is COMPLETE / MERGED. This includes Live/VOD/Seri
 
 Foundation / Mega/Xtream authentication proof is CERTIFIED. Later Phase 3 real-provider playback/catalog proofs and post-Shell physical-TV feature proofs remain separate residual validation gates where not explicitly certified. Deterministic TV test coverage is not represented as physical-device certification.
 
-Phase 4 — WireGuard has Stage 004A dependency/compliance foundation COMPLETE / MERGED and Stage 004B identity/permission/adapter ACTIVE. Android minimum support is API 24 / Android 7.0. 004B prepares only device-local WireGuard identity, Android system VPN consent and a thin GoBackend adapter; always-on is disabled and no peer, OVH change, server configuration or real VPN tunnel is part of this stage. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work. Public launch remains NO.
+Phase 4 — WireGuard progressed beyond the historical 004A/004B foundations: Task055 integrated native Android WireGuard into the replacement Extreme/PINK host. Its Worker Result records exact CI and staging proofs for authenticated enrollment, normal system consent, Live AV decode, cold restore and reconnection. This does not establish Owner physical-phone/TV acceptance, production deployment, general provider compatibility or public-launch readiness. Phase 5 — Windows and Phase 6 — Hardening / Distribution remain future work. Public launch remains NO.
 
 See:
 - docs/PRODUCT_SPEC.md

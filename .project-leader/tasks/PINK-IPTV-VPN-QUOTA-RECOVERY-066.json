@@ -1,0 +1,126 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-VPN-QUOTA-RECOVERY-066",
+  "project": "PINK IPTV account VPN slot exhaustion handling and secure retry guidance",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-08T18:50:51.966Z",
+  "authority": {
+    "kind": "DERIVED_COMPLETION_AUTHORITY",
+    "source": "STANDING_OWNER_GRANT",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Real owner handset APK062 returned VPN_ENROLL while protected session succeeded. Exact VPS read-only tasks063-065 proved backend HTTP429 quota five/5 then natural expiry four/5, all services operational. E1 code recovery: distinguish genuine capacity 429 from other enrollment failures in Android restricted main frame, show Portuguese accurate no-reinstall guidance, add authenticated backend Retry-After on 429 equal to earliest lease expiry, preserve fail-closed VPN security and other subscribers. Full backend and Android CI and unit+instrumentation; no backend deployment, DB mutations, device peer changes, public release or physical success claim."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "e26749ee396585b7335730f9389406b7b5c52a42",
+    "task_branch": "builder/vpn-quota-recovery-066"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    ".project-leader/tasks/PINK-IPTV-VPN-QUOTA-RECOVERY-066.json",
+    "backend/app/vpn.py",
+    "backend/tests/test_vpn.py",
+    "clients/extreme/overlay/vpn/PinkConnection.kt",
+    "clients/extreme/overlay/vpn-tests/PinkVpnIdentityTest.kt",
+    "clients/extreme/overlay/pink-bridge.js",
+    "clients/extreme/overlay/pink-bridge.test.ts",
+    "clients/extreme/overlay/pink-session.js",
+    "clients/extreme/overlay/pink-session.test.ts",
+    "clients/extreme/audit_066.py",
+    ".github/workflows/pink-extreme-042.yml",
+    "docs/VPN_QUOTA_RECOVERY_066.md",
+    ".project-leader/results/PINK-IPTV-VPN-QUOTA-RECOVERY-066.json",
+    ".project-leader/recovery-events/PINK-IPTV-VPN-QUOTA-RECOVERY-066/**"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "vps_database_or_peer_mutation",
+    "device_installation_or_auto_replacement",
+    "credential_or_key_exposure",
+    "force_push",
+    "third_project_mutation"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Exact head Android build and native emulation: WireGuard non-root, Keystore, VPN consent, fail closed, Media3",
+    "Backend authenticated lease quota 429 Retry-After earliest-expiry tests",
+    "Client privacy-safe allowlisted capacity mapping and forbidden native exception text",
+    "No production deployments and no revocation of existing device peers"
+  ],
+  "required_ci": [
+    "Backend CI",
+    "PINK Extreme Android 042"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "5b58a29526295b2827b619630a392ab8d7531502cf245458d9cf82e3c1d6b357",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "7f3706f96a43071d797f19774b9eca25ab464e56"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Exact-source backend and Android CI both SUCCESS on code/validated debug APK, quota errors precisely identified in Portuguese without credentials, backend Retry-After tested, no regression and no production deployment; physical device test separately pending.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

@@ -138,6 +138,15 @@ def apply(root: Path, destination: Path):
         text = text.replace(f'return processPinkCatalog(body, "{kind}", catMap, playlistId, {kind.upper()}_TTL_MS)',
                             f'return processPinkCatalog(body, "{kind}", catMap, playlistId, {kind.upper()}_TTL_MS).catch(error => {{ throw catalogActionFailure(error, "{action}", "WORKER_LOAD") }})')
         category_action = 'get_vod_categories' if kind == 'vod' else 'get_series_categories'
+        # Chromium's Response.json() can replace a ReadableStream rejection
+        # with a generic TypeError. Read with the existing stream reader so
+        # the native fixed failure code survives, then parse the complete body.
+        begin = text.index(f'async function fetch{title}CategoryMap(playlistId) {{')
+        end = text.index('\n}', begin)
+        category = text[begin:end]
+        assert category.count('r.json()') == 1
+        category = category.replace('r.json()', '(pinkCatalogRuntime() ? streamingText(r).then(JSON.parse) : r.json())')
+        text = text[:begin] + category + text[end:]
         # A bridge/chunk failure is not an empty category map. Retain its exact
         # safe phase instead of silently proceeding with a second full request.
         marker = f'    log.warn("[xt:catalog] {kind} categories parse failed:", err?.message || err)'

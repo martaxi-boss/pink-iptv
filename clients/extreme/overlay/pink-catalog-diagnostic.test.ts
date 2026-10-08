@@ -10,6 +10,18 @@ describe('physical catalog decision evidence', () => {
     expect(catalogFailureDetail(privateInput)).toMatch(/^PINK [a-f0-9]{8} · CATALOG · CATALOG_FAILED$/)
     expect(catalogFailureDetail({code:'STAGE',bytes:Infinity,elapsedMs:NaN})).not.toMatch(/Infinity|NaN/)
   })
+  it('preserves fixed pre-transfer native failure phases without leaking exceptions', () => {
+    for (const phase of ['ACCOUNT_BINDING', 'SOURCE_VALIDATION', 'VPN_NETWORK', 'STAGE_FILE', 'STAGE_LIFECYCLE']) {
+      const protectedError = catalogActionFailure(
+        catalogFailure(phase, {bytes:'sensitive', httpStatus:-1, elapsedMs:-1, providerUrl:'https://private.invalid'}),
+        'get_vod_categories', 'BRIDGE_OPEN'
+      )
+      const detail = catalogFailureDetail(protectedError)
+      expect(detail).toContain('MOVIES:CATEGORIES · ' + phase)
+      expect(detail).not.toMatch(/private|sensitive|providerUrl|https/)
+    }
+    expect(catalogFailureDetail(catalogFailure('account/password/secret'))).toContain('CATALOG_FAILED')
+  })
   it('distinguishes JSON failure from mapping failure without returning the body', () => {
     expect(() => parsePinkCatalog('<private>', 'vod', new Map())).toThrowError(expect.objectContaining({code:'WORKER_PARSE'}))
     expect(() => parsePinkCatalog('[null]', 'series', new Map())).toThrowError(expect.objectContaining({code:'WORKER_MAP'}))

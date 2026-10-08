@@ -34,22 +34,28 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     }
     fun open(action: String, entryId: String): JSONObject {
         val policy = PinkCatalogTransfer.policy(action)
-        val entry = selected(entryId)
-        val url = requestUrl(entry.getString("serverUrl"), entry.getString("username"), entry.getString("password"), action)
+        val entry = PinkCatalogStage.attempt("ACCOUNT_BINDING") { selected(entryId) }
+        val url = PinkCatalogStage.attempt("SOURCE_VALIDATION") {
+            requestUrl(entry.getString("serverUrl"), entry.getString("username"), entry.getString("password"), action)
+        }
         val token = UUID.randomUUID().toString()
         val file = File(directory, token)
         try {
-            val request = runtime.openProtectedConnection(url)
+            val request = PinkCatalogStage.attempt("VPN_NETWORK") { runtime.openProtectedConnection(url) }
             try {
-                lease.attach(request)
+                PinkCatalogStage.attempt("STAGE_LIFECYCLE") { lease.attach(request) }
                 PinkCatalogTransfer.download(request, file, policy) { lease.active() && PinkVpnRuntime.isReady() }
             } finally { request.disconnect(); lease.release() }
-            selected(entryId)
-            synchronized(stages) {
-                check(stages.size < 4)
-                stages[token] = Stage(entryId, file, RandomAccessFile(file, "r"))
+            PinkCatalogStage.attempt("ACCOUNT_BINDING") { selected(entryId) }
+            PinkCatalogStage.attempt("STAGE_FILE") {
+                synchronized(stages) {
+                    check(stages.size < 4)
+                    stages[token] = Stage(entryId, file, RandomAccessFile(file, "r"))
+                }
             }
-            cleanup.schedule(Runnable { close(token) }, 300, TimeUnit.SECONDS)
+            PinkCatalogStage.attempt("STAGE_LIFECYCLE") {
+                cleanup.schedule(Runnable { close(token) }, 300, TimeUnit.SECONDS)
+            }
             return JSONObject().put("token", token).put("size", file.length())
         } catch (error: Exception) { file.delete(); throw error }
     }
@@ -95,6 +101,17 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
 // Only fixed phase codes cross the bridge; never exception messages or provider data.
 internal class PinkCatalogFailure(val phase: String, val bytes: Long? = null,
     val elapsedMs: Long? = null, val httpStatus: Int? = null) : IllegalStateException(phase)
+
+/** Fixed phase boundaries only; never include upstream URLs, exceptions or account data. */
+internal object PinkCatalogStage {
+    fun <T> attempt(phase: String, operation: () -> T): T {
+        require(phase in setOf("ACCOUNT_BINDING", "SOURCE_VALIDATION", "VPN_NETWORK",
+            "STAGE_FILE", "STAGE_LIFECYCLE"))
+        return try { operation() }
+        catch (failure: PinkCatalogFailure) { throw failure }
+        catch (_: Exception) { throw PinkCatalogFailure(phase) }
+    }
+}
 
 /** Bounded disk transfer; no full native String or JSONArray for large catalogs. */
 internal object PinkCatalogTransfer {

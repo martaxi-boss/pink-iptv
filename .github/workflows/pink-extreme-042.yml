@@ -1,7 +1,7 @@
 name: PINK Extreme Android 042
 on:
   push:
-    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059", "builder/device-login-recovery-062", "builder/vpn-quota-recovery-066"]
+    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059", "builder/device-login-recovery-062", "builder/vpn-quota-recovery-066", "builder/vod-series-stage-diagnostic-069"]
     paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml", "docs/PHYSICAL_UI_RECOVERY_059.md"]
   workflow_dispatch:
 permissions:

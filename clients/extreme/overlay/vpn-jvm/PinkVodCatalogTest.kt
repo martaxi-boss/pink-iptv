@@ -92,6 +92,30 @@ class PinkVodCatalogTest {
         fresh.attach(Reply(ByteArrayInputStream("[]".toByteArray())))
         fresh.release(); fresh.close()
     }
+    @Test fun unexpectedNativeStageFailuresAreClassifiedWithoutExposingSecrets() {
+        for (phase in listOf("ACCOUNT_BINDING", "SOURCE_VALIDATION", "VPN_NETWORK", "STAGE_FILE", "STAGE_LIFECYCLE")) {
+            val error = try {
+                PinkCatalogStage.attempt(phase) { throw IllegalStateException("password=https://private.invalid/secret") }
+                fail("Unexpected error was not mapped")
+                null
+            } catch (failure: PinkCatalogFailure) { failure }
+            assertEquals(phase, error?.phase)
+            assertEquals(phase, error?.message)
+            assertNull(error?.cause)
+            assertNull(error?.httpStatus)
+            assertNull(error?.bytes)
+        }
+        val original = PinkCatalogFailure("READ_IDLE", 123, 20000, 200)
+        val observed = try {
+            PinkCatalogStage.attempt("STAGE_FILE") { throw original }
+            fail("Expected typed failure")
+            null
+        } catch (failure: PinkCatalogFailure) { failure }
+        assertSame(original, observed)
+        try { PinkCatalogStage.attempt("private-secret") { true }; fail("Unsafe code admitted") }
+        catch (_: IllegalArgumentException) { }
+    }
+
     private data class Failure(val code:Int,val body:ByteArray,val limit:Int,val admitted:Boolean)
 
     @Test fun regressionOldIdleBudgetAcceptsProgressThatFifteenSecondsRejected() {

@@ -68,6 +68,15 @@ object PinkWebBridge {
                         "vodCatalogChunk" -> vodCatalog.chunk(payload.getString("token"), payload.getString("entryId"))
                         "vodCatalogClose" -> vodCatalog.close(payload.getString("token"))
                         "ready" -> PinkVpnRuntime.isReady()
+                        "vpnPermissionRetry" -> {
+                            // Existing origin + main-frame restriction applies to consent retry.
+                            // Only the live Activity may show Android's official VPN dialog.
+                            val activity = context as? MainActivity
+                            if (activity == null) false else {
+                                main.post { activity.retryPinkVpnConsentFromLogin() }
+                                true
+                            }
+                        }
                         "liveCatalog" -> PinkCatalog.read(vault, PinkVpnRuntime.get(app),
                             payload.getString("action"), payload.getString("entryId"))
                         "resolve" -> PinkVpnRuntime.get(app).resolve(
@@ -81,6 +90,9 @@ object PinkWebBridge {
                     response.put("ok", true).put("result", result)
                 } catch (error: Exception) {
                     response.put("ok", false)
+                    if (request.optString("operation") == "resolve") {
+                        response.put("code", PinkVpnRuntime.get(app).loginFailureCode())
+                    }
                     if (request.optString("operation") in setOf("vodCatalog", "vodCatalogChunk", "vodCatalogClose")) {
                         response.put("code", if (error is PinkCatalogFailure) error.phase else "STAGE")
                         if (error is PinkCatalogFailure) {

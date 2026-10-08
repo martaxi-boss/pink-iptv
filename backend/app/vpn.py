@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import ipaddress
 import json
+import math
 import secrets
 import socket
 from datetime import UTC, datetime, timedelta
@@ -182,7 +183,16 @@ def enroll(
             )
         ).all()
         if len(active) >= settings.vpn_max_installations_per_account:
-            deny(429)
+            # Capacity is based on unexpired per-installation leases, not the
+            # current number of connected peers. Tell the authenticated client
+            # when its next slot expires, without identifying other devices.
+            earliest = min(aware(installation.expires_at) for installation in active)
+            seconds = max(1, min(86400, math.ceil((earliest - datetime.now(UTC)).total_seconds())))
+            raise HTTPException(
+                429,
+                "PINK connection unavailable",
+                headers={"Cache-Control": "no-store", "Retry-After": str(seconds)},
+            )
     if peer is not None:
         if peer.mapping_id != mapping.id and (
             payload.device_token is None

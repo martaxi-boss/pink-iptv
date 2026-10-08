@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 15,
+  "recorded_at": "2026-10-06T21:08:01.324962+00:00",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 7,
+  "action_fingerprint": "061;catalog-reader-browser-task-yield;main-vs-renderer",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "748a7e353faa01d104504fb95bdbf390e7a992a9836039f4138fd6ef1fefeff5",
+  "detail": "Prospective covered source recovery bundled with material catalog-drain fairness correction and causal behavior regression.72 required frontend tests PASS; new exact Backend/Android CI and original APK integrity required before separate060 proof. Preserve actual row-click presented video/audio, native AV/cold/roaming, strict protected provider plane/fixed physical TLS control and immutable journals; no direct fallback, architecture change, timeout increase, equivalent rerun or physical claim."
+}

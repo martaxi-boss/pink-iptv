@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 29,
+  "recorded_at": "2026-10-07T06:09:51.985Z",
+  "event": "REPLAN",
+  "strategy_generation": 12,
+  "action_fingerprint": "061;pinned-http-body-call-return-resolution-boundary",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "e580e62180f6e677016e27e795a1e1996c62f40a5e969904b1ee158c1718b1d1",
+  "detail": "Exact pinned package HTTPguest2.5.9 and native2.5.9 inspected: ReadableStream.pull DOES return readChunk promise, so unawaited-pull hypothesis rejected. Locate synchronous core.invoke call versus returned unresolved/resolved promise at one real fetch_read_body command via strict Vite transform of installed package2.5.9. No core alias/package pin/transport/timing/routing/player change. Origin-restricted native fixed stage calling/returned/resolved/rejected/threw captured independently of blocked evaluateJavascript; no args/rid/bytes/errors/provider origin/account. Preserve original invocation, arguments, promise identity and error; six frontend contract/actual installed package drift cases plus existing native origin test augmented. Existing app/actual media deadlines unchanged. Retire ineffective operational CPU/native sampler in next bounded VPS task when binding new exact green source."
+}

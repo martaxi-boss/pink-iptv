@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-06T15:27:28.002269+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 1,
+  "action_fingerprint": "061;inherited-ea1770a9;immutable-legacy-preservation-with-fresh-independent-certification",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": null,
+  "detail": "Canonical validator rejects historical059 event2: previous hash185f1821 is raw event1 SHA256 rather than canonical68dc1723, and generation2 FAILURE_OBSERVED changes strategy without REPLAN. Preserve both original event bytes and immutable059 authorization. Supersede059 as STALE_EXECUTION_PACKET, not terminal success. Inherit already corrected app/harness sourceea1770a9 and65 passing tests; establish immutable061 authorization-only commitb0aca985 before this audit/closure implementation. Fresh exact Android/Backend CI and separately authorized060 actual UI/native AV/recovery still mandatory. No retrospective event repair or weakened verifier."
+}

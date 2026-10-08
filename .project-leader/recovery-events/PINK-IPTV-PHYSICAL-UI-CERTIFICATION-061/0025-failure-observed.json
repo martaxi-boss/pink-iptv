@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 25,
+  "recorded_at": "2026-10-07T05:38:16.295Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 10,
+  "action_fingerprint": "061;owned-grant-address-capture-and-fixed-protected-health-cause",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "ff26c3fb7c8a3909de70931c39b0673a2ab85d22cc5b4cdd24982e423a576528",
+  "detail": "Exact source1bc0c02 Backend37576312584 SUCCESS; Android37576312190 FAILURE. App/universal+allABI build compiled; instrumentation compile errors only: PinkVpnIdentityTest.kt59 addLinkAddress unavailable and LinkAddress(String) hidden/package-private in public Android SDK. Lint completed but no usable exact certified APK artifact; lint11462749716 inert. No VPS/actual UI proof on this red source. Native owned selection logic compiled; test fixture needs public API."
+}

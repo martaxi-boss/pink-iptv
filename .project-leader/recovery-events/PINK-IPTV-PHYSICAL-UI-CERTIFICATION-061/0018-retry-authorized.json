@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 18,
+  "recorded_at": "2026-10-07T04:06:19.313035+00:00",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 8,
+  "action_fingerprint": "061;first-UTF8-decode-vs-next-native-body-pull;renderer-window-state",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "dc15caba37a555be7714c6556ca9524238e0feb513d632600013ce91878127db",
+  "detail": "Prospective covered source instrumentation answering first-decode versus subsequent native-body-pull boundary;75 required frontend tests and complete Astro build PASS. New native fixed-phase acceptance tests remain in exact Android CI. Require fresh exact Backend/Android CI and original APK/checksums before separate060 proof. Preserve actual production rowclick video/audio, native AV, cold/roam, fixed physical TLS control/protected provider plane, immutable journals. No repeated unchanged run, timeout increase, fallback, host effects or physical claim."
+}

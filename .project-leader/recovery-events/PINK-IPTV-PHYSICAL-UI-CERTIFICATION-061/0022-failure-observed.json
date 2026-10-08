@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 22,
+  "recorded_at": "2026-10-07T05:25:54.609Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 9,
+  "action_fingerprint": "061;native-view-diagnostic-owned-scenario-scope-fix",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "e60c428c19d3fad44a454b1ff5bd31b06f93c6b7e34e4b060802601df8ef54f3",
+  "detail": "Exact b517 remains Backend/Android green, but new VPS R26run37575192868 failed BEFORE UI in protected-login-enrollment: activation protected_health, live/bound true, admitted false, saved true, serviceStopAck true, control none/requests2. Observer WAIT_PHASE/NO_UI_PHASE confirms CPU/native diagnostic never ran; account/DNS UI regression not inferred. Protected before-after audits/own cleanup PASS. This is objective new failure, reopening only protected route admission. Existing probe swallows cause; actual first body decode/native IPC UI frontier remains unresolved."
+}

@@ -10,6 +10,26 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class PinkWebBridgeTest {
+    @Test fun validatedAccountCacheSurvivesVaultRecreationOnlyInProcessMemory() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val prefs = context.getSharedPreferences("pink_account_v1", 0)
+        prefs.edit().clear().commit()
+        val blob = """{"entries":[{"_id":"fixture"}],"selectedId":"fixture"}"""
+        try {
+            val first = PinkVault(context)
+            assertTrue(first.markValidated(blob))
+            assertNull(prefs.getString("account", null))
+            val second = PinkVault(context)
+            assertEquals(blob, second.readValidated())
+            assertNull(prefs.getString("account", null))
+            assertTrue(second.markValidated(""))
+            assertEquals("", PinkVault(context).readValidated())
+        } finally {
+            PinkVault(context).markValidated("")
+            prefs.edit().clear().commit()
+        }
+    }
+
     private fun evaluate(view: WebView, script: String): String {
         val latch = CountDownLatch(1)
         var result: String? = null
@@ -52,6 +72,24 @@ class PinkWebBridgeTest {
             val loaded = JSONObject(waitValue(view,"window.result||''"))
             assertTrue(loaded.getBoolean("ok"))
             assertEquals("synthetic-account-blob",loaded.getString("result"))
+            // Protected catalog actions must fail closed before account/VPN admission.
+            for ((index, action) in listOf("get_vod_categories", "get_vod_streams", "get_series_categories", "get_series").withIndex()) {
+                evaluate(view, "window.result='';PinkNative.postMessage(JSON.stringify({id:'"+(index+10)+"',operation:'vodCatalog',payload:{action:'"+action+"',entryId:'fixture'}}));true")
+                val denied = JSONObject(waitValue(view,"window.result||''"))
+                assertFalse(denied.getBoolean("ok"))
+                assertFalse(denied.has("result"))
+            }
+            val beforePulse = PinkWebBridge.rendererPulseForTests()
+            evaluate(view, "PinkNative.postMessage(JSON.stringify({id:'0',operation:'livePulse',payload:{}}));true")
+            val pulseDeadline = System.currentTimeMillis()+2000
+            while (PinkWebBridge.rendererPulseForTests() == beforePulse && System.currentTimeMillis()<pulseDeadline) Thread.sleep(50)
+            assertTrue(PinkWebBridge.rendererPulseForTests()>beforePulse)
+            for (phase in listOf("categories", "channels", "response", "reading", "body", "parsing", "painting", "painted", "failed")) {
+                evaluate(view, "PinkNative.postMessage(JSON.stringify({id:'0',operation:'livePhase',payload:{phase:'"+phase+"'}}));true")
+                val deadline = System.currentTimeMillis()+2000
+                while (PinkWebBridge.livePhaseForTests()!=phase && System.currentTimeMillis()<deadline) Thread.sleep(50)
+                assertEquals(phase,PinkWebBridge.livePhaseForTests())
+            }
             instrumentation.runOnMainSync {
                 view.loadDataWithBaseURL("https://tauri.localhost.foreign.example",
                     "<script>window.marker=String(typeof window.PinkNative)</script>",

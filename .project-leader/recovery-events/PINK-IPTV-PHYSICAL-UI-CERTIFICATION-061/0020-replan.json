@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 20,
+  "recorded_at": "2026-10-07T04:17:18.420972+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 9,
+  "action_fingerprint": "061;native-view-diagnostic-owned-scenario-scope-fix",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "7a005c6c2f94befc9d86b61eb03f0d19d7619a1e7424ce61386ecf62c26f1406",
+  "detail": "Keep a nullable ActivityScenario<MainActivity> handle in outer test scope, assigned only to the launched owned scenario. Failure diagnostic reads its native view and captures fixed state on main, reports from instrumentation thread; unavailable/destroyed view cannot replace primary failure. No login, transport, body logic, timeout or success-gate change; first-decode/next-pull instrumentation retained."
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-RECOVERY-059",
+  "terminal_status": "STALE_EXECUTION_PACKET",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-PHYSICAL-UI-RECOVERY-059.json",
+  "authorization_commit_sha": "bd9fb77588a5c625d44aaf4828e7b8934ad9c5f4",
+  "authorization_sha256": "babd4e1657497d14a38303e57f5a9426d64fe40d153e0468cb52144651e5f8be",
+  "implementation_head_sha": "ea1770a905843defe0f7b409fd81a623fd3614ce",
+  "branch": "builder/physical-ui-recovery-059",
+  "pr_number": 44,
+  "recorded_at": "2026-10-06T15:27:28.002269+00:00",
+  "superseded_by": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "changes": [
+    "Removed unconditional hidden Home login redirect; preserve protected account-based routing.",
+    "Added privacy-safe login transaction diagnostics and replacement-document actual proof barrier.",
+    "Explicitly superseded invalid historical recovery without rewriting authorization or event bytes."
+  ],
+  "validation": [
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "All20 current PR paths fit immutable059 scope."
+    },
+    {
+      "name": "Canonical recovery journal",
+      "status": "FAIL",
+      "evidence": "Event2 uses raw-byte previous digest and increases generation on FAILURE_OBSERVED; canonical structural verifier rejects."
+    },
+    {
+      "name": "Actual authenticated WebView/Tauri live catalog renders and navigation remains responsive",
+      "status": "SKIPPED",
+      "evidence": "R10 on2332 retained idle replacement form; corrected harness sourceea1770a9 has not completed new operational proof."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK Extreme Android 042",
+      "status": "SUCCESS",
+      "run_id": 37485188411
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37485188172
+    }
+  ],
+  "material_non_effects": [
+    "Historical059 task/events unchanged.",
+    "No source terminal-success, physical-device PASS, main merge, release or production deploy claimed."
+  ],
+  "residual_blockers": [
+    "Continue bounded immutable061 successor with fresh exact source CI and actual UI/native AV/cold/roaming proof. Historical059 remains unverified recovery history."
+  ]
+}

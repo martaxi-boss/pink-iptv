@@ -22,14 +22,26 @@ class PinkVpnIdentityTest {
             val plain = cipher.decrypt(VpnEncryptedPayload(record.ivHex, record.ciphertextHex))
             assertFalse(context.filesDir.resolve("datastore/pink_wireguard_identity.preferences_pb")
                 .readBytes().toString(Charsets.ISO_8859_1).contains(plain))
-            PinkVault(context).write("{\"entries\":[],\"selectedId\":\"\"}")
+            val accountBlob = "{\"entries\":[],\"selectedId\":\"fixture-account\"}"
+            val firstVault = PinkVault(context)
+            assertTrue(firstVault.write(accountBlob))
+            assertEquals(accountBlob, firstVault.readValidated())
+            assertEquals(accountBlob, PinkVault(context).readValidated())
             assertEquals(first, store.ensureIdentity())
             cipher.destroyKeyForTests()
             assertTrue(store.ensureIdentity() is VpnIdentityResult.Failure)
-        } finally { persistence.clearForTests(); cipher.destroyKeyForTests() }
+        } finally {
+            PinkVault(context).markValidated("")
+            context.getSharedPreferences("pink_account_v1", android.content.Context.MODE_PRIVATE)
+                .edit().clear().commit()
+            persistence.clearForTests()
+            cipher.destroyKeyForTests()
+        }
     }
 
     @Test fun officialBackendAndMergedVpnServiceAreAvailable() {
+        assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture()
+        assertProtectedHealthFailuresEmitFixedKindsWithoutExceptionMessages()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         assertTrue(GoBackend(context).version.isNotBlank())
         @Suppress("DEPRECATION")
@@ -39,5 +51,38 @@ class PinkVpnIdentityTest {
         assertFalse(service.exported)
         assertEquals("android.permission.BIND_VPN_SERVICE", service.permission)
         assertFalse(service.metaData.getBoolean("android.net.VpnService.SUPPORTS_ALWAYS_ON", true))
+    }
+
+    private fun assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture() {
+        // Public Java numeric-address API only. Android LinkProperties mutation
+        // and its LinkAddress(String) constructor are hidden from the app SDK.
+        fun addresses(vararg values: String) = values.map { java.net.InetAddress.getByName(it) }
+        val grant = "10.66.0.3"
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(null, grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(emptyList(), grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(
+            addresses("10.66.0.254", "fd66:7069:6e6b::fe"), grant))
+        assertFalse(PinkVpnRuntime.ownsCapturedAddress(addresses("10.66.0.4"), grant))
+        assertTrue(PinkVpnRuntime.ownsCapturedAddress(
+            addresses("10.66.0.3", "fd66:7069:6e6b::3"), grant))
+        assertTrue(PinkVpnRuntime.ownsCapturedAddress(
+            addresses("10.66.0.254", "fd66:7069:6e6b::fe"), "10.66.0.254"))
+    }
+
+    private fun assertProtectedHealthFailuresEmitFixedKindsWithoutExceptionMessages() {
+        val privateMessage = "fixture_user:fixture_password@private-provider"
+        val fixtures = listOf(
+            java.net.UnknownHostException(privateMessage) to "DNS",
+            java.net.SocketTimeoutException(privateMessage) to "TIMEOUT",
+            javax.net.ssl.SSLException(privateMessage) to "TLS",
+            java.net.SocketException(privateMessage) to "SOCKET",
+            java.io.IOException(privateMessage) to "IO",
+            IllegalStateException(privateMessage) to "OTHER")
+        fixtures.forEach { (failure, expected) ->
+            val actual = PinkVpnRuntime.healthFailureKind(failure)
+            assertEquals(expected, actual)
+            assertFalse(actual.contains("fixture"))
+            assertFalse(actual.contains("provider"))
+        }
     }
 }

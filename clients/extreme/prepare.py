@@ -68,20 +68,71 @@ for src, dst in {
     'login.astro': 'src/pages/login.astro',
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
     'pink-bridge.js': 'src/scripts/lib/pink-bridge.js',
+    'pink-catalog.js': 'src/scripts/lib/pink-catalog.js',
     'pink-presentation.js': 'src/scripts/lib/pink-presentation.js',
+    'pink-runtime-policy.ts': 'src/scripts/lib/pink-runtime-policy.ts',
     'PinkWebBridge.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkWebBridge.kt',
     'PinkVault.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVault.kt',
+    'PinkCatalog.kt': 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkCatalog.kt',
 }.items():
     shutil.copyfile(ROOT / 'overlay' / src, DEST / dst)
 shutil.copyfile(ROOT / 'overlay/pink-session.test.ts', DEST / 'tests/pink-session.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storage.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-home.test.ts', DEST / 'tests/pink-home.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-login.test.ts', DEST / 'tests/pink-login.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-catalog.test.ts', DEST / 'tests/pink-catalog.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink-runtime-policy.test.ts')
 
 replace('src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/MainActivity.kt',
         'webView.addJavascriptInterface(PipBridge(this), "AndroidPip")',
-        'PinkWebBridge.attach(this, webView)\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
+        'PinkWebBridge.attach(this, webView)\n    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {\n      webView.importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS\n    }\n    webView.addJavascriptInterface(PipBridge(this), "AndroidPip")')
 replace('src-tauri/gen/android/app/src/main/AndroidManifest.xml', '<application', '<application android:allowBackup="false"')
+
+# Native PINK owns actual connectivity state. Generic WebView navigator.onLine can
+# report offline while the protected WireGuard route is healthy, so never show
+# the upstream browser-offline toast from that signal in the native app.
+replace('src/scripts/lib/connectivity.ts',
+        'import { t } from "@/scripts/lib/i18n.js"\n',
+        'import { t } from "@/scripts/lib/i18n.js"\nimport { pinkNativeOwnsConnectivity } from "@/scripts/lib/pink-runtime-policy.ts"\n')
+replace('src/scripts/lib/connectivity.ts',
+        '  if (navigator.onLine === false) showOfflineToast()\n  window.addEventListener("offline", showOfflineToast)\n',
+        '  if (navigator.onLine === false && !pinkNativeOwnsConnectivity()) showOfflineToast()\n  window.addEventListener("offline", () => {\n    if (!pinkNativeOwnsConnectivity()) showOfflineToast()\n  })\n')
+
+# Mega's authoritative M3U and the physical playback evidence use the legacy
+# extensionless live path. The nominal Xtream /live/... route authenticates the
+# catalog but returns HTTP 401 for media on this provider. Patch the shared live
+# URL builder once so native playback, casting and every existing Extreme caller
+# use the provider-certified path without duplicating routing policy.
+replace('src/scripts/lib/stream-urls.ts',
+        'import { fmtBase } from "@/scripts/lib/creds.js"\n',
+        'import { fmtBase } from "@/scripts/lib/creds.js"\nimport { buildPinkLiveStreamUrl } from "@/scripts/lib/pink-runtime-policy.ts"\n')
+replace('src/scripts/lib/stream-urls.ts',
+        '''export function buildLiveStreamUrl(
+  creds: Creds,
+  streamId: string | number,
+  containerExt: string | null | undefined
+): string {
+  const ext = containerExt === "ts" ? ".ts" : ".m3u8"
+  return (
+    fmtBase(creds.host, creds.port) +
+    "/live/" +
+    encodeURIComponent(creds.user) +
+    "/" +
+    encodeURIComponent(creds.pass) +
+    "/" +
+    encodeURIComponent(streamId) +
+    ext
+  )
+}''',
+        '''export function buildLiveStreamUrl(
+  creds: Creds,
+  streamId: string | number,
+  _containerExt: string | null | undefined
+): string {
+  return buildPinkLiveStreamUrl(creds, streamId)
+}''')
 
 # Strict Android credential storage: no plaintext cookie/localStorage/store fallback.
 p = DEST / 'src/scripts/lib/creds.js'
@@ -98,6 +149,9 @@ function pinkVault() {
 async function readRaw() {
   if (!pinkValidatedBlob) {
     pinkValidatedBlob = (async () => {
+      const cached = await pinkVault().readValidated()
+      if (cached) return JSON.parse(cached)
+
       const raw = await pinkVault().read()
       if (!raw) return null
       const data = JSON.parse(raw)
@@ -109,6 +163,7 @@ async function readRaw() {
           Object.assign(entry, account)
         } catch { return null } // Keep encrypted account; show login/retry, never stale authority.
       }
+      await pinkVault().markValidated(JSON.stringify(data))
       return data
     })()
   }
@@ -116,8 +171,9 @@ async function readRaw() {
 }
 async function writeRaw(data) {
   if (!await pinkVault().write(JSON.stringify(data))) throw new Error("Protected account save failed")
-  // Existing player/cast connection-limit readers need the selected ID synchronously.
-  // Publish metadata only; credentials and provider origins never leave the vault.
+  // The native bridge retains this already-validated blob only for this Android
+  // process, so route swaps do not trigger a second control-plane login.
+  // Persistent credentials remain only in the encrypted Android Keystore vault.
   localStorage.setItem("xt_playlists", JSON.stringify({ selectedId: data.selectedId || "", entries: [] }))
   pinkValidatedBlob = Promise.resolve(data)
   migrationPromise = Promise.resolve(data)
@@ -153,12 +209,84 @@ text = text[:begin] + 'export async function restoreState() { throw new Error("E
 p.write_text(text)
 
 welcome = DEST / 'src/components/WelcomeCard.astro'
-welcome.write_text('''<section class="welcome-card rounded-2xl border border-line bg-surface px-8 py-10 text-center">
-  <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-6 w-64" />
-  <h1 class="text-2xl font-semibold text-fg">A sua televisão, num só lugar.</h1>
-  <p class="my-5 text-fg-3">Entre com a sua conta PINK para ver canais, filmes e séries.</p>
-  <a href="/login" class="btn-primary">Entrar na PINK IPTV</a>
-</section>\n''')
+welcome.write_text('''<div aria-hidden="true"></div>
+''')
+
+# Live TV uses the working native protected HTTP path rather than streaming its
+# body through the Android Tauri binary IPC boundary that repeatedly stalls.
+replace('src/scripts/lib/xtream-api.js',
+        'import { providerFetch } from "@/scripts/lib/provider-fetch.js"',
+        'import { providerFetch } from "@/scripts/lib/provider-fetch.js"\nimport { fetchPinkLiveCatalog, fetchPinkVodCatalog } from "./pink-catalog.js"')
+replace('src/scripts/lib/xtream-api.js',
+        '  const startIndex = Math.min(getMirrorPin(entry._id), candidates.length - 1)\n\n  const lastAllFailed',
+        '''  if (typeof window !== "undefined" && window.PinkNative &&
+      ["get_live_categories", "get_live_streams"].includes(action)) {
+    if (Object.keys(params).length) throw new Error("Catálogo PINK inválido.")
+    return fetchPinkLiveCatalog(action, entry._id, fetchOpts.signal)
+  }
+  if (typeof window !== "undefined" && window.PinkNative &&
+      ["get_vod_categories", "get_vod_streams", "get_series_categories", "get_series"].includes(action)) {
+    if (Object.keys(params).length) throw new Error("Catálogo PINK inválido.")
+    return fetchPinkVodCatalog(action, entry._id, fetchOpts.signal)
+  }
+  const startIndex = Math.min(getMirrorPin(entry._id), candidates.length - 1)
+
+  const lastAllFailed''')
+
+# Fixed progress markers let the Android proof distinguish a disposed callback
+# from a catalog stall without recording provider data or JavaScript errors.
+replace('src/scripts/stream/stream.ts',
+        'async function loadChannels() {',
+        '''let pinkLivePulseTimer = null
+function pinkLivePulse() {
+  try { window.PinkNative?.postMessage(JSON.stringify({id:"0", operation:"livePulse", payload:{}})) } catch {}
+}
+function pinkLivePhase(value) {
+  document.documentElement.dataset.pinkLivePhase = value
+  // One-way fixed progress survives a later blocked WebView callback. No URL,
+  // account, response body or error text crosses this diagnostic boundary.
+  try { window.PinkNative?.postMessage(JSON.stringify({id:"0", operation:"livePhase", payload:{phase:value}})) } catch {}
+  if (value === "painted" || value === "failed") {
+    clearInterval(pinkLivePulseTimer)
+    pinkLivePulseTimer = null
+  } else if (pinkLivePulseTimer === null) {
+    pinkLivePulseTimer = setInterval(pinkLivePulse, 1000)
+    window.addEventListener?.("pagehide", () => clearInterval(pinkLivePulseTimer), {once:true})
+  }
+}
+async function loadChannels() {
+  pinkLivePhase("account")''')
+replace('src/scripts/stream/stream.ts', '  await Promise.allSettled([',
+        '  pinkLivePhase("preferences")\n  await Promise.allSettled([')
+replace('src/scripts/stream/stream.ts', '        const catMap = await ensureCategoryMap()',
+        '        pinkLivePhase("categories")\n        const catMap = await ensureCategoryMap()\n        pinkLivePhase("channels")')
+replace('src/scripts/stream/stream.ts',
+        '        const r = await xtreamApiFetch("get_live_streams")',
+        '        const r = await xtreamApiFetch("get_live_streams")\n        pinkLivePhase("response")')
+replace('src/scripts/stream/stream.ts', '        const body = await r.text()',
+        '        pinkLivePhase("reading")\n        const body = await r.text()\n        pinkLivePhase("body")')
+replace('src/scripts/stream/stream.ts', '        const parsed = JSON.parse(body)',
+        '        pinkLivePhase("parsing")\n        const parsed = JSON.parse(body)')
+replace('src/scripts/stream/stream.ts', '    paintChannels(data, fromCache, age, false)',
+        '    pinkLivePhase("painting")\n    paintChannels(data, fromCache, age, false)\n    pinkLivePhase("painted")')
+replace('src/scripts/stream/stream.ts', '    log.error("[xt:livetv] loadChannels threw:", e)',
+        '    pinkLivePhase("failed")\n    log.error("[xt:livetv] loadChannels threw:", e)')
+replace('src/scripts/stream/stream.ts', '  log.log("[xt:livetv] boot start")',
+        '  pinkLivePhase("boot")\n  log.log("[xt:livetv] boot start")')
+
+# A hidden Astro component still executes its scripts. Only the home account
+# reconciliation may redirect, after the protected vault has been checked.
+replace('src/pages/index.astro',
+        '\t\tdocument.documentElement.toggleAttribute("data-first-run", !hasEntries);\n\t\treturn hasEntries;',
+        '\t\tdocument.documentElement.toggleAttribute("data-first-run", !hasEntries);\n\t\tif (!hasEntries) location.replace("/login");\n\t\treturn hasEntries;')
+
+# The encrypted account is intentionally absent from localStorage. Teach the
+# upstream first-run probe to use the non-sensitive selectedId metadata instead
+# of demanding plaintext entry objects, so a validated account opens the menus
+# immediately while a fresh install is redirected straight to login.
+replace('src/pages/index.astro',
+        'hasEntries = !!(\n\t\t\t\t\tparsed &&\n\t\t\t\t\tArray.isArray(parsed.entries) &&\n\t\t\t\t\tparsed.entries.length\n\t\t\t\t);',
+        'hasEntries = !!(parsed && typeof parsed.selectedId === "string" && parsed.selectedId);')
 
 replace('src/scripts/lib/app-settings.js', 'return readLS(KEY_USER_AGENT, "")', 'return readLS(KEY_USER_AGENT, "PINK-IPTV/0.1")')
 replace('src/components/PlaylistSwitcher.svelte', '<span data-i18n="playlist.add" class="truncate">Add playlist</span>', '<span class="truncate">Conta PINK</span>')
@@ -207,4 +335,8 @@ settings.write_text(text)
 shutil.copyfile(ROOT / 'NOTICE.md', DEST / 'PINK-NOTICE.md')
 from vpn_overlay import apply as apply_vpn
 apply_vpn(ROOT, DEST, replace)
+from vod_overlay import apply as apply_vod
+apply_vod(ROOT, DEST, replace)
+from catalog_overlay import apply as apply_catalog
+apply_catalog(ROOT, DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

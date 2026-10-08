@@ -1,0 +1,88 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json",
+  "authorization_commit_sha": "b0aca9850ed55b8be0fc424af553e64fb574956b",
+  "authorization_sha256": "65b7f6b86c07a1763c1903c25d04caef02f72e81643d538c6ee093e5adc7149c",
+  "implementation_head_sha": "882df9a4aa302a9875d8d19eabdf80fd68cac33e",
+  "branch": "builder/physical-ui-recovery-059",
+  "pr_number": 44,
+  "recorded_at": "2026-10-08T16:32:51.925Z",
+  "changes": [
+    "Recovered and preserved PINK Extreme1.9.0/Android/WireGuard Task055 integrated base with bounded Task061 post-login/catalog/UI/native player corrections in PR44; retained untouched invalid Task059 history.",
+    "Fixed native protected Movies/Series catalog transport, source-bound origin/permissions, local streaming/deduplication worker/cache and UI navigation diagnostics without provider fallback or architecture/credential changes.",
+    "Final exact branch change 882df9a4 fixes detached instrumented WebView HTTP-stage reply dispatch on main Looper, restoring strict native 20,000-row/gzip-chunked test; previous 75dc79a5 failed that same real Android instrumentation gate.",
+    "Compiled verified candidate debug APK identical to GitHub CI artifact; separate bounded VPS Task060 real Android13 authenticated provider/actual WebView Live/video+audio/native recovery proof passed exact source with protected OVH audits and own-peer cleanup."
+  ],
+  "validation": [
+    {
+      "name": "Project architecture scope audit",
+      "status": "PASS",
+      "evidence": "clients/extreme/audit_061.py in Android CI37805248042 validated immutable Task061 authorization bound to b0aca985 SHA256=65b7f6b8, exact mutation scope and untouched invalid historical059 recovery; source architecture preservation confirmed."
+    },
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Full Task061 diff from authorized ea1770a9 baseline audited by clients/extreme/audit_061.py PASS; no backend/host/secret changes. Last focused diff 75dc79a5..882df9a4 changed only clients/extreme/overlay/vpn-tests/PinkCatalogTransportChecks.kt."
+    },
+    {
+      "name": "GitHub evidence verification",
+      "status": "PASS",
+      "evidence": "PINK source882df9a4 exact Android CI run37805248042 terminal SUCCESS and Backend CI37805248131 terminal SUCCESS; signed debug candidate provenance manifest artifact11562399564, split manifest11562808990; live staging proof VPS run37808275533 attempt2 SUCCESS bound to original PINK source, VPS Worker Result Task060 TERMINAL_SUCCESS."
+    },
+    {
+      "name": "Actual authenticated WebView/Tauri live catalog renders and navigation remains responsive",
+      "status": "PASS",
+      "evidence": "VPS Android13 actual authenticated proof060 job113418978101: AUTHORITATIVE_USERNAME_PASSWORD_LOGIN_AND_CATALOG_VIA_WIREGUARD, ACTUAL_WEBVIEW_USERNAME_PASSWORD_LOGIN, ACTUAL_WEBVIEW_TAURI_LIVE_CATALOG_AND_UI_ROUNDTRIP and ACTUAL_UI_CHANNEL_CLICK_VIDEO_AUDIO_DECODE=PASS;player=webview. Exact APK/source bytes reused; runtime control admission preserved."
+    },
+    {
+      "name": "Connection status uses authoritative protected route without unprotected fallback",
+      "status": "PASS",
+      "evidence": "Task061/VPS real R29 verified pinned HTTPS control selection + authenticated account, admitted WireGuard, preserved root and secure selected account; temporary own peer cleaned; no direct provider fallback introduced, live catalog transport PinkCatalog.kt baseline unchanged."
+    },
+    {
+      "name": "Prior native playback and recovery preserved",
+      "status": "PASS",
+      "evidence": "Real Android CI37805248042 full Keystore/offline/normal VPN consent, native Media3 multi-audio, forced subtitle/video presentation, single-audio fallback and strict worker/cache recreation PASS; VPS real R29 NATIVE_LIVE_AUDIO_VIDEO_DECODE_AND_SAME_INSTALLATION_RECREATION, COLD_PROCESS_SAME_KEY_NO_CREDENTIALS_AUTHORIZED_TUNNEL, SAME_PROCESS_WIFI_TO_CELLULAR_WIREGUARD_ROAM and WIFI_RECONNECT_CAPTURE_AND_DEFAULT_TUNNEL_HEALTH PASS."
+    },
+    {
+      "name": "No credentials or provider origin in diagnostic output",
+      "status": "PASS",
+      "evidence": "Existing privacy-safe fixed-stage diagnostic and source scanner CI37805248042 PASS; VPS Task060 preserves account fixture only in disposable emulator and reports allowlisted phase/status with no account values; protected pre/post runtime audits success."
+    },
+    {
+      "name": "Invalid historical059 recovery preserved and superseded without retrospective repair",
+      "status": "PASS",
+      "evidence": "Exact source audit_061.py PASS asserts Task059 original task and recovery journal bytes unchanged; 059 recorded STALE_EXECUTION_PACKET superseded by 061, no rewriting; VPS 060 separately scoped with intact history."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK Extreme Android 042",
+      "status": "SUCCESS",
+      "run_id": 37805248042
+    },
+    {
+      "name": "Backend CI",
+      "status": "SUCCESS",
+      "run_id": 37805248131
+    }
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37805248042/artifacts/11562399564",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37805248042/artifacts/11562808990",
+    "https://github.com/martaxi-boss/VPS/actions/runs/37808275533",
+    "Exact debug APK PINK-IPTV-VOD-882df9a4.apk 77333322 bytes SHA256 cfbcb0113467b4e58f3333a68773df409de37b5cb6a346c655a2d4d0d41e3cd5; Android debug signature only; not production-signed."
+  ],
+  "material_non_effects": [
+    "No customer secrets, Mega reseller token or WireGuard shared private key embedded in release artifacts; no PINK backend, production infrastructure, firewall, persistent peer, credential, deployment or public release changed under Task061.",
+    "No Owner physical-phone/TV result inferred. Debug APK is an acceptance candidate, not a commercial/public release."
+  ],
+  "residual_blockers": [
+    "Owner physical Android phone/Android TV D-pad, real provider Movies/Series/EPG and multi-audio/subtitles acceptance still required; separate from Task061 mandatory exact authenticated Live/native staging proof.",
+    "No public launch approval; Windows remains a separate future objective."
+  ]
+}

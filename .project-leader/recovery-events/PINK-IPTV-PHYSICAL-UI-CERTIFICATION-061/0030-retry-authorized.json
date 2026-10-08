@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 30,
+  "recorded_at": "2026-10-07T06:09:51.987Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 12,
+  "action_fingerprint": "061;pinned-http-body-call-return-resolution-boundary",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "87ae4a95617b34b76b01c846d54db6a6fcd3e947c2bfa842816ab6be8250c86b",
+  "detail": "Prospective new single-command observation answers specific R27 frontier; not equivalent blind retry. Existing061 owner scope covers technical diagnosis. Require exact source Backend/Android CI SUCCESS, installed pinned plugin transform/privacy/promise/native enum+foreign-origin cases, original75 frontend contract tests and native5 consent/offline/recreation/payload/lint before fresh artifact060binding and actualproof. All strict actual UIrows/categories/productionrowclick decodedAV/nativeAV/cold/roam/audit/cleanup criteria retained; no fallback/directprovider/physical claim. Only isolated JavaScript identity/fixed-phase check executed here; workspace offline means no local build claim. Retire temporary source observer after causal repair."
+}

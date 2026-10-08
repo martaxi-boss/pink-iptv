@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 12,
+  "recorded_at": "2026-10-06T20:46:54.159858+00:00",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 6,
+  "action_fingerprint": "061;body-first-byte-vs-renderer-pulse;no-timeout-increase",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "7587f43546cfb50001e180a32474597a96b22bca9b32125619a16370ecf53d3d",
+  "detail": "Prospective existing-authority source diagnostic completion bundled with technical reading/renderer instrumentation, not a recovery-only ticket. Exact new source Backend/Android CI and original artifact verification required before separate060 proof. Next real proof answers first body-byte progress versus independent renderer liveness during missing callback, retaining actual channel-click presented video/audio, cold/roaming, fixed TLS/WireGuard separation and protected cleanup. No physical certification or production transition."
+}

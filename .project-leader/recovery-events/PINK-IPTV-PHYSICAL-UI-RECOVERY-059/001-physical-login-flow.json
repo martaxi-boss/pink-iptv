@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-RECOVERY-059",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 1,
+  "recorded_at": "2026-10-06T11:40:00Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 1,
+  "action_fingerprint": "059-physical-login-persistence-control-plane",
+  "attempt_count": 1,
+  "identical_failure_count": 1,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": null,
+  "detail": "Owner physical Android evidence on the exact e60a724 APK shows three in-scope defects after normal VPN consent: an unwanted first-run WelcomeCard forces an extra tap before login; a successful account save/navigation can return to first-run/login instead of retaining the validated account in the same process; and a subsequent login can block for a long interval then surface the sanitized temporary-service error. The existing implementation mirrors empty entries to localStorage, keeps post-login validation cache module-local across route bundles, and routes fixed PINK control API calls through the admitted VPN despite the runtime comment/design reserving explicit physical Network calls for the fixed HTTPS control plane. Provider/media fail-closed routing remains separate and must stay captured by WireGuard."
+}

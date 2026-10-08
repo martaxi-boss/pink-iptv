@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 27,
+  "recorded_at": "2026-10-07T05:38:16.298Z",
+  "event": "RETRY_AUTHORIZED",
+  "strategy_generation": 11,
+  "action_fingerprint": "061;public-numeric-address-owned-capture-regression",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "38b1a1ff0cc02581b276e3d40260426cffb5aafbf63a448a3cca2d1268dfd4dc",
+  "detail": "Prospective objective native instrumentation compilation repair within061. Exact new Backend/Android CI must both SUCCESS with augmented native cases and normal consent/offline failclosure/recreation, frontend/build/payload/lint/privacy before artifact/proof binding. No local compile claim while execution environment offline; exact compiler diagnostics drive repair. Source1bc red artifacts never consumed; require fresh source APK/instrumentation/checksums. Strict actual UIrows/realclick AV/native AV/cold/roam and protected audits/own cleanup remain pending. No blind retry, timeout increase, direct fallback or physical claim."
+}

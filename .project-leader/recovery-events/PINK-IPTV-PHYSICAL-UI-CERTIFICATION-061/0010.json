@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 10,
+  "recorded_at": "2026-10-06T20:46:54.159561+00:00",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 5,
+  "action_fingerprint": "061;body-first-byte-vs-renderer-pulse;no-timeout-increase",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "5d0891b62f2e84fc0f32a26eb493fa9604cebec980a9e670618883bf37f61aa4",
+  "detail": "R18 operational run37527941041/source632a805 passes repaired official emulator acquisition, native protected login/catalog, WebView username/password login, DNS readiness and host audits/own-peer cleanup. Actual UI observer callback misses10s at live_rows; complete document route/livetv progress100. Independent nativephase reading proves response reached before body completion. R16 success remains valid but this later narrow failure requires causal discrimination, not repeated proof or timeout increase."
+}

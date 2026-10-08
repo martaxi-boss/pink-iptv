@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 7,
+  "recorded_at": "2026-10-06T16:39:44.619Z",
+  "event": "REPLAN",
+  "strategy_generation": 4,
+  "action_fingerprint": "061;control-network-specific-DNS-eligibility-before-one-fixed-HTTPS-POST",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 1,
+  "previous_event_sha256": "6d17ff18f6107fb81aa8a815241f36651c9bf49bdc0dd8bef9b74cd9db884d8f",
+  "detail": "Choose only existing eligible physical control candidates, prefer eligible default, probe fixed control hostname via each candidate Network before one unchanged pinned HTTPS POST. VALIDATED is insufficient for host DNS; reject unresolved candidates and fail closed on exhaustion. Keep process/provider sockets VPN-bound, TLS/redirect policy, encrypted identity and recovery unchanged. Add4 native policy regressions for bad cellular DNS, default preference, exclusion and exhausted candidates. Fresh exact sourceCI and separately authorized actual UI/native AV/recovery proof required."
+}

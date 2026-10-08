@@ -34,12 +34,38 @@ describe('origin-restricted native transport', () => {
     native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: true }) })
     expect(await saved).toBe(true)
   })
+  it('bridges native process-only validated account cache operations', async () => {
+    const { native, host } = create()
+    const read = host.PinkAccountVault.readValidated()
+    let request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request.operation).toBe('vaultReadValidated')
+    native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: '' }) })
+    expect(await read).toBe('')
+
+    const mark = host.PinkAccountVault.markValidated('synthetic-validated-state')
+    request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request.operation).toBe('vaultMarkValidated')
+    expect(request.payload).toEqual({ value: 'synthetic-validated-state' })
+    native.onmessage({ data: JSON.stringify({ id: request.id, ok: true, result: true }) })
+    expect(await mark).toBe(true)
+  })
   it('never surfaces native error details', async () => {
     const { native, host } = create()
     const waiting = expect(host.PinkConnection.ready()).rejects.toThrow('temporariamente indisponível')
     const request = JSON.parse(native.postMessage.mock.calls[0][0])
     native.onmessage({ data: JSON.stringify({ id: request.id, ok: false, error: 'private detail' }) })
     await waiting
+  })
+  it('exposes only fixed safe catalog phases and does not accept provider error text', async () => {
+    const { native, host } = create()
+    for (const [code, expected] of [['READ_IDLE','READ_IDLE'], ['private URL or credentials','CATALOG_FAILED']]) {
+      const waiting = host.PinkCatalog.openVod('get_series', 'fixture')
+      const request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+      const assertion = expect(waiting).rejects.toMatchObject({message:'Serviço PINK temporariamente indisponível.', ...(expected ? {code:expected} : {})})
+      native.onmessage({data:JSON.stringify({id:request.id,ok:false,code,error:'private body'})})
+      await assertion
+      try { await waiting } catch (error: any) { expect(error.code).toBe(expected) }
+    }
   })
   it('bounds a missing native response and ignores its later arrival', async () => {
     vi.useFakeTimers()

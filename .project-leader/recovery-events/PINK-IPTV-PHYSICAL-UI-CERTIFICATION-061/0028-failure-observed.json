@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 28,
+  "recorded_at": "2026-10-07T06:09:51.982Z",
+  "event": "FAILURE_OBSERVED",
+  "strategy_generation": 11,
+  "action_fingerprint": "061;public-numeric-address-owned-capture-regression",
+  "attempt_count": 1,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "97c5402d17866092977a03f00e06518a7c76369e0ecf593a9b53d4d909d5fa9e",
+  "detail": "Exact CF source Backend37577307299 and Android37577307342 SUCCESS, artifact11463567054. R27 real run37578902130 FAILURE on exact CF relay11463452938; owned protected admission and real native/catalog/WebView username-password pass, DNSready/target and before/after audits+owncleanup pass. Actual UI /livetv progress100, pulling_next, renderer QUIET/mainRESPONSIVE/view present+foreground/cacheVALID. CPU stagePROFILER_STOP unavailable; own-UID JavaBridge fixed native backtrace unavailable. No UIrows/actualclick AV success. This failure is later than inherited channels and retires R26 pre-UI failure as current frontier, without asserting its cause."
+}

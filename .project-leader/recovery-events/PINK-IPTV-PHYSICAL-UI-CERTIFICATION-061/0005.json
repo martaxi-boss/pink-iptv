@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061",
+  "repository": "martaxi-boss/pink-iptv",
+  "sequence": 5,
+  "recorded_at": "2026-10-06T16:17:39.608948+00:00",
+  "event": "REPLAN",
+  "strategy_generation": 3,
+  "action_fingerprint": "061;bounded-live-stage-and-native-route-progress-observations",
+  "attempt_count": 0,
+  "identical_failure_count": 0,
+  "no_progress_iterations": 0,
+  "previous_event_sha256": "958d360ba56b9fbb7c3c86e7d3b4492008f38e073e30c9ab1809fe87ae35ad85",
+  "detail": "Replace undifferentiated callback failure with fixed native WebView route/progress snapshot and last successful fixed live-stage observation. Mark account/preferences/categories/channels/parsing/painting boundaries; no account/provider/error payload. Do not retry same source or extend timeout; preserve actual login/rows/player checks. Fresh exact Android/Backend CI and separately authorized proof required. Actual UI login is material progress, reset no-progress for the new diagnostic strategy."
+}

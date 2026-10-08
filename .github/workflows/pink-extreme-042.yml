@@ -2,7 +2,7 @@ name: PINK Extreme Android 042
 on:
   push:
     branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059"]
-    paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml"]
+    paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml", "docs/PHYSICAL_UI_RECOVERY_059.md"]
   workflow_dispatch:
 permissions:
   contents: read

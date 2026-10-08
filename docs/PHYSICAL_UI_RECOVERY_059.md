@@ -1,3 +1,93 @@
+# PINK IPTV — recuperação de 8 de outubro de 2026
+
+## Estado reconciliado
+
+Este registo atualiza o estado da continuação no PR #44. As secções abaixo,
+`README.md`, `PROJECT_STATE.md` e `SUPERVISOR_HANDOFF.md` preservam decisões e
+provas históricas; referências antigas a VPN inexistente ou Mega sem descoberta
+não descrevem o código atual. Não reiniciar as ordens antigas a partir desses textos.
+
+- `main`: `a90138b650d6d3415e2fc713fba534bc8d22df49`.
+- Continuação: `builder/physical-ui-recovery-059`, PR #44, ainda não integrado.
+- Runtime de controlo: Project Leader 0.7.0, revisão
+  `7f3706f96a43071d797f19774b9eca25ab464e56`; trabalho técnico reversível sob a
+  instrução atual do Owner, preservando a autorização061 e o histórico059.
+- Já integrado: cliente Extreme InfiniTV1.9.0 completo com identidade PINK;
+  descoberta Mega no primeiro login (PR #39, merge `9f66ab8c`);
+  WireGuard Android nativo (PR #42, merge `8ac154b8`).
+- Backend e cliente Android anterior não foram alterados por esta recuperação.
+  O transporte Live `PinkCatalog.kt` permanece igual ao baseline `585ea63f`.
+- `PUBLIC LAUNCH = NO`; sem release, deployment, merge ou alterações na VPS.
+
+## Interrupção identificada e correção
+
+O último commit encontrado foi `6cdb5aa24219d175f6837004990a6f87c339a1ad`.
+Backend CI37745746436 passou, mas Android CI37745746329 falhou no teste real
+Chromium com `category failure evidence lost`. Os passos de APK/instrumentação
+não foram executados. O erro posterior de permissão do Gradle/lint ocorreu
+após essa interrupção e não constitui uma execução de lint bem-sucedida.
+A descrição antiga do PR citava `e18bd4da`, não este HEAD mais recente.
+
+A correção `0e364e04a8ff2f66fb21ae766ff78c9b0c1afea7` lê o corpo das categorias
+através do leitor incremental existente antes de JSON.parse. Assim evita a
+perda do erro original de ReadableStream no Response.json do Chromium e
+preserva a fase nativa segura e a ação responsável. Filmes e Séries têm ambos
+regressão no browser: falha de categorias é propagada, não é repetida, não
+inicia o catálogo completo e não revela mensagens privadas.
+Nenhuma asserção foi removida nem foi introduzido transporte alternativo.
+
+Validação local executada: 106 testes em 15 ficheiros PASS; build de produção
+com 27 páginas PASS; auditoria imutável061/histórico059 PASS; git diff check PASS.
+A transferência nativa, Media3, autenticação, Keystore e VPN não foram alterados
+por esta correção. A validação integral final pertence aos runs do HEAD final
+indicados no PR #44; não inferir certificação a partir deste texto.
+O workflow passa também a acompanhar alterações deste registo de aceitação,
+para que a documentação final não fique sem validação do mesmo commit.
+
+## Auditoria e evidências preservadas
+
+- Login: apenas utilizador/palavra-passe; origem exata devolvida pelo backend;
+  token Mega apenas no backend, sem palavra-passe persistida na base de dados.
+  A conta Android usa AES-GCM/Keystore, com backups desativados.
+- Comunicação: abertura dos catálogos pela Network VPN admitida; ações fixas,
+  conta selecionada, origem e redirecionamentos verificados; limites de bytes,
+  duração, inatividade e limpeza dos ficheiros temporários mantidos.
+- Filmes/Séries: worker, cache IndexedDB e deduplicação preservados. O HEAD
+  recuperado já usa sequência de fundo Live → Filmes → Séries dirigida pela
+  conclusão; não confundir com a descrição mais antiga de ausência de warmup.
+- Reprodução: Media3 nativo para VOD/episódios, seleção real de áudio/legendas,
+  legendas forçadas e fallback de lançamento protegido preservados.
+- Backend CI verifica Ruff, migração PostgreSQL, testes e deteção de segredos.
+  O workflow atual do cliente é `PINK Extreme Android 042`; `Android CI`
+  refere-se ao cliente Kotlin anterior e não certifica o APK Extreme.
+- Prova funcional real histórica: VPS run37608746146, fonte PINK `b44d07b8`.
+  É prova de baseline, não prova do fornecedor para VOD no HEAD atual.
+- Os branches históricos e registos inválidos/superados foram preservados;
+  a existência de um branch antigo não significa trabalho ativo. O PR #44
+  era o único PR aberto encontrado no início da recuperação.
+- Issue #21 continua aberta e refere uma lacuna histórica do controlo central.
+  A execução atual exige CI terminal do commit exato antes de declarar prontidão;
+  não alterou governança nem certificou uma correção central por esta auditoria.
+
+## Aceitação ainda necessária
+
+1. CI final Android e Backend terminal com sucesso, incluindo testes JVM,
+   lint, privacidade, instrumentação Keystore/origem/VPN, HTTP local real com
+   gzip/chunks, worker/cache após recriação e reprodução Media3 multi-faixa.
+   Consultar os runs do HEAD final no PR, não reutilizar o resultado de outro SHA.
+2. No telefone do Owner, com o APK exato desses artefactos: login e restauração
+   da conta, carregamento completo de Filmes/Séries do fornecedor, Live,
+   filme e episódio conhecidos com áudio/legendas, mudança de faixa e regresso.
+3. Validação física Android TV/D-pad e interrupção/recuperação de rede onde
+   aplicável. Emulator/CI não certificam imagem e som num dispositivo físico.
+4. Metadados de legendas externas do fornecedor permanecem não verificados;
+   não inventar formato ou endpoints nem confundir com faixas internas Media3.
+5. Antes de merge, resolver autoridade e controlos para o HEAD exato. Aprovação
+   de lançamento, distribuição e produção permanece separada. Não declarar
+   a tarefa061 concluída enquanto faltarem as suas provas obrigatórias.
+
+## Histórico preservado
+
 # Physical UI Recovery059: initial Android service retirement
 
 The accepted055/056 catalog proof used native HTTP and did not exercise WebView rendering. Source059 adds real form submission, Tauri Live TV rows, category-control/main-thread roundtrip and fixed privacy-safe flags before the native decoded AV/recovery proof.

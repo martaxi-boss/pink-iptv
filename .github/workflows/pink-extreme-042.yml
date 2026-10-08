@@ -22,7 +22,10 @@ jobs:
           persist-credentials: false
       - name: Audit immutable certification061 continuation
         run: |
-          if test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json; then
+          if [ "${{ github.ref_name }}" = 'builder/physical-ui-recovery-059' ]; then
+            test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json
+            python clients/extreme/audit_061.py
+          elif test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json; then
             python clients/extreme/audit_061.py
           fi
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320

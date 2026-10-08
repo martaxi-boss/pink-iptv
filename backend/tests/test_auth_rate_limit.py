@@ -54,7 +54,7 @@ def make_client(settings, session_factory, *, per_user=2, global_limit=8):
 def post_login(client, username):
     return client.post(
         "/v1/session/resolve",
-        json={"username": username, "password": "redacted-fixture"},
+        json={"username": username, "password": "redacted-fixture"},  # pragma: allowlist secret
     )
 
 

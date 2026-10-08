@@ -48,6 +48,11 @@ try {
         let result = true
         if (request.operation === 'vaultReadValidated') {
           result = JSON.stringify({selectedId:'fixture',entries:[{_id:'fixture',type:'xtream',serverUrl:'https://fixture.invalid',username:'synthetic',password:'synthetic'}]})
+        } else if (request.operation === 'liveCatalog') {
+          const action = request.payload.action
+          if (!['get_vod_categories', 'get_series_categories'].includes(action)) throw Error('Unapproved category operation')
+          opens[action] = (opens[action] || 0) + 1
+          result = bodies.get(action)
         } else if (request.operation === 'vodCatalog') {
           const action = request.payload.action
           opens[action] = (opens[action] || 0) + 1
@@ -115,8 +120,8 @@ try {
     try { await catalog.fetchPinkVodRows('fixture'); failures.push('failure swallowed') }
     catch (error) { if (error.code !== 'HTTP_STATUS') failures.push('failure phase lost') }
     if (rejectedRequests !== 1) failures.push('deterministic failure retried')
-    // Category body failures used to be swallowed as an empty map. Preserve
-    // the first actionable stage and do not issue a full catalog afterwards.
+    // Direct native Live-style category failures must stop before any bulk
+    // VOD/series staging. Preserve their safe action and do not retry.
     for (const [categoryAction, fetchRows] of [
       ['get_vod_categories', catalog.fetchPinkVodRows],
       ['get_series_categories', catalog.fetchPinkSeriesRows],
@@ -125,17 +130,19 @@ try {
     window.PinkNative = {onmessage:null, postMessage(text) {
       const request = JSON.parse(text)
       let result = true, ok = true
-      if (request.operation === 'vodCatalog') {
+      if (request.operation === 'liveCatalog') {
         categoryOpens++
-        if (request.payload.action !== categoryAction) failures.push('catalog fetched after category failure')
-        result = {token:'failed-category',size:10}
-      } else if (request.operation === 'vodCatalogChunk') ok = false
-      else if (request.operation !== 'vodCatalogClose') throw Error('Unexpected failure fixture operation')
+        if (request.payload.action !== categoryAction) failures.push('wrong category action')
+        ok = false
+      } else {
+        failures.push('bulk catalog transport used after category failure')
+        ok = false
+      }
       queueMicrotask(() => window.PinkNative.onmessage({data:JSON.stringify({id:request.id,ok,result,code:'STAGE'})}))
     }}
     try { await fetchRows('fixture'); failures.push('category failure swallowed') }
     catch (error) {
-      if (error.code !== 'STAGE' || error.catalogAction !== categoryAction) failures.push('category failure evidence lost')
+      if (error.code !== 'BRIDGE_OPEN' || error.catalogAction !== categoryAction) failures.push('category failure evidence lost')
     }
     if (categoryOpens !== 1) failures.push('category failure retried')
     }

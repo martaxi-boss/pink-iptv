@@ -14,6 +14,7 @@ ALLOWED = {
     "clients/extreme/overlay/PinkCatalog.kt",
     "clients/extreme/overlay/pink-catalog.js",
     "clients/extreme/overlay/pink-catalog.test.ts",
+    "clients/extreme/overlay/pink-catalog-browser.mjs",
     "clients/extreme/overlay/vpn-jvm/PinkCatalogPolicyTest.kt",
     "clients/extreme/overlay/vpn-tests/PinkCatalogTransportChecks.kt",
 }
@@ -47,6 +48,9 @@ def main():
     assert 'action === "get_vod_categories" || action === "get_series_categories"' in vod
     assert "native.read(action, entryId)" in vod
     assert "native.openVod(action, entryId)" in vod
+    browser = Path("clients/extreme/overlay/pink-catalog-browser.mjs").read_text()
+    assert "request.operation === 'liveCatalog'" in browser
+    assert "bulk catalog transport used after category failure" in browser
     assert "url.openConnection" not in live
     for path in ("clients/extreme/overlay/vpn/PinkConnection.kt",
                  "clients/extreme/overlay/pink-session.js",

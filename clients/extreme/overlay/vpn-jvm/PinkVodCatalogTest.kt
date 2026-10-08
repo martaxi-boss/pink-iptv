@@ -95,7 +95,7 @@ class PinkVodCatalogTest {
     @Test fun unexpectedNativeStageFailuresAreClassifiedWithoutExposingSecrets() {
         for (phase in listOf("ACCOUNT_BINDING", "SOURCE_VALIDATION", "VPN_NETWORK", "STAGE_FILE", "STAGE_LIFECYCLE")) {
             val error = try {
-                PinkCatalogStage.attempt(phase) { throw IllegalStateException("password=https://private.invalid/secret") }
+                PinkCatalogStage.attempt(phase) { throw IllegalStateException("sensitive native failure text") }
                 fail("Unexpected error was not mapped")
                 null
             } catch (failure: PinkCatalogFailure) { failure }

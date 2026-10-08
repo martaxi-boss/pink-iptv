@@ -53,9 +53,7 @@ def charge_auth_attempt(
 
         shared = db.get(AuthRateWindow, _GLOBAL)
         if shared is None:
-            shared = AuthRateWindow(
-                bucket_key=_GLOBAL, window_number=window_number, attempts=0
-            )
+            shared = AuthRateWindow(bucket_key=_GLOBAL, window_number=window_number, attempts=0)
             db.add(shared)
         elif shared.window_number != window_number:
             # At most the previous window's bounded rows survive until rollover.

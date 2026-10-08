@@ -55,8 +55,6 @@ def test_alembic_schema_on_real_postgres() -> None:
     assert ("public_key",) in vpn_unique
     assert ("address",) in vpn_unique
 
-    auth_columns = {
-        column["name"] for column in inspect(engine).get_columns("auth_rate_windows")
-    }
+    auth_columns = {column["name"] for column in inspect(engine).get_columns("auth_rate_windows")}
     assert auth_columns == {"bucket_key", "window_number", "attempts"}
     assert not {"username", "password", "ip_address"}.intersection(auth_columns)

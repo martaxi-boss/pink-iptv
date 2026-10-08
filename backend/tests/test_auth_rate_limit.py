@@ -80,9 +80,7 @@ def test_repeated_username_is_stopped_before_upstream_calls(settings, session_fa
         assert all("redacted-fixture" not in bucket.bucket_key for bucket in buckets)
 
 
-def test_same_limit_applies_to_known_and_unknown_account(
-    settings, session_factory, future_mapping
-):
+def test_same_limit_applies_to_known_and_unknown_account(settings, session_factory, future_mapping):
     client, mega_calls, xtream_calls = make_client(
         settings, session_factory, per_user=1, global_limit=8
     )
@@ -100,9 +98,7 @@ def test_same_limit_applies_to_known_and_unknown_account(
 
 
 def test_global_limit_stops_rotating_usernames(settings, session_factory):
-    client, mega_calls, _ = make_client(
-        settings, session_factory, per_user=10, global_limit=2
-    )
+    client, mega_calls, _ = make_client(settings, session_factory, per_user=10, global_limit=2)
     assert post_login(client, "a").status_code == 200
     assert post_login(client, "b").status_code == 200
     assert post_login(client, "c").status_code == 429
@@ -115,9 +111,7 @@ def test_global_limit_stops_rotating_usernames(settings, session_factory):
 
 
 def test_expired_window_is_reset_and_old_digest_buckets_removed(db, settings):
-    limited = settings.model_copy(
-        update={"auth_rate_per_username": 1, "auth_rate_global": 3}
-    )
+    limited = settings.model_copy(update={"auth_rate_per_username": 1, "auth_rate_global": 3})
     first = datetime(2026, 10, 8, 12, 0, 5, tzinfo=UTC)
     charge_auth_attempt(db, limited, "private-user", now=first)
     with pytest.raises(HTTPException) as blocked:

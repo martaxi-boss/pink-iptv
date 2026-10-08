@@ -17,6 +17,17 @@ export async function fetchPinkVodCatalog(action, entryId, signal) {
   signal?.throwIfAborted()
   installPinkBridge()
   const native = window.PinkCatalog
+  // Physical Live TV works on this exact VPN-owned native HTTP path.
+  // Categories are small (8 MiB native bound); do not stage them on disk.
+  // Full movie/series catalogs still stream to disk in bounded 256 MiB chunks.
+  if (action === "get_vod_categories" || action === "get_series_categories") {
+    if (!native?.read) throw catalogActionFailure(null, action, "BRIDGE_UNAVAILABLE")
+    const text = await native.read(action, entryId).catch(error => {
+      throw catalogActionFailure(error, action, "BRIDGE_OPEN")
+    })
+    signal?.throwIfAborted()
+    return new Response(text, {status: 200, headers: {"Content-Type": "application/json; charset=utf-8"}})
+  }
   if (!native?.openVod) throw catalogActionFailure(null, action, "BRIDGE_UNAVAILABLE")
   const {token, size} = await native.openVod(action, entryId).catch(error => { throw catalogActionFailure(error, action, "BRIDGE_OPEN") })
   const close = () => native.closeVod(token).catch(() => {})

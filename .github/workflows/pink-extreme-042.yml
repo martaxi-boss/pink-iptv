@@ -22,7 +22,9 @@ jobs:
           persist-credentials: false
       - name: Audit immutable certification061, login recovery062 or bounded VPN quota066
         run: |
-          if [ "${{ github.ref_name }}" = 'builder/vpn-quota-recovery-066' ]; then
+          if [ "${{ github.ref_name }}" = 'builder/vod-series-stage-diagnostic-069' ]; then
+            python clients/extreme/audit_069.py
+          elif [ "${{ github.ref_name }}" = 'builder/vpn-quota-recovery-066' ]; then
             python clients/extreme/audit_066.py
           elif [ "${{ github.ref_name }}" = 'builder/device-login-recovery-062' ]; then
             python clients/extreme/audit_062.py

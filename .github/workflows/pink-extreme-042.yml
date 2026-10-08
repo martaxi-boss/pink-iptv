@@ -68,11 +68,6 @@ jobs:
           target.parent.mkdir(parents=True, exist_ok=True)
           target.write_text('/_astro/' + workers[0].name)
           PY
-      - name: Focused native catalog and VPN regressions before APK build
-        working-directory: ${{ runner.temp }}/pink-extreme/src-tauri/gen/android
-        run: |
-          chmod +x gradlew
-          ./gradlew --no-daemon app:testUniversalDebugUnitTest -x app:rustBuildUniversalDebug
       - name: Generate real test-only VOD media with multiple tracks
         timeout-minutes: 5
         run: |

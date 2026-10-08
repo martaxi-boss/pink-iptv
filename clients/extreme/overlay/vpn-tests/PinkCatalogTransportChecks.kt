@@ -19,8 +19,9 @@ import org.json.JSONTokener
 import org.junit.Assert.*
 
 /** Test-only loopback HTTP. No provider, vault, VPN-admission override or remote I/O.
- * Uses Android's real HTTP stack, production disk transfer/chunk encoder and
- * production JS bridge/Response. VPN authority is verified separately. */
+ * Uses the *production Live native HTTP reader* for VOD categories and the
+ * existing production disk/chunk reader for full VOD/Series. VPN authority
+ * and bound Network acquisition are verified separately. */
 class PinkCatalogTransportChecks {
     fun verify() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -74,8 +75,16 @@ class PinkCatalogTransportChecks {
                     try {
                         val payload = request.getJSONObject("payload")
                         val result: Any = when (request.getString("operation")) {
+                            "liveCatalog" -> {
+                                val action = payload.getString("action")
+                                require(action in setOf("get_vod_categories", "get_series_categories"))
+                                requests.add(action)
+                                val connection = URL("http://127.0.0.1:${server.localPort}/fixture").openConnection() as HttpURLConnection
+                                PinkCatalog.readHttp(connection, action) { true }
+                            }
                             "vodCatalog" -> {
                                 val action = payload.getString("action")
+                                require(action in setOf("get_vod_streams", "get_series"))
                                 requests.add(action)
                                 val file = File.createTempFile("pink-http-fixture", ".json", context.cacheDir)
                                 val connection = URL("http://127.0.0.1:${server.localPort}/fixture").openConnection() as HttpURLConnection
@@ -134,7 +143,7 @@ class PinkCatalogTransportChecks {
             assertNull(serverFailure)
             assertEquals(listOf("get_vod_categories","get_vod_streams","get_series_categories","get_series"), requests)
             assertTrue(stages.isEmpty())
-            instrumentation.sendStatus(2, android.os.Bundle().apply { putString("stream", "\nPINK_ANDROID_HTTP_STAGE_WEBMESSAGE=PASS;ACTIONS=4;ROWS=20000;GZIP_CHUNKED=PASS\n") })
+            instrumentation.sendStatus(2, android.os.Bundle().apply { putString("stream", "\nPINK_ANDROID_HTTP_STAGE_WEBMESSAGE=PASS;ACTIONS=4;ROWS=20000;GZIP_CHUNKED=PASS;LIVE_PATH_CATEGORIES=PASS\n") })
         } finally {
             server.close(); thread.join(3000)
             io.shutdownNow(); io.awaitTermination(5, TimeUnit.SECONDS)

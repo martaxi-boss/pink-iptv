@@ -11,6 +11,11 @@ ALLOWED = {
     "clients/extreme/overlay/vpn-jvm/PinkVodCatalogTest.kt",
     "clients/extreme/overlay/pink-catalog-diagnostic.js",
     "clients/extreme/overlay/pink-catalog-diagnostic.test.ts",
+    "clients/extreme/overlay/PinkCatalog.kt",
+    "clients/extreme/overlay/pink-catalog.js",
+    "clients/extreme/overlay/pink-catalog.test.ts",
+    "clients/extreme/overlay/vpn-jvm/PinkCatalogPolicyTest.kt",
+    "clients/extreme/overlay/vpn-tests/PinkCatalogTransportChecks.kt",
 }
 
 
@@ -34,13 +39,21 @@ def main():
     assert '"vodCatalog" -> "BRIDGE_OPEN"' in bridge
     assert '"vodCatalogChunk" -> "BRIDGE_CHUNK"' in bridge
     assert '"STAGE_LIFECYCLE"' in bridge
+    live = Path("clients/extreme/overlay/PinkCatalog.kt").read_text()
+    vod = Path("clients/extreme/overlay/pink-catalog.js").read_text()
+    assert '"get_vod_categories", "get_series_categories"' in live
+    assert "return readHttp(runtime.openProtectedConnection(url), action)" in live
+    assert "return if (action in smallCategories) 8 * 1024 * 1024 else 32 * 1024 * 1024" in live
+    assert 'action === "get_vod_categories" || action === "get_series_categories"' in vod
+    assert "native.read(action, entryId)" in vod
+    assert "native.openVod(action, entryId)" in vod
+    assert "url.openConnection" not in live
     for path in ("clients/extreme/overlay/vpn/PinkConnection.kt",
-                 "clients/extreme/overlay/PinkCatalog.kt",
                  "clients/extreme/overlay/pink-session.js",
                  "backend/app/vpn.py"):
         assert path not in changed
     assert not any(path.startswith(".project-leader/") for path in changed)
-    print("PINK069_SAFE_STAGE_DIAGNOSTIC_NO_VPN_OR_LIVE_MUTATION=PASS")
+    print("PINK069_NATIVE_LIVE_CATEGORY_REUSE_AND_DIAGNOSTIC_SCOPE=PASS")
 
 
 if __name__ == "__main__":

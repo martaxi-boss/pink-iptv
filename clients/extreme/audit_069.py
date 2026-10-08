@@ -2,7 +2,7 @@
 from pathlib import Path
 import subprocess
 
-BASE = "4fdc889a48834b5058c558695b0f2a0f5d94138b"  # public source SHA
+BASE = "4fdc889a48834b5058c558695b0f2a0f5d94138b"  # pragma: allowlist secret -- public source SHA
 ALLOWED = {
     ".github/workflows/pink-extreme-042.yml",
     "clients/extreme/audit_069.py",

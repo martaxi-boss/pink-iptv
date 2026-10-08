@@ -1,6 +1,7 @@
 import { catalogFailure } from "./pink-catalog-diagnostic.js"
 // Only the local main document receives the origin-restricted native message object.
 let installedFor = null
+const safeLoginCodes = new Set(["VPN_PERMISSION", "CONTROL_HTTPS", "VPN_ENROLL", "VPN_ACTIVATION", "DEVICE_SECURITY", "LOGIN_UNAVAILABLE"])
 export function installPinkBridge() {
   const native = typeof window !== "undefined" && window.PinkNative
   if (typeof native?.postMessage !== "function") return false
@@ -18,6 +19,9 @@ export function installPinkBridge() {
     if (reply.ok === true) waiting.resolve(reply.result)
     else {
       const error = new Error("Serviço PINK temporariamente indisponível.")
+      if (waiting.operation === "resolve") {
+        error.code = safeLoginCodes.has(reply.code) ? reply.code : "LOGIN_UNAVAILABLE"
+      }
       if (waiting.operation.startsWith("vodCatalog")) {
         const safe = catalogFailure(reply.code, reply)
         Object.assign(error, {code:safe.code})
@@ -30,7 +34,9 @@ export function installPinkBridge() {
     const id = String(++sequence)
     const timer = setTimeout(() => {
       pending.delete(id)
-      reject(operation.startsWith("vodCatalog") ? catalogFailure("BRIDGE_TIMEOUT") : new Error("Serviço PINK temporariamente indisponível."))
+      reject(operation.startsWith("vodCatalog") ? catalogFailure("BRIDGE_TIMEOUT") :
+        operation === "resolve" ? Object.assign(new Error("Serviço PINK temporariamente indisponível."), {code: "LOGIN_TIMEOUT"}) :
+        new Error("Serviço PINK temporariamente indisponível."))
     }, timeout)
     pending.set(id, { resolve, reject, timer, operation })
     try { native.postMessage(JSON.stringify({ id, operation, payload })) }
@@ -42,6 +48,7 @@ export function installPinkBridge() {
   })
   window.PinkConnection = {
     ready: () => call("ready"),
+    requestVpnConsent: () => call("vpnPermissionRetry"),
     resolve: (username, password) => call("resolve", { username, password }, 150000),
   }
   window.PinkAccountVault = {

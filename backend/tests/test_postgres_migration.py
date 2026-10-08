@@ -93,9 +93,7 @@ def test_authentication_budget_serializes_postgres_connections(settings) -> None
     assert results.count(429) == 4
 
     with engine.connect() as connection:
-        rows = connection.execute(
-            text("SELECT bucket_key, attempts FROM auth_rate_windows")
-        ).all()
+        rows = connection.execute(text("SELECT bucket_key, attempts FROM auth_rate_windows")).all()
     assert len(rows) == 2
     assert {attempts for _, attempts in rows} == {2}
     assert all("concurrent-pseudonym" not in key for key, _ in rows)

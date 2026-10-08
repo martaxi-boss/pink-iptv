@@ -25,10 +25,8 @@
     "Backend source CI success https://github.com/martaxi-boss/pink-iptv/actions/runs/37805248131",
     "Final evidence-only Backend CI success https://github.com/martaxi-boss/pink-iptv/actions/runs/37809949335",
     "Native authenticated real proof https://github.com/martaxi-boss/VPS/actions/runs/37808275533",
-    "GitHub verified merged true and main exact 958b9e928e888e3ecf7b3c5d8140d37077f89b3c"
+    "GitHub verified merged true and main exact 958b9e928e888e3ecf7b3c5d8140d37077f89b3c",
+    "Canonical current-state SUCCESS transition has no unresolved effect controls; the separate Task061 Worker Result preserves Owner physical Android/TV and provider Movies/Series/EPG acceptance pending. This metadata correction does not certify them or change the prior merge head/proof."
   ],
-  "residual_blockers": [
-    "Owner physical Android phone/Android TV D-pad and real provider Movies/Series/EPG playback acceptance pending.",
-    "No public release; candidate APK is debug-signed."
-  ]
+  "residual_blockers": []
 }

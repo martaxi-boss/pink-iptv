@@ -94,7 +94,11 @@ class PinkCatalogTransportChecks {
                     } catch (failure: Exception) {
                         response.put("ok", false).put("code", if (failure is PinkCatalogFailure) failure.phase else "STAGE")
                     }
-                    view.post { reply.postMessage(response.toString()) }
+                    // This fixture WebView has no attached window: View.post() may never run.
+                    // Dispatch on the main looper, matching the production bridge.
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        reply.postMessage(response.toString())
+                    }
                 }
             }
             view.loadDataWithBaseURL("https://tauri.localhost", """<script>$source

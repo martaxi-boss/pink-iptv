@@ -1,3 +1,4 @@
+import { catalogFailure } from "./pink-catalog-diagnostic.js"
 // One catalog owner per document. A new WebView never inherits a pending job.
 export function pinkCatalogRuntime() {
   return typeof window !== "undefined" && !!window.PinkNative
@@ -72,11 +73,14 @@ export function takePinkCatalogPersistence(rows, entryId, kind) {
 
 export function processPinkCatalog(body, kind, categories, entryId, ttl) {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./pink-catalog-worker.js", import.meta.url), {type: "module"})
+    let worker
+    try { worker = new Worker(new URL("./pink-catalog-worker.js", import.meta.url), {type: "module"}) }
+    catch { reject(catalogFailure("WORKER_LOAD")); return }
     const rows = []
-    worker.onerror = () => { worker.terminate(); reject(new Error("Não foi possível processar o catálogo PINK.")) }
+    worker.onerror = () => { worker.terminate(); reject(catalogFailure("WORKER_LOAD")) }
+    worker.onmessageerror = () => { worker.terminate(); reject(catalogFailure("WORKER_MESSAGE")) }
     worker.onmessage = ({data}) => {
-      if (data.error) { worker.terminate(); reject(new Error("Resposta de catálogo PINK inválida.")); return }
+      if (data.error) { worker.terminate(); reject(catalogFailure(data.error)); return }
       if (data.done) {
         if (data.persisted) persistedRows.set(rows, {entryId, kind, fetchedAt: data.fetchedAt, ttl})
         worker.terminate(); resolve(rows); return
@@ -85,6 +89,7 @@ export function processPinkCatalog(body, kind, categories, entryId, ttl) {
       // Let input/paint run between batches, with only one batch in transit.
       setTimeout(() => worker.postMessage({next: true}), 0)
     }
-    worker.postMessage({body, kind, categories, entryId, ttl})
+    try { worker.postMessage({body, kind, categories, entryId, ttl}) }
+    catch { worker.terminate(); reject(catalogFailure("WORKER_MESSAGE")) }
   })
 }

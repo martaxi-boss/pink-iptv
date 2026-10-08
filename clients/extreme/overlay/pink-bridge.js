@@ -1,3 +1,4 @@
+import { catalogFailure } from "./pink-catalog-diagnostic.js"
 // Only the local main document receives the origin-restricted native message object.
 let installedFor = null
 export function installPinkBridge() {
@@ -17,9 +18,10 @@ export function installPinkBridge() {
     if (reply.ok === true) waiting.resolve(reply.result)
     else {
       const error = new Error("Serviço PINK temporariamente indisponível.")
-      if (waiting.operation.startsWith("vodCatalog") && ["CONNECT", "HTTP_STATUS", "READ", "READ_IDLE", "TOTAL_DEADLINE", "MAX_BYTES", "VPN_LOST", "STAGE"].includes(reply.code)) {
-        error.code = reply.code
-        console.warn("PINK_CATALOG_PHASE=" + reply.code)
+      if (waiting.operation.startsWith("vodCatalog")) {
+        const safe = catalogFailure(reply.code, reply)
+        Object.assign(error, {code:safe.code})
+        for (const key of ["bytes", "elapsedMs", "httpStatus"]) if (safe[key] !== undefined) error[key] = safe[key]
       }
       waiting.reject(error)
     }
@@ -28,7 +30,7 @@ export function installPinkBridge() {
     const id = String(++sequence)
     const timer = setTimeout(() => {
       pending.delete(id)
-      reject(new Error("Serviço PINK temporariamente indisponível."))
+      reject(operation.startsWith("vodCatalog") ? catalogFailure("BRIDGE_TIMEOUT") : new Error("Serviço PINK temporariamente indisponível."))
     }, timeout)
     pending.set(id, { resolve, reject, timer, operation })
     try { native.postMessage(JSON.stringify({ id, operation, payload })) }

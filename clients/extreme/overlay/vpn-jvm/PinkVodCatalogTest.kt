@@ -172,4 +172,31 @@ class PinkVodCatalogTest {
         } catch (failure: PinkCatalogFailure) { assertEquals("TOTAL_DEADLINE",failure.phase) }
         finally { assertTrue(cancelled); assertTrue(reply.disconnected); assertFalse(file.exists()); file.delete() }
     }
+
+    @Test fun physicalFailureEvidenceRetainsOnlyPhaseStatusProgressAndDuration() {
+        var time = 0L
+        var reads = 0
+        val file = File.createTempFile("pink-evidence", ".tmp")
+        val stream = object : InputStream() {
+            override fun read() = error("bulk only")
+            override fun read(b: ByteArray, off: Int, len: Int): Int {
+                time += 1000000000L
+                if (++reads == 2) throw java.io.IOException("private URL, account, response")
+                b[off] = 91
+                return 1
+            }
+        }
+        try {
+            PinkCatalogTransfer.download(Reply(stream), file, PinkCatalogTransfer.policy("get_series"), {time}) {true}
+            fail("Read failure was hidden")
+        } catch (failure: PinkCatalogFailure) {
+            assertEquals("READ", failure.phase)
+            assertEquals(1L, failure.bytes ?: -1L)
+            assertEquals(2000L, failure.elapsedMs ?: -1L)
+            assertEquals(200, failure.httpStatus ?: -1)
+            assertEquals("READ", failure.message)
+            assertNull(failure.cause)
+            assertFalse(file.exists())
+        } finally { file.delete() }
+    }
 }

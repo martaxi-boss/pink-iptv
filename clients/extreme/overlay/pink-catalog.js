@@ -1,4 +1,5 @@
 import { installPinkBridge } from "./pink-bridge.js"
+import { catalogActionFailure, catalogFailure } from "./pink-catalog-diagnostic.js"
 
 export async function fetchPinkLiveCatalog(action, entryId, signal) {
   if (!["get_live_categories", "get_live_streams"].includes(action)) throw new Error("Catálogo PINK inválido.")
@@ -16,8 +17,8 @@ export async function fetchPinkVodCatalog(action, entryId, signal) {
   signal?.throwIfAborted()
   installPinkBridge()
   const native = window.PinkCatalog
-  if (!native?.openVod) throw new Error("Serviço PINK indisponível neste dispositivo.")
-  const {token, size} = await native.openVod(action, entryId)
+  if (!native?.openVod) throw catalogActionFailure(null, action, "BRIDGE_UNAVAILABLE")
+  const {token, size} = await native.openVod(action, entryId).catch(error => { throw catalogActionFailure(error, action, "BRIDGE_OPEN") })
   const close = () => native.closeVod(token).catch(() => {})
   try { signal?.throwIfAborted() } catch (error) { await close(); throw error }
   let received = 0, closed = false
@@ -31,15 +32,15 @@ export async function fetchPinkVodCatalog(action, entryId, signal) {
         const chunk = await native.readVodChunk(token, entryId)
         signal?.throwIfAborted()
         if (chunk.done) {
-          if (received !== size) throw new Error("Catálogo PINK incompleto.")
+          if (received !== size) throw Object.assign(new Error("Catálogo PINK incompleto."), {code:"BODY_SIZE"})
           await finish(); controller.close(); return
         }
         const text = atob(chunk.data)
         const bytes = Uint8Array.from(text, c => c.charCodeAt(0))
         received += bytes.length
-        if (received > size) throw new Error("Catálogo PINK inválido.")
+        if (received > size) throw catalogFailure("BODY_SIZE")
         controller.enqueue(bytes)
-      } catch (error) { await finish(); controller.error(error) }
+      } catch (error) { await finish(); controller.error(signal?.aborted ? error : catalogActionFailure(error, action, "BRIDGE_CHUNK")) }
     },
     cancel() { return finish() },
   })

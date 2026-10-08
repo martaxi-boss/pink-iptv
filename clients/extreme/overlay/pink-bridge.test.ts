@@ -58,7 +58,7 @@ describe('origin-restricted native transport', () => {
   })
   it('exposes only fixed safe catalog phases and does not accept provider error text', async () => {
     const { native, host } = create()
-    for (const [code, expected] of [['READ_IDLE','READ_IDLE'], ['private URL or credentials',undefined]]) {
+    for (const [code, expected] of [['READ_IDLE','READ_IDLE'], ['private URL or credentials','CATALOG_FAILED']]) {
       const waiting = host.PinkCatalog.openVod('get_series', 'fixture')
       const request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
       const assertion = expect(waiting).rejects.toMatchObject({message:'Serviço PINK temporariamente indisponível.', ...(expected ? {code:expected} : {})})

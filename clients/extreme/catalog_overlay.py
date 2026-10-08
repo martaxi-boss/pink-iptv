@@ -1,6 +1,7 @@
 """Demand-first Android catalogs; pinned upstream remains the cache/UI owner."""
 from pathlib import Path
 import shutil
+import subprocess
 
 
 def apply(root: Path, destination: Path):
@@ -13,10 +14,26 @@ def apply(root: Path, destination: Path):
 
     for name in ("pink-catalog-pipeline.js", "pink-catalog-worker.js"):
         shutil.copyfile(root / "overlay" / name, destination / "src/scripts/lib" / name)
+    revision = subprocess.check_output(["git", "-C", str(root), "rev-parse", "--short=8", "HEAD"], text=True).strip()
+    diagnostic = (root / "overlay/pink-catalog-diagnostic.js").read_text().replace("__PINK_CATALOG_REVISION__", revision)
+    (destination / "src/scripts/lib/pink-catalog-diagnostic.js").write_text(diagnostic)
+    shutil.copyfile(root / "overlay/pink-catalog-diagnostic.test.ts", destination / "tests/pink-catalog-diagnostic.test.ts")
     shutil.copyfile(root / "overlay/pink-catalog-pipeline.test.ts", destination / "tests/pink-catalog-pipeline.test.ts")
     shutil.copyfile(root / "overlay/pink-catalog-browser.mjs", destination / "tests/pink-catalog-browser.mjs")
     android_tests = destination / "src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme"
     shutil.copyfile(root / "overlay/vpn-tests/PinkCatalogWorkerChecks.kt", android_tests / "PinkCatalogWorkerChecks.kt")
+    shutil.copyfile(root / "overlay/vpn-tests/PinkCatalogTransportChecks.kt", android_tests / "PinkCatalogTransportChecks.kt")
+    assets = android_tests.parents[3] / "assets"
+    assets.mkdir(parents=True, exist_ok=True)
+    # Exercise the exact production JS transport in a test-only WebView with
+    # real Android HTTP/disk/chunk replies. No fixture is shipped in the app.
+    scripts = [diagnostic] + [(root / "overlay" / name).read_text() for name in ("pink-bridge.js", "pink-catalog.js")]
+    (assets / "pink-catalog-transport.js").write_text("\n".join(
+        "\n".join(line for line in source.splitlines() if not line.startswith("import ")).replace("export ", "")
+        for source in scripts))
+    edit("src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme/PinkWebBridgeTest.kt",
+         '        val instrumentation = InstrumentationRegistry.getInstrumentation()\n        val context = instrumentation.targetContext',
+         '        PinkCatalogTransportChecks().verify()\n        val instrumentation = InstrumentationRegistry.getInstrumentation()\n        val context = instrumentation.targetContext')
     edit("src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme/PinkVpnStartupTest.kt",
          '            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()',
          '            PinkCatalogWorkerChecks().verify(activity)\n            PinkVodTracksChecks().allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo()')
@@ -79,6 +96,9 @@ def apply(root: Path, destination: Path):
         text = text[:begin] + text[end:]
         text = text.replace('  fetchCategoryMap,\n', '').replace('let categoryMap = null\n', '')
         text = text.replace('import { xtreamApiFetch } from "@/scripts/lib/xtream-api.js"\n', '')
+        text = 'import { catalogFailureDetail } from "@/scripts/lib/pink-catalog-diagnostic.js"\n' + text
+        text = text.replace('      onRetry: load' + ('Movies' if kind == 'vod' else 'Series') + ',',
+                            '      onRetry: load' + ('Movies' if kind == 'vod' else 'Series') + ',\n      detail: catalogFailureDetail(e),')
         target.write_text(text)
 
     # A fresh full Android response already contains all provider metadata.
@@ -92,6 +112,7 @@ def apply(root: Path, destination: Path):
     # Export reusable uncached fetchers; the cache/queue owns deduplication.
     target = destination / "src/scripts/lib/catalog.js"
     text = target.read_text()
+    text = 'import { catalogActionFailure } from "./pink-catalog-diagnostic.js"\n' + text
     for kind, title, start_marker, end_marker in (
         ("vod", "Vod", '  const fetcher = () => retryWithBackoff(async () => {', '  const { data } = await cachedFetch(playlistId, "vod"'),
         ("series", "Series", '  const fetcher = () => retryWithBackoff(async () => {', '  const { data } = await cachedFetch(playlistId, "series"'),
@@ -114,6 +135,14 @@ def apply(root: Path, destination: Path):
         text = text.replace(f'xtreamApiFetch("{action}")', f'xtreamApiFetch("{action}", {{}}, {{entryId: playlistId}})')
         action = 'get_vod_streams' if kind == 'vod' else 'get_series'
         text = text.replace(f'xtreamApiFetch("{action}")', f'xtreamApiFetch("{action}", {{}}, {{entryId: playlistId}})')
+        text = text.replace(f'return processPinkCatalog(body, "{kind}", catMap, playlistId, {kind.upper()}_TTL_MS)',
+                            f'return processPinkCatalog(body, "{kind}", catMap, playlistId, {kind.upper()}_TTL_MS).catch(error => {{ throw catalogActionFailure(error, "{action}", "WORKER_LOAD") }})')
+        category_action = 'get_vod_categories' if kind == 'vod' else 'get_series_categories'
+        # A bridge/chunk failure is not an empty category map. Retain its exact
+        # safe phase instead of silently proceeding with a second full request.
+        marker = f'    log.warn("[xt:catalog] {kind} categories parse failed:", err?.message || err)'
+        assert text.count(marker) == 1
+        text = text.replace(marker, f'    if (pinkCatalogRuntime()) throw catalogActionFailure(err, "{category_action}", "CATEGORY_PARSE")\n' + marker)
     target.write_text(text)
 
     edit("src/scripts/lib/cache.js", '// IndexedDB-backed catalog cache with in-memory hydration layer',

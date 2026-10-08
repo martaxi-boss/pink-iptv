@@ -23,9 +23,10 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     private val lease = PinkCatalogTransfer.Lease()
     init { directory.listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 300000 }?.forEach { it.delete() } }
     private fun selected(entryId: String): JSONObject {
-        check(lease.active() && PinkVpnRuntime.isReady())
+        if (!lease.active()) throw PinkCatalogFailure("CANCELLED")
+        if (!PinkVpnRuntime.isReady()) throw PinkCatalogFailure("VPN_LOST")
         val account = JSONObject(vault.readValidated())
-        check(account.getString("selectedId") == entryId)
+        if (account.getString("selectedId") != entryId) throw PinkCatalogFailure("ACCOUNT_BINDING")
         val entries = account.getJSONArray("entries")
         val entry = (0 until entries.length()).map { entries.getJSONObject(it) }.single { it.getString("_id") == entryId }
         check(entry.getString("type") == "xtream")
@@ -58,11 +59,10 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
             return synchronized(stages) {
                 val stage = checkNotNull(stages[token])
                 check(stage.entryId == entryId)
-                val buffer = ByteArray(128 * 1024)
-                val count = stage.reader.read(buffer)
+                val chunk = PinkCatalogTransfer.readChunk(stage.reader)
                 check(lease.active() && PinkVpnRuntime.isReady())
-                if (count < 0) { close(token); JSONObject().put("done", true) }
-                else JSONObject().put("data", Base64.getEncoder().encodeToString(buffer.copyOf(count)))
+                if (chunk.optBoolean("done")) close(token)
+                chunk
             }
         } catch (error: Exception) { close(token); throw error }
     }
@@ -93,10 +93,17 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
 }
 
 // Only fixed phase codes cross the bridge; never exception messages or provider data.
-internal class PinkCatalogFailure(val phase: String) : IllegalStateException(phase)
+internal class PinkCatalogFailure(val phase: String, val bytes: Long? = null,
+    val elapsedMs: Long? = null, val httpStatus: Int? = null) : IllegalStateException(phase)
 
 /** Bounded disk transfer; no full native String or JSONArray for large catalogs. */
 internal object PinkCatalogTransfer {
+    internal fun readChunk(reader: RandomAccessFile): JSONObject {
+        val buffer = ByteArray(128 * 1024)
+        val count = reader.read(buffer)
+        return if (count < 0) JSONObject().put("done", true)
+            else JSONObject().put("data", Base64.getEncoder().encodeToString(buffer.copyOf(count)))
+    }
     private val deadlines = Executors.newSingleThreadScheduledExecutor { job ->
         Thread(job, "pink-catalog-deadline").apply { isDaemon = true }
     }
@@ -144,9 +151,12 @@ internal object PinkCatalogTransfer {
             if (!ready()) throw PinkCatalogFailure("VPN_LOST")
         }
         var phase = "CONNECT"
+        val started = now()
+        var total = 0L
+        var status: Int? = null
         try {
             admitted()
-            val status = request.responseCode
+            status = request.responseCode
             admitted()
             if (status != 200) throw PinkCatalogFailure("HTTP_STATUS")
             if (request.contentLengthLong > policy.maxBytes) throw PinkCatalogFailure("MAX_BYTES")
@@ -154,7 +164,6 @@ internal object PinkCatalogTransfer {
             val deadline = now() + TimeUnit.SECONDS.toNanos(policy.seconds)
             val idleBudget = TimeUnit.SECONDS.toNanos(20)
             var lastProgress = now()
-            var total = 0L
             phase = "READ"
             request.inputStream.use { input ->
                 phase = "STAGE"
@@ -192,8 +201,9 @@ internal object PinkCatalogTransfer {
             // This also admits UTF-8 BOM exactly as the streaming decoder does.
         } catch (error: Exception) {
             file.delete()
-            if (error is PinkCatalogFailure) throw error
-            throw PinkCatalogFailure(if (expired.get()) "TOTAL_DEADLINE" else if (!ready()) "VPN_LOST" else phase)
+            val code = if (error is PinkCatalogFailure) error.phase else
+                if (expired.get()) "TOTAL_DEADLINE" else if (!ready()) "VPN_LOST" else phase
+            throw PinkCatalogFailure(code, total, TimeUnit.NANOSECONDS.toMillis(now() - started), status)
         } finally { cancelDeadline(); request.disconnect() }
     }
 }

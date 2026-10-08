@@ -56,7 +56,7 @@ jobs:
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
           pnpm exec playwright install --with-deps chromium
           node tests/pink-catalog-browser.mjs
           pnpm run build
@@ -122,6 +122,7 @@ jobs:
           adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkWebBridgeTest com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner > "$RUNNER_TEMP/pink055-origin.txt"
           cat "$RUNNER_TEMP/pink055-origin.txt"
           grep -q 'OK (2 tests)' "$RUNNER_TEMP/pink055-origin.txt"
+          grep -q 'PINK_ANDROID_HTTP_STAGE_WEBMESSAGE=PASS;ACTIONS=4;ROWS=20000;GZIP_CHUNKED=PASS' "$RUNNER_TEMP/pink055-origin.txt"
           # MonitoringInstrumentation otherwise finishes the live Tauri host after
           # all asserts, racing native teardown before it publishes the result.
           # Keep it alive until the existing force-stop; recreation is still tested.

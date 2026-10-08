@@ -1,15 +1,19 @@
 import { mapXtreamVodRows, mapXtreamSeriesRows } from "./catalog-mappers.js"
 import { persistPinkCatalog } from "./pink-catalog-store.js"
 import { isTrustedWorkerMessage } from "./worker-origin.ts"
+import { catalogFailure } from "./pink-catalog-diagnostic.js"
 
 export function parsePinkCatalog(body, kind, categories) {
-  const parsed = JSON.parse(body)
+  let parsed
+  try { parsed = JSON.parse(body) } catch { throw catalogFailure("WORKER_PARSE") }
   const raw = Array.isArray(parsed) ? parsed : kind === "vod"
     ? parsed?.movies || parsed?.results : parsed?.series || parsed?.results
-  if (!Array.isArray(raw)) throw new Error("Invalid catalog")
-  if (kind === "vod") return mapXtreamVodRows(raw, categories)
-  if (kind === "series") return mapXtreamSeriesRows(raw, categories)
-  throw new Error("Invalid catalog kind")
+  if (!Array.isArray(raw)) throw catalogFailure("WORKER_PARSE")
+  try {
+    if (kind === "vod") return mapXtreamVodRows(raw, categories)
+    if (kind === "series") return mapXtreamSeriesRows(raw, categories)
+  } catch { throw catalogFailure("WORKER_MAP") }
+  throw catalogFailure("WORKER_PARSE")
 }
 
 if (typeof self !== "undefined" && typeof document === "undefined") {
@@ -35,6 +39,6 @@ if (typeof self !== "undefined" && typeof document === "undefined") {
       }
       self.postMessage({rows: rows.slice(offset, offset + 512)})
       offset += 512
-    } catch { rows = null; self.postMessage({error: true}) }
+    } catch (error) { rows = null; self.postMessage({error: error?.code === "WORKER_MAP" ? "WORKER_MAP" : "WORKER_PARSE"}) }
   }
 }

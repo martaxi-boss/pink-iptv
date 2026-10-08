@@ -83,6 +83,11 @@ object PinkWebBridge {
                     response.put("ok", false)
                     if (request.optString("operation") in setOf("vodCatalog", "vodCatalogChunk", "vodCatalogClose")) {
                         response.put("code", if (error is PinkCatalogFailure) error.phase else "STAGE")
+                        if (error is PinkCatalogFailure) {
+                            error.bytes?.let { response.put("bytes", it) }
+                            error.elapsedMs?.let { response.put("elapsedMs", it) }
+                            error.httpStatus?.let { response.put("httpStatus", it) }
+                        }
                     }
                 }
                 val encodedResponse = response.toString()

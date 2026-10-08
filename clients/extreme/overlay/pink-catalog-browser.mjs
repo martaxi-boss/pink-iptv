@@ -115,6 +115,25 @@ try {
     try { await catalog.fetchPinkVodRows('fixture'); failures.push('failure swallowed') }
     catch (error) { if (error.code !== 'HTTP_STATUS') failures.push('failure phase lost') }
     if (rejectedRequests !== 1) failures.push('deterministic failure retried')
+    // Category body failures used to be swallowed as an empty map. Preserve
+    // the first actionable stage and do not issue a full catalog afterwards.
+    let categoryOpens = 0
+    window.PinkNative = {onmessage:null, postMessage(text) {
+      const request = JSON.parse(text)
+      let result = true, ok = true
+      if (request.operation === 'vodCatalog') {
+        categoryOpens++
+        if (request.payload.action !== 'get_vod_categories') failures.push('catalog fetched after category failure')
+        result = {token:'failed-category',size:10}
+      } else if (request.operation === 'vodCatalogChunk') ok = false
+      else if (request.operation !== 'vodCatalogClose') throw Error('Unexpected failure fixture operation')
+      queueMicrotask(() => window.PinkNative.onmessage({data:JSON.stringify({id:request.id,ok,result,code:'STAGE'})}))
+    }}
+    try { await catalog.fetchPinkVodRows('fixture'); failures.push('category failure swallowed') }
+    catch (error) {
+      if (error.code !== 'STAGE' || error.catalogAction !== 'get_vod_categories') failures.push('category failure evidence lost')
+    }
+    if (categoryOpens !== 1) failures.push('category failure retried')
     window.PinkNative = originalNative
     const start = performance.now()
     await catalog.warmupActive('fixture', {background: true})

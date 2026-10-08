@@ -95,9 +95,9 @@ describe('protected Movies/Series transport', () => {
   })
   it('rejects protected failure and incomplete transfer rather than using another network', async () => {
     vodBridge('[]','vodCatalog')
-    await expect(xtreamApiFetch('get_series')).rejects.toThrow('temporariamente indisponível')
+    await expect(xtreamApiFetch('get_series')).rejects.toMatchObject({code:'CATALOG_FAILED',catalogAction:'get_series'})
     const native = vodBridge('[{"id":1}]','',true)
-    await expect((await fetchPinkVodCatalog('get_series','selected-fixture')).text()).rejects.toThrow('incompleto')
+    await expect((await fetchPinkVodCatalog('get_series','selected-fixture')).text()).rejects.toMatchObject({code:'BODY_SIZE',catalogAction:'get_series'})
     expect(native.postMessage.mock.calls.some(([s]:any)=>JSON.parse(s).operation==='vodCatalogClose')).toBe(true)
   })
   it('cancellation and stream cancellation release the native private stage', async () => {
@@ -114,8 +114,9 @@ describe('protected Movies/Series transport', () => {
   it('keeps native admission, selected-account binding and owned Network opener mandatory', () => {
     const native = readFileSync(new URL('../src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVodCatalog.kt',import.meta.url),'utf8')
     expect(native).toContain('runtime.openProtectedConnection(url)')
-    expect(native).toContain('check(lease.active() && PinkVpnRuntime.isReady())')
-    expect(native).toContain('account.getString("selectedId") == entryId')
+    expect(native).toContain('if (!lease.active()) throw PinkCatalogFailure("CANCELLED")')
+    expect(native).toContain('if (!PinkVpnRuntime.isReady()) throw PinkCatalogFailure("VPN_LOST")')
+    expect(native).toContain('if (account.getString("selectedId") != entryId) throw PinkCatalogFailure("ACCOUNT_BINDING")')
     expect(native).not.toContain('url.openConnection')
     expect(native).not.toMatch(/(?<!get)JSONArray\(/)
   })

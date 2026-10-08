@@ -116,6 +116,63 @@ class PinkVodCatalogTest {
         catch (_: IllegalArgumentException) { }
     }
 
+    @Test fun supersededCatalogsNeverExhaustFourSlotsOrLeakFiles() {
+        val store = PinkVodStageStore()
+        val files = mutableListOf<File>()
+        try {
+            repeat(8) { index ->
+                val file = File.createTempFile("pink-stage", ".json")
+                file.writeText("[]")
+                files.add(file)
+                store.admit("vod-$index", "fixture", "get_vod_streams", file)
+                assertEquals(1, store.count())
+                if (index > 0) {
+                    assertFalse(files[index - 1].exists())
+                    try { store.chunk("vod-${index - 1}", "fixture"); fail("Old token served") }
+                    catch (failure: PinkCatalogFailure) { assertEquals("STAGE_EXPIRED", failure.phase) }
+                }
+            }
+            val series = File.createTempFile("pink-series-stage", ".json")
+            series.writeText("[]")
+            files.add(series)
+            store.admit("series", "fixture", "get_series", series)
+            assertEquals(2, store.count())
+            assertEquals("W10=", store.chunk("series", "fixture").getString("data"))
+            assertTrue(store.chunk("series", "fixture").getBoolean("done"))
+            assertEquals(1, store.count())
+            val different = File.createTempFile("pink-other-stage", ".json")
+            different.writeText("[]")
+            files.add(different)
+            store.admit("new-account", "other", "get_series", different)
+            assertEquals(1, store.count())
+            assertFalse("Old selected account stage not disposed", files[7].exists())
+        } finally {
+            store.closeAll()
+            assertEquals(0, store.count())
+            files.forEach { it.delete() }
+        }
+    }
+
+    @Test fun missingFileAndCapacityFailureRemainDistinctAndFailClosed() {
+        val store = PinkVodStageStore(maxOpen = 1)
+        val file = File.createTempFile("pink-valid-stage", ".json").apply { writeText("[]") }
+        val other = File.createTempFile("pink-cap-stage", ".json").apply { writeText("[]") }
+        val missing = File.createTempFile("pink-missing-stage", ".json").apply { delete() }
+        try {
+            store.admit("original", "fixture", "get_vod_streams", file)
+            try { store.admit("missing", "fixture", "get_vod_streams", missing); fail("Missing file admitted") }
+            catch (failure: PinkCatalogFailure) { assertEquals("STAGE_FILE", failure.phase) }
+            assertTrue(file.exists())
+            assertEquals(1, store.count())
+            try { store.admit("over-limit", "fixture", "get_series", other); fail("Cap exceeded") }
+            catch (failure: PinkCatalogFailure) { assertEquals("STAGE_CAPACITY", failure.phase) }
+            assertEquals(1, store.count())
+            try { store.chunk("original", "other"); fail("Wrong account read") }
+            catch (failure: PinkCatalogFailure) { assertEquals("ACCOUNT_BINDING", failure.phase) }
+            assertEquals("W10=", store.chunk("original", "fixture").getString("data"))
+        } finally { store.closeAll(); file.delete(); other.delete(); missing.delete() }
+    }
+
     private data class Failure(val code:Int,val body:ByteArray,val limit:Int,val admitted:Boolean)
 
     @Test fun regressionOldIdleBudgetAcceptsProgressThatFifteenSecondsRejected() {

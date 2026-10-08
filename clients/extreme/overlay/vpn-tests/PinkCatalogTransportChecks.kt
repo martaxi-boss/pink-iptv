@@ -5,7 +5,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.webkit.WebViewCompat
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.RandomAccessFile
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -29,7 +28,7 @@ class PinkCatalogTransportChecks {
         val server = ServerSocket(0, 4, InetAddress.getByName("127.0.0.1"))
         server.soTimeout = 30000
         val io = Executors.newSingleThreadExecutor()
-        val stages = mutableMapOf<String, Pair<File, RandomAccessFile>>()
+        val stages = PinkVodStageStore()
         val requests = mutableListOf<String>()
         val body = "[" + (1..5000).joinToString(",") { """{"stream_id":$it,"series_id":$it,"name":"Português 🎬 $it"}""" } + "]"
         val bytes = body.toByteArray(Charsets.UTF_8)
@@ -89,13 +88,12 @@ class PinkCatalogTransportChecks {
                                 val file = File.createTempFile("pink-http-fixture", ".json", context.cacheDir)
                                 val connection = URL("http://127.0.0.1:${server.localPort}/fixture").openConnection() as HttpURLConnection
                                 PinkCatalogTransfer.download(connection, file, PinkCatalogTransfer.policy(action)) { true }
-                                stages[action] = file to RandomAccessFile(file, "r")
+                                stages.admit(action, "fixture", action, file)
                                 JSONObject().put("token", action).put("size", file.length())
                             }
-                            "vodCatalogChunk" -> PinkCatalogTransfer.readChunk(stages.getValue(payload.getString("token")).second)
+                            "vodCatalogChunk" -> stages.chunk(payload.getString("token"), "fixture")
                             "vodCatalogClose" -> {
-                                stages.remove(payload.getString("token"))?.let { it.second.close(); it.first.delete() }
-                                true
+                                stages.close(payload.getString("token"))
                             }
                             else -> error("Unexpected test operation")
                         }
@@ -142,12 +140,12 @@ class PinkCatalogTransportChecks {
             assertTrue(served.await(3, TimeUnit.SECONDS))
             assertNull(serverFailure)
             assertEquals(listOf("get_vod_categories","get_vod_streams","get_series_categories","get_series"), requests)
-            assertTrue(stages.isEmpty())
+            assertEquals(0, stages.count())
             instrumentation.sendStatus(2, android.os.Bundle().apply { putString("stream", "\nPINK_ANDROID_HTTP_STAGE_WEBMESSAGE=PASS;ACTIONS=4;ROWS=20000;GZIP_CHUNKED=PASS;LIVE_PATH_CATEGORIES=PASS\n") })
         } finally {
             server.close(); thread.join(3000)
             io.shutdownNow(); io.awaitTermination(5, TimeUnit.SECONDS)
-            stages.values.forEach { it.second.close(); it.first.delete() }
+            stages.closeAll()
             instrumentation.runOnMainSync { view.destroy() }
         }
     }

@@ -52,6 +52,11 @@ def main():
     assert "request.operation === 'liveCatalog'" in browser
     assert "bulk catalog transport used after category failure" in browser
     assert "url.openConnection" not in live
+    assert 'stages.admit(token, entryId, action, file)' in source
+    assert 'it.entryId != entryId || it.action == action' in source
+    assert 'if (held.size >= maxOpen) throw PinkCatalogFailure("STAGE_CAPACITY")' in source
+    assert 'return PinkCatalogTransfer.readChunk' not in source
+    assert 'catch (_: Exception) { throw PinkCatalogFailure("STAGE_FILE") }' in source
     for path in ("clients/extreme/overlay/vpn/PinkConnection.kt",
                  "clients/extreme/overlay/pink-session.js",
                  "backend/app/vpn.py"):

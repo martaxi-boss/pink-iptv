@@ -1,6 +1,6 @@
 // Fixed codes and bounded counters only. Never format an exception message,
 // account identifier, URL, provider response, or arbitrary native field.
-const phases = new Set(["CONNECT", "HTTP_STATUS", "READ", "READ_IDLE", "TOTAL_DEADLINE", "MAX_BYTES", "VPN_LOST", "STAGE", "STAGE_FILE", "STAGE_LIFECYCLE", "SOURCE_VALIDATION", "VPN_NETWORK", "ACCOUNT_BINDING", "CANCELLED", "BRIDGE_OPEN", "BRIDGE_CHUNK", "BRIDGE_TIMEOUT", "BRIDGE_UNAVAILABLE", "BODY_SIZE", "CATEGORY_PARSE", "WORKER_LOAD", "WORKER_PARSE", "WORKER_MAP", "WORKER_MESSAGE", "CATALOG_FAILED"])
+const phases = new Set(["CONNECT", "HTTP_STATUS", "READ", "READ_IDLE", "TOTAL_DEADLINE", "MAX_BYTES", "VPN_LOST", "STAGE", "STAGE_FILE", "STAGE_CAPACITY", "STAGE_EXPIRED", "STAGE_LIFECYCLE", "SOURCE_VALIDATION", "VPN_NETWORK", "ACCOUNT_BINDING", "CANCELLED", "BRIDGE_OPEN", "BRIDGE_CHUNK", "BRIDGE_TIMEOUT", "BRIDGE_UNAVAILABLE", "BODY_SIZE", "CATEGORY_PARSE", "WORKER_LOAD", "WORKER_PARSE", "WORKER_MAP", "WORKER_MESSAGE", "CATALOG_FAILED"])
 const actions = new Map([["get_vod_categories", "MOVIES:CATEGORIES"], ["get_vod_streams", "MOVIES:CATALOG"], ["get_series_categories", "SERIES:CATEGORIES"], ["get_series", "SERIES:CATALOG"]])
 const count = (value, max) => Number.isSafeInteger(value) && value >= 0 && value <= max ? value : undefined
 

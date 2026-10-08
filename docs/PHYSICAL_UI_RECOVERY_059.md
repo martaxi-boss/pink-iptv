@@ -1,5 +1,12 @@
 # PINK IPTV — recuperação de 8 de outubro de 2026
 
+## Retoma operacional pelo Project Leader — 8 de outubro de 2026
+
+- HEAD de continuação verificado antes desta retoma: `434528f0e3cd66b358d34b097e62bc5d3357a992`.
+- A correção do health-check na Network VPN está no branch; o teste funcional posterior ao HEAD não foi demonstrado por evidência de certificação nesta retoma.
+- A atualização deste registo aciona o workflow Android 042 na branch, para obter evidência de build, instrumentação e APK associada ao novo commit. Um workflow iniciado não equivale a PASS; verificar conclusão, artefactos e SHA exato.
+- A validação real de login, catálogo, imagem/som, VPN e recuperação no dispositivo do Owner continua independente. Não publicar nem afirmar APK final certificada sem essas provas.
+
 ## Estado reconciliado
 
 Este registo atualiza o estado da continuação no PR #44. As secções abaixo,

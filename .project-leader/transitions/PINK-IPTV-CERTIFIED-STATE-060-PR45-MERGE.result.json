@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-CERTIFIED-STATE-060-PR45-MERGE",
+  "task_id": "PINK-IPTV-CERTIFIED-STATE-060",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-CERTIFIED-STATE-060-PR45-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "https://github.com/martaxi-boss/pink-iptv/pull/45",
+    "revision": "e8fa5d116d0edf53525e4d0496ff55c15ee0b257",
+    "base_revision": "a90138b650d6d3415e2fc713fba534bc8d22df49",
+    "environment": "main"
+  },
+  "observed_at": "2026-10-08T16:08:13.063Z",
+  "final_state": {
+    "status": "PR45_DOCUMENTATION_MERGED_EXACT_AUTHORIZED_HEAD_NO_RELEASE",
+    "revision": "b2b68bdeed71b8f0795b246c0a8ea9bd221a6252"
+  },
+  "evidence": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/45",
+    "Prior standalone authorization commit 9337aecd24ad7b6a4017b4a2ebc4c64f417996ae retained in project-leader/authorize-docs-060-pr45-20261008 (target exact source/base, STANDING_OWNER_GRANT).",
+    "GitHub PR45 state=closed merged=true; merge b2b68bdeed71b8f0795b246c0a8ea9bd221a6252 parents exactly a90138b650d6d3415e2fc713fba534bc8d22df49 and e8fa5d116d0edf53525e4d0496ff55c15ee0b257; diff only PROJECT_STATE.md README.md docs/ROADMAP.md.",
+    "Exact PR45 source Android CI success push 37801653267 and pull_request 37801661689; Backend CI success push 37801653408 and pull_request 37801661530. No Android Extreme runtime or server/VPS modification and no public release; phone/TV remains separate. "
+  ],
+  "residual_blockers": []
+}

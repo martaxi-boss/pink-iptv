@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-DEVICE-LOGIN-RECOVERY-062-MERGE",
+  "task_id": "PINK-IPTV-DEVICE-LOGIN-RECOVERY-062",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-DEVICE-LOGIN-RECOVERY-062-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "https://github.com/martaxi-boss/pink-iptv/pull/46",
+    "revision": "6578f166293971ac59d895aad9b68b2bb587f0a5",
+    "base_revision": null,
+    "environment": "main"
+  },
+  "observed_at": "2026-10-08T17:54:40.216Z",
+  "final_state": {
+    "status": "PR46_MERGED_EXACT_CERTIFIED_LOGIN_RECOVERY",
+    "revision": "caeb8257c6730e78ee88d15dbd1699f5ca4f0b70"
+  },
+  "evidence": [
+    "Prior authorization committed to main as 115d6b9b6ff58328131fcd0b42df1aac41127504 before merge.",
+    "GitHub confirms PR46 merged=true and merge source 6578f166293971ac59d895aad9b68b2bb587f0a5; integrated main commit caeb8257c6730e78ee88d15dbd1699f5ca4f0b70.",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37817481725 — PINK Extreme Android 042 terminal SUCCESS",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37817481790 — Backend CI terminal SUCCESS",
+    "APK PINK-IPTV-VOD-6578f166.apk; 77333630 bytes; SHA256 2c6e563aee87078b44ae423eb753d2286febd3a63ad1c760c3703ebe32f7a4b8; verified same as manifest and all four artifact parts.",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37817481725/artifacts/11568238220"
+  ],
+  "residual_blockers": [
+    "The exact owner Android phone login regression has not been re-tested after the new APK; actual owner device login, provider catalog/playback/EPG and Android TV D-pad acceptance remain pending.",
+    "Previously installed debug APK uses a different signing certificate; a reinstall rather than in-place update is required.",
+    "No public release or production deployment authorization."
+  ]
+}

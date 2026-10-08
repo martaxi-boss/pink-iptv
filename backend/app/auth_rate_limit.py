@@ -63,20 +63,20 @@ def charge_auth_attempt(
             shared.window_number = window_number
             shared.attempts = 0
 
-        individual = db.get(AuthRateWindow, user_bucket)
-        if individual is None:
-            individual = AuthRateWindow(
-                bucket_key=user_bucket, window_number=window_number, attempts=0
-            )
-            db.add(individual)
-
-        blocked = (
-            shared.attempts >= settings.auth_rate_global
-            or individual.attempts >= settings.auth_rate_per_username
-        )
+        # A saturated global budget must not allocate a row for each attacker-
+        # supplied username. Otherwise the limiter itself permits table flooding.
+        blocked = shared.attempts >= settings.auth_rate_global
         if not blocked:
-            shared.attempts += 1
-            individual.attempts += 1
+            individual = db.get(AuthRateWindow, user_bucket)
+            if individual is None:
+                individual = AuthRateWindow(
+                    bucket_key=user_bucket, window_number=window_number, attempts=0
+                )
+                db.add(individual)
+            blocked = individual.attempts >= settings.auth_rate_per_username
+            if not blocked:
+                shared.attempts += 1
+                individual.attempts += 1
         db.commit()
     except (SQLAlchemyError, RuntimeError) as exc:
         db.rollback()

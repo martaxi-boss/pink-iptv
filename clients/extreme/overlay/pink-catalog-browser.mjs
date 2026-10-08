@@ -147,11 +147,15 @@ try {
     if (categoryOpens !== 1) failures.push('category failure retried')
     }
     window.PinkNative = originalNative
+    // The preceding deliberate full-catalog failure makes one extra direct
+    // category read. Warmup must not add any *further* provider requests.
+    if (opens.get_vod_categories !== 2) failures.push('functional direct-category retry coverage lost')
+    const beforeBackground = {...opens}
     const start = performance.now()
     await catalog.warmupActive('fixture', {background: true})
     const homeMs = performance.now() - start
     await pipeline.backgroundPinkCatalog('fixture', () => { throw Error('duplicate background') })
-    if ([...bodies.keys()].some(action=>opens[action]!==1)) failures.push('hot background re-downloaded')
+    if ([...bodies.keys()].some(action=>opens[action]!==beforeBackground[action])) failures.push('hot background re-downloaded')
     return {homeMs, duplicateRequests: count, nativeCatalogRequests:opens, bodyBytes: body.length, baseline, worker, failures}
   })
   assert.deepEqual(result.failures, [])

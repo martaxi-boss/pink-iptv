@@ -106,7 +106,12 @@ def test_global_limit_stops_rotating_usernames(settings, session_factory):
     assert post_login(client, "a").status_code == 200
     assert post_login(client, "b").status_code == 200
     assert post_login(client, "c").status_code == 429
+    # New unknown usernames cannot flood database buckets once global is full.
+    assert post_login(client, "d").status_code == 429
     assert mega_calls == ["a", "b"]
+    with session_factory() as session:
+        buckets = session.scalars(select(AuthRateWindow)).all()
+        assert len(buckets) == 3
 
 
 def test_expired_window_is_reset_and_old_digest_buckets_removed(db, settings):

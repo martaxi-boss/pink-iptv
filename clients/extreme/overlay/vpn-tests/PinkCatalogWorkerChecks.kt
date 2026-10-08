@@ -25,10 +25,18 @@ class PinkCatalogWorkerChecks {
         val readyDeadline = System.currentTimeMillis() + 15000
         var ready = false
         while (!ready && System.currentTimeMillis() < readyDeadline) {
-            instrumentation.runOnMainSync { ready = web.progress == 100 && web.url?.startsWith("http") == true }
+            // This offline fixture has no validated account. Home reconciles
+            // that asynchronously *after* load/progress=100 and redirects to
+            // login. Injecting into that interim document loses the fixture
+            // on recreation; await the actual terminal local route instead.
+            instrumentation.runOnMainSync {
+                ready = web.progress == 100 && web.url?.let {
+                    android.net.Uri.parse(it).path?.trimEnd('/') == "/login"
+                } == true
+            }
             if (!ready) Thread.sleep(100)
         }
-        assertTrue("Recreated WebView did not load its local document", ready)
+        assertTrue("Offline WebView did not finish its empty-account redirect", ready)
         val path = instrumentation.context.assets.open("pink-catalog-worker-path.txt").bufferedReader().use { it.readText().trim() }
         val script = """
           (() => {

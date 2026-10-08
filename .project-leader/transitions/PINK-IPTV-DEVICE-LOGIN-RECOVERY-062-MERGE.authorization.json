@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-DEVICE-LOGIN-RECOVERY-062-MERGE",
+  "task_id": "PINK-IPTV-DEVICE-LOGIN-RECOVERY-062",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-08T17:53:11.639Z",
+  "action": "merge_to_main",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "authority": {
+    "source": "STANDING_OWNER_GRANT",
+    "summary": "Owner's continuing instruction requires correcting and integrating recoverable PINK IPTV app defects until a tested APK can be handed off. Exact source 6578f166293971ac59d895aad9b68b2bb587f0a5 passed Android CI 37817481725 and Backend CI 37817481790. Bounded 10-file owner-device login/consent/diagnostic changes audited; original Task061 evidence/history unchanged; debug APK 77,333,630 bytes SHA256 2c6e563aee87078b44ae423eb753d2286febd3a63ad1c760c3703ebe32f7a4b8. Automated emulator/security accepted. Merge code only, no release/deploy/credentials/production changes or false owner physical PASS. Revalidate exact PR HEAD and current main before effect.",
+    "binding_mode": "EXACT_REVISION_BOUND"
+  },
+  "target": {
+    "kind": "pull_request",
+    "identifier": "https://github.com/martaxi-boss/pink-iptv/pull/46",
+    "revision": "6578f166293971ac59d895aad9b68b2bb587f0a5",
+    "base_revision": null,
+    "environment": "main"
+  }
+}

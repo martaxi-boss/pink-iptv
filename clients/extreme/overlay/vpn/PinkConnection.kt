@@ -40,7 +40,7 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     private val persistence = DataStoreVpnIdentityPersistence(app)
     private val identity = SecureVpnIdentityStore(cipher, persistence)
     private val prefs = app.getSharedPreferences("pink_vpn_grant_v1", Context.MODE_PRIVATE)
-    private val permission = CountDownLatch(1)
+    @Volatile private var permission = CountDownLatch(1)
     private val backend by lazy { GoBackend(app) }
     @Volatile private var live = false
     @Volatile private var boundVpn: Network? = null
@@ -97,6 +97,25 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         if (!accepting) return
         ContextCompat.startForegroundService(app, Intent(app, PinkVpnRuntimeService::class.java))
         work.execute { maintain() }
+    }
+
+    /** Only the explicit login action can repeat a previously refused VPN consent.
+     * Activity resume must not trap the owner in repeated Android VPN dialogs. */
+    fun retryPermission(activity: Activity, launcher: ActivityResultLauncher<Intent>) {
+        if (accepting || (consentRequested && permission.count > 0L)) return
+        permission = CountDownLatch(1)
+        consentRequested = false
+        startup(activity, launcher)
+    }
+
+    /** Fixed public codes only: never propagate account data, URLs or exceptions. */
+    internal fun loginFailureCode(): String = when {
+        !accepting -> "VPN_PERMISSION"
+        protectedStage == "session_resolve" -> "CONTROL_HTTPS"
+        protectedStage == "vpn_enroll" -> "VPN_ENROLL"
+        protectedStage == "activate_tunnel" -> "VPN_ACTIVATION"
+        protectedStage in setOf("identity", "save_grant") -> "DEVICE_SECURITY"
+        else -> "LOGIN_UNAVAILABLE"
     }
 
     fun resume() { work.execute { failures = 0; nextAttempt = 0; maintain() } }

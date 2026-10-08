@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-AUDIT-BACKEND-HARDENING-068-MERGE",
+  "task_id": "PINK-IPTV-AUDIT-BACKEND-HARDENING-068",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-AUDIT-BACKEND-HARDENING-068-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "48",
+    "revision": "9007bcf12a4ade2ae8ef1d0fcafb732122fc065f",
+    "base_revision": "e26749ee396585b7335730f9389406b7b5c52a42",
+    "environment": "repository_main"
+  },
+  "observed_at": "2026-10-08T19:38:54.009Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "af52b7ef73fc31bbb765cfc4920f7758fd813b95"
+  },
+  "evidence": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/48",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37833005160",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37833013472",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37833314468",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37833319855",
+    "Independently verified main commit af52b7ef73fc31bbb765cfc4920f7758fd813b95 with parents e26749ee396585b7335730f9389406b7b5c52a42 and 9007bcf12a4ade2ae8ef1d0fcafb732122fc065f"
+  ],
+  "residual_blockers": [
+    "No server database migration or production deployment authorized or performed by this merge. Staging/production must migrate before using the updated backend.",
+    "Main branch is not protected by enforced required status checks.",
+    "VPN quota PR47 is separately open; Owner physical Android login and TV acceptance remain unverified.",
+    "VPN installation address recycling, VPN-specific request admission, backup/restore, performance and Windows remain separate workstreams."
+  ]
+}

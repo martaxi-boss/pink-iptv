@@ -78,7 +78,7 @@ def charge_auth_attempt(
                 shared.attempts += 1
                 individual.attempts += 1
         db.commit()
-    except (SQLAlchemyError, RuntimeError) as exc:
+    except (SQLAlchemyError, RuntimeError):
         db.rollback()
         raise HTTPException(
             status_code=503,

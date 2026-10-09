@@ -8,7 +8,7 @@ from urllib.request import Request, urlopen
 
 REPO = "martaxi-boss/pink-iptv"
 BASE = "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7"  # pragma: allowlist secret -- public Git commit identifier
-TASK = "PINK-IPTV-REPOSITORY-HYGIENE-088"
+TASK = "PINK-IPTV-REPOSITORY-HYGIENE-089"
 
 
 def api(path, method="GET"):

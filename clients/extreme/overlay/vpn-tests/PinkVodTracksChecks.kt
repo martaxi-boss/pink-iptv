@@ -10,14 +10,17 @@ import android.widget.CheckedTextView
 import androidx.media3.common.C
 import androidx.media3.common.TrackGroup
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.DefaultTrackNameProvider
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.TrackSelectionView
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import androidx.test.uiautomator.UiDevice
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -141,7 +144,85 @@ class PinkVodTracksChecks {
         }
     }
 
+    // Interact with the *installed native Activity*, not source-string
+    // assertions: the customer must be able to open the dots menu, see Cast,
+    // see PiP and actually change image sizing while video is playing.
+    private fun verifyOwnerPlaybackMenu() {
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).check(matches(isDisplayed())).perform(click())
+        // Assert all seven Owner options *inside* the active native fullscreen player.
+        for (item in listOf(
+            R.string.pink_video_picture_in_picture,
+            R.string.xt_video_display_mode,
+            R.string.pink_video_audio_only,
+            R.string.pink_video_mono_audio,
+            R.string.pink_video_playback_stats,
+            R.string.pink_video_stream_health,
+            R.string.pink_video_cast_screen,
+        )) onView(withText(item)).check(matches(isDisplayed()))
+        onView(withText(R.string.xt_video_playback_speed)).check(matches(isDisplayed()))
+        onView(withText(R.string.xt_video_display_mode)).perform(click())
+        onView(withText(R.string.xt_video_display_zoom)).perform(click())
+        await("owner image Zoom actually applies") { view.resizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText(R.string.xt_video_display_mode)).perform(click())
+        onView(withText(R.string.xt_video_display_fit)).perform(click())
+        await("owner image Fit restores") { view.resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT }
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText(R.string.pink_video_playback_stats)).perform(click())
+        onView(withText(org.hamcrest.Matchers.containsString("Video frames:"))).check(matches(isDisplayed()))
+        onView(withText(android.R.string.ok)).perform(click())
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText(R.string.pink_video_stream_health)).perform(click())
+        onView(withText(org.hamcrest.Matchers.containsString("Recent states:"))).check(matches(isDisplayed()))
+        onView(withText(android.R.string.ok)).perform(click())
+        // 'Audio only' must actually disable the video track, without muting audio.
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText(R.string.pink_video_audio_only)).perform(click())
+        await("native audio only disables video track") {
+            player.trackSelectionParameters.disabledTrackTypes.contains(C.TRACK_TYPE_VIDEO) &&
+                !player.trackSelectionParameters.disabledTrackTypes.contains(C.TRACK_TYPE_AUDIO)
+        }
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText("Audio only ✓")).perform(click())
+        await("native video track returns after audio only") {
+            !player.trackSelectionParameters.disabledTrackTypes.contains(C.TRACK_TYPE_VIDEO)
+        }
+        await("native video resumes after audio-only toggle") {
+            player.playerError == null && player.isPlaying &&
+                (player.videoDecoderCounters?.renderedOutputBufferCount ?: 0) > 0
+        }
+        // Mono audio must actually recreate the PCM downmixing renderer, not
+        // merely change a label or open a global Android accessibility screen.
+        val original = player
+        instrumentation.runOnMainSync { view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText(R.string.pink_video_mono_audio)).perform(click())
+        await("mono renderer recreates native player") {
+            val replacement = view.player as? ExoPlayer
+            replacement != null && replacement !== original && replacement.isPlaying &&
+                replacement.playerError == null
+        }
+        instrumentation.runOnMainSync { player = view.player as ExoPlayer; view.showController() }
+        onView(withId(R.id.pink_more_actions)).perform(click())
+        onView(withText("Mono audio ✓")).perform(click())
+        await("stereo renderer restores native playback") {
+            val replacement = view.player as? ExoPlayer
+            replacement != null && replacement !== player && replacement.isPlaying &&
+                replacement.playerError == null
+        }
+        instrumentation.runOnMainSync { player = view.player as ExoPlayer }
+        report("PINK_ANDROID_NATIVE_OWNER_SEVEN_MENU_AND_AUDIO_TOGGLES=PASS")
+        report("PINK_ANDROID_NATIVE_DOTS_MENU_PIP_CAST_AND_REAL_DISPLAY_MODE=PASS")
+    }
+
     fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4") { host ->
+        verifyOwnerPlaybackMenu()
         lateinit var audio: List<Track>
         instrumentation.runOnMainSync {
             audio = tracks(C.TRACK_TYPE_AUDIO)

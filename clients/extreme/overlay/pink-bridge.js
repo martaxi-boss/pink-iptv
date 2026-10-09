@@ -60,6 +60,8 @@ export function installPinkBridge() {
     markValidated: (value) => call("vaultMarkValidated", { value }),
     write: (value) => call("vaultWrite", { value }),
   }
+  // Open Android Cast settings without handing provider media to a remote device.
+  window.PinkScreenCast = { open: () => call("castPicker") }
   window.PinkCatalog = {
     read: (action, entryId) => call("liveCatalog", { action, entryId }, 60000),
     // 15s connect + 20s response idle + 180s body + 5s bridge margin.

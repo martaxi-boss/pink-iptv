@@ -68,6 +68,7 @@ for src, dst in {
     'login.astro': 'src/pages/login.astro',
     'tv-login.ts': 'src/scripts/tv/views/login.ts',
     'pink-bridge.js': 'src/scripts/lib/pink-bridge.js',
+    'pink-screen-cast.js': 'src/scripts/lib/pink-screen-cast.js',
     'pink-catalog.js': 'src/scripts/lib/pink-catalog.js',
     'pink-presentation.js': 'src/scripts/lib/pink-presentation.js',
     'pink-runtime-policy.ts': 'src/scripts/lib/pink-runtime-policy.ts',
@@ -81,6 +82,7 @@ shutil.copyfile(ROOT / 'overlay/pink-storage.test.ts', DEST / 'tests/pink-storag
 shutil.copyfile(ROOT / 'overlay/pink-home.test.ts', DEST / 'tests/pink-home.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-login.test.ts', DEST / 'tests/pink-login.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-bridge.test.ts', DEST / 'tests/pink-bridge.test.ts')
+shutil.copyfile(ROOT / 'overlay/pink-screen-cast.test.ts', DEST / 'tests/pink-screen-cast.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-catalog.test.ts', DEST / 'tests/pink-catalog.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-presentation.test.ts', DEST / 'tests/pink-presentation.test.ts')
 shutil.copyfile(ROOT / 'overlay/pink-runtime-policy.test.ts', DEST / 'tests/pink-runtime-policy.test.ts')

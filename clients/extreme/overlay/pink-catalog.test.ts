@@ -70,6 +70,7 @@ function vodBridge(body: string, fail = '', truncate = false) {
     const request = JSON.parse(text)
     queueMicrotask(() => {
       let result: any = true
+      if (request.operation === 'liveCatalog') result = body
       if (request.operation === 'vodCatalog') result = {token:'fixture-token',size:bytes.length}
       if (request.operation === 'vodCatalogChunk') {
         if (truncate || offset >= bytes.length) result = {done:true}
@@ -89,8 +90,11 @@ describe('protected Movies/Series transport', () => {
     const response = await xtreamApiFetch(action, {}, {entryId:'selected-fixture'})
     expect(await response.text()).toBe(body)
     const calls = native.postMessage.mock.calls.map(([text]:any) => JSON.parse(text))
-    expect(calls.filter((c:any)=>c.operation==='vodCatalog')).toEqual([{id:'1',operation:'vodCatalog',payload:{action,entryId:'selected-fixture'}}])
-    expect(calls.some((c:any)=>c.operation==='vodCatalogClose')).toBe(true)
+    const category = action === 'get_vod_categories' || action === 'get_series_categories'
+    const operation = category ? 'liveCatalog' : 'vodCatalog'
+    expect(calls.filter((c:any)=>c.operation===operation)).toEqual([{id:'1',operation,payload:{action,entryId:'selected-fixture'}}])
+    expect(calls.some((c:any)=>c.operation==='vodCatalogClose')).toBe(!category)
+    expect(calls.some((c:any)=>c.operation===(category ? 'vodCatalog' : 'liveCatalog'))).toBe(false)
     expect(calls.every((c:any)=>!JSON.stringify(c).includes('private'))).toBe(true)
   })
   it('rejects protected failure and incomplete transfer rather than using another network', async () => {
@@ -99,6 +103,13 @@ describe('protected Movies/Series transport', () => {
     const native = vodBridge('[{"id":1}]','',true)
     await expect((await fetchPinkVodCatalog('get_series','selected-fixture')).text()).rejects.toMatchObject({code:'BODY_SIZE',catalogAction:'get_series'})
     expect(native.postMessage.mock.calls.some(([s]:any)=>JSON.parse(s).operation==='vodCatalogClose')).toBe(true)
+  })
+  it('refuses a failed native category request without entering the staged or generic provider transports', async () => {
+    const native = vodBridge('[]', 'liveCatalog')
+    await expect(fetchPinkVodCatalog('get_vod_categories','selected-fixture')).rejects.toMatchObject({
+      code: 'BRIDGE_OPEN', catalogAction: 'get_vod_categories'
+    })
+    expect(native.postMessage.mock.calls.map(([value]:any)=>JSON.parse(value).operation)).toEqual(['liveCatalog'])
   })
   it('cancellation and stream cancellation release the native private stage', async () => {
     const native = vodBridge('[{"id":1}]')
@@ -114,6 +125,10 @@ describe('protected Movies/Series transport', () => {
   it('keeps native admission, selected-account binding and owned Network opener mandatory', () => {
     const native = readFileSync(new URL('../src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkVodCatalog.kt',import.meta.url),'utf8')
     expect(native).toContain('runtime.openProtectedConnection(url)')
+    const live = readFileSync(new URL('../src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkCatalog.kt',import.meta.url),'utf8')
+    expect(live).toContain('return readHttp(runtime.openProtectedConnection(url), action)')
+    expect(live).toContain('"get_vod_categories", "get_series_categories"')
+    expect(live).not.toContain('url.openConnection')
     expect(native).toContain('if (!lease.active()) throw PinkCatalogFailure("CANCELLED")')
     expect(native).toContain('if (!PinkVpnRuntime.isReady()) throw PinkCatalogFailure("VPN_LOST")')
     expect(native).toContain('if (account.getString("selectedId") != entryId) throw PinkCatalogFailure("ACCOUNT_BINDING")')

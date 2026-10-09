@@ -123,7 +123,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     fun listRecoverableInstallations(): String = work.submit<String> {
-        control("/v1/vpn/installations", JSONObject(), authorizedRecoveryBearer()).toString()
+        control("/v1/vpn/installations", JSONObject(), authorizedRecoveryBearer())
+            .getJSONArray("installations").toString()
     }.get(40, TimeUnit.SECONDS)
 
     fun releaseRecoverableInstallation(handle: String): Boolean {
@@ -555,7 +556,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                     output.toByteArray()
                 }
                 check(raw.size <= 65536)
-                return JSONObject(String(raw, Charsets.UTF_8))
+                val json = String(raw, Charsets.UTF_8)
+                return if (isList) JSONObject().put("installations", org.json.JSONArray(json))
+                else JSONObject(json)
             } finally { connection.disconnect() }
         } catch (failure: Exception) {
             if (path != "/v1/vpn/refresh") {

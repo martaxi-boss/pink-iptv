@@ -160,31 +160,37 @@ def apply(root, dest, replace):
             '    val moreActions = playerView?.findViewById<View>(R.id.pink_more_actions)?.also { it.isFocusable = true }\n    val mute = muteButton')
     replace(native + 'VideoActivity.kt',
             'val volumeRow = listOfNotNull(mute, volume, subtitle, audioTrack, settings)',
-            'val volumeRow = listOfNotNull(mute, volume, subtitle, audioTrack, settings, moreActions)')
+            'val volumeRow = listOfNotNull(mute, volume, subtitle, audioTrack, moreActions ?: settings)')
     controller = 'src-tauri/gen/android/app/src/main/res/layout/player_controller_tv.xml'
     replace(controller, '''            <ImageButton
                 android:id="@id/exo_settings"
                 style="@style/ExoStyledControls.Button.Bottom.Settings"
                 android:focusable="true"
                 android:background="@drawable/bg_video_control_focus" />''',
-            '''            <ImageButton
-                android:id="@id/exo_settings"
-                style="@style/ExoStyledControls.Button.Bottom.Settings"
-                android:focusable="true"
-                android:background="@drawable/bg_video_control_focus" />
-
-            <TextView
-                android:id="@+id/pink_more_actions"
+            '''            <FrameLayout
                 android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:gravity="center"
-                android:text="@string/pink_video_more_dots"
-                android:textColor="@color/xt_row_text"
-                android:textSize="26sp"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="@drawable/bg_video_control_focus"
-                android:contentDescription="@string/pink_video_more_actions" />''')
+                android:layout_height="48dp">
+
+                <ImageButton
+                    android:id="@id/exo_settings"
+                    style="@style/ExoStyledControls.Button.Bottom.Settings"
+                    android:focusable="false"
+                    android:background="@drawable/bg_video_control_focus" />
+
+                <TextView
+                    android:id="@+id/pink_more_actions"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/pink_video_more_dots"
+                    android:textColor="@color/xt_row_text"
+                    android:textSize="26sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="@drawable/bg_video_control_focus"
+                    android:contentDescription="@string/pink_video_more_actions" />
+
+            </FrameLayout>''')
     # Preserve the existing TV back hierarchy while supporting Android gestures.
     replace(native + 'VideoActivity.kt', '    setupCustomControls()', '''    setupCustomControls()
     onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {

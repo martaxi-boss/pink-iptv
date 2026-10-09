@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-089-DELETE-002",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-089",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-089-DELETE-002.authorization.json",
+  "action": "delete_fully_merged_non_main_branch_ref",
+  "target": {
+    "kind": "repository_branch",
+    "identifier": "builder/extreme-wireguard-053",
+    "revision": "a0725aa6ced7c6da4be82c9ad256611a7cb65601",
+    "base_revision": "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7",
+    "environment": null
+  },
+  "observed_at": "2026-10-09T22:38:36.766Z",
+  "final_state": {
+    "status": "DELETED",
+    "revision": null
+  },
+  "evidence": [
+    "Read-only inventory 38000142479 completed SUCCESS, with exact SHA proven ancestor of pinned main and no active PR/runs.",
+    "Exact-grant cleanup run 38000265342 completed SUCCESS and individually verified expected SHA, unchanged main, activity, ancestor and deletion read-back.",
+    "Fresh repository branch listing confirms absent ref; commit history, PR records, current Android and VPS operations preserved."
+  ],
+  "residual_blockers": []
+}

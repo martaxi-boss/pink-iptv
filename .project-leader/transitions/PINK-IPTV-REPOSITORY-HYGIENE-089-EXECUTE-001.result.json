@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-089-EXECUTE-001",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-089",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-089-EXECUTE.authorization.json",
+  "action": "execute_exact_authorized_merged_ref_hygiene",
+  "target": {
+    "kind": "repository_branch_cleanup",
+    "identifier": "control/pink-efficiency-hygiene-088",
+    "revision": "42336fed7d3bce7a740a97412853138e75ffd0ea",
+    "base_revision": "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7",
+    "environment": null
+  },
+  "observed_at": "2026-10-09T22:38:55.633Z",
+  "final_state": {
+    "status": "COMPLETED",
+    "revision": "42336fed7d3bce7a740a97412853138e75ffd0ea"
+  },
+  "evidence": [
+    "Pre-effect owner grant and independent read-only inventory 38000142479 completed successfully.",
+    "Authorized exact commit 42336fed7d3bce7a740a97412853138e75ffd0ea activated GitHub run 38000265342 which completed SUCCESS after four per-ref post-delete 404 validations.",
+    "Independent live branch listing confirms all four absent and protected active PR refs preserved; main unchanged."
+  ],
+  "residual_blockers": []
+}

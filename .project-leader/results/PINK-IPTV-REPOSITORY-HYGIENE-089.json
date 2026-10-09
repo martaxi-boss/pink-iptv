@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-089",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-REPOSITORY-HYGIENE-089.json",
+  "branch": "control/pink-efficiency-hygiene-088",
+  "implementation_head_sha": "42336fed7d3bce7a740a97412853138e75ffd0ea",
+  "recorded_at": "2026-10-09T22:38:55.633Z",
+  "validation": [
+    {
+      "name": "Exact ref provenance",
+      "status": "PASS",
+      "evidence": "All four remaining refs were identified by read-only inventory 38000142479 with exact ancestor SHA; original Project Leader Task088 and resulting evidence retained."
+    },
+    {
+      "name": "Active work protection",
+      "status": "PASS",
+      "evidence": "Current open PRs #63/#53/#47 and active Android jobs excluded by SHA and branch name."
+    },
+    {
+      "name": "Control and material transition",
+      "status": "PASS",
+      "evidence": "Four explicit per-ref E2 exact SHA grants precede execution commit and independent task authorization immutable."
+    },
+    {
+      "name": "Scope / security unchanged",
+      "status": "PASS",
+      "evidence": "Only historical branch refs changed; main, Android source, VPN/backend/Keystore, workflow security/test assertions, signing, credentials and artifacts unchanged."
+    },
+    {
+      "name": "Post-write inspection",
+      "status": "PASS",
+      "evidence": "Action run 38000265342 terminal SUCCESS; all four refs absent from live branch inventory, main still a6c5b7e7; branch count now 40."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK exact merged-ref hygiene 089 read-only inventory",
+      "run_id": 38000142479,
+      "status": "SUCCESS"
+    },
+    {
+      "name": "PINK exact merged-ref hygiene 089 exact cleanup",
+      "run_id": 38000265342,
+      "status": "SUCCESS"
+    }
+  ],
+  "changes": [
+    "Remove four additional fully merged inactive builder refs while preserving immutable commit history and all user/device/security data.",
+    "Preserve completed Task088 records, new four E2 authorizations and execution proof on one control branch."
+  ],
+  "material_non_effects": [
+    "No main push, PR merge or app code change.",
+    "No release signing or VPS mutation.",
+    "Main branch protection still disabled; separate issue #50 requires GitHub administrative configuration.",
+    "The concurrent Android QA optimization in PR #63 has separate exact-head mandatory QA CI."
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/38000265342",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/38000142479"
+  ],
+  "residual_blockers": []
+}

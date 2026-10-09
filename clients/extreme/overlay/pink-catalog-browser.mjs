@@ -1,7 +1,8 @@
 // Real browser Worker + IndexedDB regression; synthetic catalogs contain no account data.
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
-import { createServer } from 'vite'
+import { createServer, transformWithEsbuild } from 'vite'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const server = await createServer({configFile: false, root: process.cwd(), resolve: {alias: {'@': resolve('src')}}, server: {host: '127.0.0.1', port: 0}})
@@ -171,6 +172,60 @@ try {
   })
   assert.equal(restored.fromCache, true)
   assert.equal(restored.rows, 100000)
+
+  // Fullscreen Live TV still uses Video.js by default. Check the generated
+  // production button and popup stay inside the fullscreen DOM subtree.
+  const stream = readFileSync('src/scripts/stream/stream.ts', 'utf8')
+  const fullscreenStart = stream.indexOf('const PINK_FULLSCREEN_MORE_ID = ')
+  const fullscreenEnd = stream.indexOf('const CURRENT_MORE_MENU_ID = ', fullscreenStart)
+  const menuStart = stream.indexOf('function openCurrentMoreMenu(')
+  const menuEnd = stream.indexOf('function showTuningOverlay(', menuStart)
+  assert.ok(fullscreenStart > 0 && fullscreenEnd > fullscreenStart && menuStart > 0 && menuEnd > menuStart,
+    'live fullscreen owner menu absent from prepared app')
+  const ownerOptions = ['Picture-in-Picture', 'Display mode', 'Audio only', 'Mono audio',
+    'Playback stats', 'Stream health log', 'Play on TV']
+  const bootstrap = [
+    'const ICON_DOTS = "⋯"',
+    'const t = (value) => value',
+    'const all = [{id:"fixture",name:"test"}]',
+    'const lastPlayContext = {streamId:"fixture",src:"content://fixture",name:"test"}',
+    'const vjs = {}',
+    'const CURRENT_MORE_MENU_ID = "current-more-menu"',
+    'let currentMoreMenuEl = null, currentMoreMenuTrigger = null',
+    'const currentMoreMenuSpatialNav = {open(){},close(){}}',
+    'function closeCurrentMoreMenu() { currentMoreMenuEl?.remove(); currentMoreMenuEl=null; currentMoreMenuTrigger=null }',
+    'function onCurrentMoreMenuOutside() {}',
+    'function onCurrentMoreMenuKey() {}',
+    'function closeCurrentMoreMenuOnBlur() {}',
+    'function buildCurrentMoreMenuItems(){return ' + JSON.stringify(ownerOptions) +
+       '.map(label=>{const button=document.createElement("button");button.textContent=label;button.setAttribute("role","menuitem");return button})}',
+  ].join('\n')
+  const trailer = [
+    'pinkEnsureFullscreenMoreActions();pinkEnsureFullscreenMoreActions();',
+    "const buttons=[...document.querySelectorAll('#pink-fullscreen-more-actions')];",
+    "if(buttons.length!==1)throw Error('duplicated or missing fullscreen three-dots');",
+    'buttons[0].click();',
+    "const menu=document.getElementById('current-more-menu');",
+    "globalThis.__pinkMenuResult={buttons:buttons.length,inFullscreen:!!menu&&document.querySelector('.video-js').contains(menu),",
+    "overlayPosition:menu?.style.position,items:[...menu.querySelectorAll('[role^=\"menuitem\"]')].map(item=>item.textContent)};",
+  ].join('\n')
+  const extracted = bootstrap + '\n' +
+    stream.slice(fullscreenStart, fullscreenEnd) + '\n' +
+    stream.slice(menuStart, menuEnd) + '\n' + trailer
+  const executable = (await transformWithEsbuild(extracted, 'pink-live-fullscreen.ts', {loader:'ts'})).code
+  const menuPage = await browser.newPage()
+  try {
+    await menuPage.setContent('<!doctype html><div class="video-js vjs-fullscreen" style="position:relative;width:480px;height:360px"><div class="vjs-control-bar"></div></div>')
+    const fullscreen = await menuPage.evaluate((code) => { (new Function(code))(); return window.__pinkMenuResult }, executable)
+    assert.equal(fullscreen.buttons, 1)
+    assert.equal(fullscreen.inFullscreen, true, 'popup hidden outside fullscreen subtree')
+    assert.equal(fullscreen.overlayPosition, 'absolute')
+    assert.deepEqual(fullscreen.items, ownerOptions)
+    console.log('PINK_LIVE_FULLSCREEN_OWNER_MENU=PASS;ITEMS=7;FULLSCREEN_SUBTREE=PASS')
+  } finally {
+    await menuPage.close()
+  }
+
   console.log('PINK_CATALOG_BROWSER=' + JSON.stringify({...result, restored}))
 } finally {
   await browser?.close()

@@ -5,6 +5,7 @@ on:
     paths:
       - "clients/extreme/qa_variant.py"
       - "clients/extreme/test_qa_variant.py"
+      - "clients/extreme/overlay/pink-catalog-browser.mjs"
       - "clients/extreme/scan_qa_repo.py"
       - "clients/extreme/QA_ANDROID_TEST_083.md"
       - ".github/workflows/pink-android-side-by-side-qa-083.yml"
@@ -113,6 +114,7 @@ jobs:
               assert page.count('src="/pink-idle.webp"') == 1
           live_menu = (root / "src/scripts/stream/stream.ts").read_text()
           assert live_menu.count('import("@/scripts/lib/pink-screen-cast.js")') == 2
+          assert 'pinkEnsureFullscreenMoreActions()' in live_menu and 'fullscreenHost.appendChild(menu)' in live_menu
           vod_btn = (root / "src/scripts/lib/play-on-tv-button.ts").read_text()
           assert 'openPinkCastSettings' in vod_btn and 'button.hidden = true' not in vod_btn
           native_video = (root / "src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/VideoActivity.kt").read_text()

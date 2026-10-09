@@ -10,6 +10,11 @@ on:
       - ".github/workflows/pink-android-side-by-side-qa-083.yml"
 permissions:
   contents: read
+# Only one E1 Android QA build can certify the newest head of this PR.
+# Preserve a previous diagnostic run by labelling the PR before the next push.
+concurrency:
+  group: pink-owner-qa2-${{ github.event.pull_request.number }}
+  cancel-in-progress: ${{ !contains(github.event.pull_request.labels.*.name, 'keep-older-qa-diagnostics') }}
 jobs:
   qa-android:
     if: github.event_name == 'pull_request' && github.head_ref == 'builder/side-by-side-android-qa-083' && github.event.pull_request.head.repo.full_name == 'martaxi-boss/pink-iptv'

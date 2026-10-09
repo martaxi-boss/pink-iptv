@@ -107,7 +107,10 @@ def apply(root, dest, replace):
     # API requirement to callers of the application's own Activity/constants.
     replace(native + 'VideoActivity.kt', '@UnstableApi\nclass VideoActivity',
             '@androidx.annotation.OptIn(UnstableApi::class)\nclass VideoActivity')
-    replace(native + 'VideoActivity.kt', '''    if (mode == MODE_LIVE) {
+    # Reproduce the Owner's complete seven-item overflow menu inside fullscreen
+    # Media3. It is the same VideoActivity for Live, Movies and Series episodes.
+    replace(native + 'VideoActivity.kt', '''  private fun showPlayerSettings() {
+    if (mode == MODE_LIVE) {
       showDisplayModeChooser()
       return
     }
@@ -120,32 +123,178 @@ def apply(root, dest, replace):
       .setItems(labels) { _, which ->
         if (which == 0) showDisplayModeChooser() else showPlaybackSpeedChooser()
       }
-      .show()''', '''    // Keep display sizing and native PiP / system Cast in all playback modes.
-    val labels = mutableListOf(getString(R.string.xt_video_display_mode))
-    val speedIndex = if (mode == MODE_VOD) {
-      labels.add(getString(R.string.xt_video_playback_speed))
-      1
-    } else -1
-    val pipIndex = labels.size
-    labels.add(getString(R.string.pink_video_picture_in_picture))
-    val castIndex = labels.size
-    labels.add(getString(R.string.pink_video_cast_screen))
+      .show()
+  }
+
+  private fun showDisplayModeChooser() {''', '''  private fun showPlayerSettings() {
+    // The owner uses these exact seven choices on the Live TV page.
+    // Keep them accessible *inside fullscreen playback* for both modes.
+    val labels = mutableListOf(
+      getString(R.string.pink_video_picture_in_picture),
+      getString(R.string.xt_video_display_mode),
+      getString(R.string.pink_video_audio_only) + if (pinkAudioOnly) " ✓" else "",
+      getString(R.string.pink_video_mono_audio) + if (pinkMonoAudio) " ✓" else "",
+      getString(R.string.pink_video_playback_stats),
+      getString(R.string.pink_video_stream_health),
+      getString(R.string.pink_video_cast_screen),
+    )
+    if (mode == MODE_VOD) labels.add(getString(R.string.xt_video_playback_speed))
     AlertDialog.Builder(this)
       .setTitle(R.string.xt_video_settings_title)
-      .setItems(labels.toTypedArray()) { _, which ->
-        when (which) {
-          0 -> showDisplayModeChooser()
-          speedIndex -> showPlaybackSpeedChooser()
-          pipIndex -> enterPictureInPictureMode(PictureInPictureParams.Builder().build())
-          castIndex -> try {
+      .setItems(labels.toTypedArray()) { _, choice ->
+        when (choice) {
+          0 -> enterPipNow()
+          1 -> showDisplayModeChooser()
+          2 -> setPinkAudioOnly(!pinkAudioOnly)
+          3 -> setPinkMonoAudio(!pinkMonoAudio)
+          4 -> showPinkPlaybackStats()
+          5 -> showPinkStreamHealth()
+          6 -> try {
             startActivity(Intent(android.provider.Settings.ACTION_CAST_SETTINGS))
           } catch (_: Exception) {
-            android.widget.Toast.makeText(this, R.string.pink_video_cast_unavailable, android.widget.Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.pink_video_cast_unavailable, Toast.LENGTH_LONG).show()
           }
+          7 -> if (mode == MODE_VOD) showPlaybackSpeedChooser()
         }
       }
       .setOnDismissListener { playerView?.showController() }
-      .show()''')
+      .show()
+  }
+
+  // Audio-only is a per-playback VIDEO track disable, not mute.
+  // The player continues playing its audio within the same VPN process.
+  private var pinkAudioOnly = false
+  private var pinkMonoAudio = false
+  private val pinkHealthEvents = ArrayDeque<String>()
+
+  private fun pinkHealthEvent(phase: String) {
+    // Fixed phases only: no credential, provider URL or exception is logged.
+    if (phase !in setOf("Idle", "Buffering", "Ready", "Ended", "Playback error")) return
+    if (pinkHealthEvents.size >= 24) pinkHealthEvents.removeFirst()
+    pinkHealthEvents.addLast(phase)
+  }
+
+  private fun setPinkAudioOnly(enabled: Boolean) {
+    val player = exoPlayer ?: return
+    pinkAudioOnly = enabled
+    player.trackSelectionParameters = player.trackSelectionParameters
+      .buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, enabled).build()
+    playerView?.findViewById<View>(androidx.media3.ui.R.id.exo_shutter)?.visibility =
+      if (enabled) View.VISIBLE else View.GONE
+    playerView?.showController()
+  }
+
+  private fun setPinkMonoAudio(enabled: Boolean) {
+    if (pinkMonoAudio == enabled) return
+    val player = exoPlayer ?: return
+    val keepPlaying = player.playWhenReady
+    val position = player.currentPosition.coerceAtLeast(0L)
+    pinkMonoAudio = enabled
+    // Renderers install a real PCM stereo/surround-to-mono audio processor.
+    // Restart only the in-app player at the same VOD position to apply it.
+    if (mode == MODE_VOD) resumeMs = position
+    releasePlayer()
+    initializePlayer()
+    exoPlayer?.playWhenReady = keepPlaying
+    playerView?.showController()
+  }
+
+  private fun pinkMonoRenderersFactory(): androidx.media3.exoplayer.RenderersFactory =
+    object : androidx.media3.exoplayer.DefaultRenderersFactory(this) {
+      override fun buildAudioSink(context: android.content.Context,
+                                  enableFloatOutput: Boolean,
+                                  enableAudioOutputPlaybackParams: Boolean):
+        androidx.media3.exoplayer.audio.AudioSink {
+        val mono = androidx.media3.common.audio.ChannelMixingAudioProcessor()
+        for (channels in 1..8) {
+          val gain = 1f / channels
+          mono.putChannelMixingMatrix(
+            androidx.media3.common.audio.ChannelMixingMatrix(channels, 1,
+              FloatArray(channels) { gain }))
+        }
+        return androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
+          .setEnableFloatOutput(false)
+          .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
+          .setAudioProcessors(arrayOf<androidx.media3.common.audio.AudioProcessor>(mono))
+          .build()
+      }
+    }
+
+  private fun showPinkPlaybackStats() {
+    val player = exoPlayer
+    val state = when (player?.playbackState) {
+      Player.STATE_IDLE -> "Idle"
+      Player.STATE_BUFFERING -> "Buffering"
+      Player.STATE_READY -> "Ready"
+      Player.STATE_ENDED -> "Ended"
+      else -> "Unavailable"
+    }
+    val info = listOf(
+      "Playback: " + state,
+      "Buffered: " + ((player?.totalBufferedDuration ?: 0L) / 1000L) + " s",
+      "Video frames: " + (player?.videoDecoderCounters?.renderedOutputBufferCount ?: 0),
+      "Dropped frames: " + (player?.videoDecoderCounters?.droppedBufferCount ?: 0),
+      "Audio frames: " + (player?.audioDecoderCounters?.renderedOutputBufferCount ?: 0),
+      "Audio only: " + if (pinkAudioOnly) "ON" else "OFF",
+      "Mono audio: " + if (pinkMonoAudio) "ON" else "OFF",
+    )
+    AlertDialog.Builder(this).setTitle(R.string.pink_video_playback_stats)
+      .setMessage(info.joinToString("\\n"))
+      .setPositiveButton(android.R.string.ok, null).show()
+  }
+
+  private fun showPinkStreamHealth() {
+    val player = exoPlayer
+    val info = listOf(
+      "Playback state: " + when (player?.playbackState) {
+        Player.STATE_IDLE -> "Idle"
+        Player.STATE_BUFFERING -> "Buffering"
+        Player.STATE_READY -> "Ready"
+        Player.STATE_ENDED -> "Ended"
+        else -> "Unavailable"
+      },
+      "Buffered: " + ((player?.totalBufferedDuration ?: 0L) / 1000L) + " s",
+      "Recent states:",
+    ) + pinkHealthEvents.toList().ifEmpty { listOf("No events yet") }
+    AlertDialog.Builder(this).setTitle(R.string.pink_video_stream_health)
+      .setMessage(info.joinToString("\\n"))
+      .setPositiveButton(android.R.string.ok, null).show()
+  }
+
+  private fun showDisplayModeChooser() {''')
+    replace(native + 'VideoActivity.kt', '''    val player = ExoPlayer.Builder(this)
+      .setMediaSourceFactory(buildMediaSourceFactory(defaultUa, defaultReferer))
+      .build()''', '''    val builder = if (pinkMonoAudio) ExoPlayer.Builder(this, pinkMonoRenderersFactory())
+      else ExoPlayer.Builder(this)
+    val player = builder
+      .setMediaSourceFactory(buildMediaSourceFactory(defaultUa, defaultReferer))
+      .build()''')
+    replace(native + 'VideoActivity.kt', '''    view.player = player
+''', '''    view.player = player
+    if (pinkAudioOnly) {
+      player.trackSelectionParameters = player.trackSelectionParameters
+        .buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).build()
+      view.findViewById<View>(androidx.media3.ui.R.id.exo_shutter)?.visibility = View.VISIBLE
+    }
+''')
+    replace(native + 'VideoActivity.kt',
+            '''      override fun onPlayerError(error: PlaybackException) {
+''',
+            '''      override fun onPlayerError(error: PlaybackException) {
+        pinkHealthEvent("Playback error")
+''')
+    replace(native + 'VideoActivity.kt',
+            '''      override fun onPlaybackStateChanged(state: Int) {
+''',
+            '''      override fun onPlaybackStateChanged(state: Int) {
+        pinkHealthEvent(when (state) {
+          Player.STATE_IDLE -> "Idle"
+          Player.STATE_BUFFERING -> "Buffering"
+          Player.STATE_READY -> "Ready"
+          Player.STATE_ENDED -> "Ended"
+          else -> "Idle"
+        })
+''')
     # The same original three-dots affordance stays in the native VOD/Live
     # controller; unlike the default gear it is explicitly visible and tested.
     replace(native + 'VideoActivity.kt', '''    playerView?.findViewById<View>(androidx.media3.ui.R.id.exo_settings)?.setOnClickListener {
@@ -264,6 +413,80 @@ def apply(root, dest, replace):
             'import("@/scripts/lib/pink-screen-cast.js")'
             '.then(({ openPinkCastSettings }) => openPinkCastSettings())'
         ) + source[stop:]
+    # Embedded Video.js is the default Live player. Its fullscreen element
+    # hides the original "ON/EPG" toolbar, so inject the *same* seven-item
+    # overflow in the fullscreen player's control bar rather than copying
+    # actions or attempting to render outside the fullscreen DOM subtree.
+    web_marker = 'const CURRENT_MORE_MENU_ID = "current-more-menu"'
+    if source.count(web_marker) != 1:
+        raise SystemExit("Live fullscreen menu anchor drift")
+    source = source.replace(web_marker, '''const PINK_FULLSCREEN_MORE_ID = "pink-fullscreen-more-actions"
+function pinkEnsureFullscreenMoreActions() {
+  const bar = document.querySelector("#player .vjs-control-bar")
+    || document.querySelector(".video-js .vjs-control-bar")
+  if (!bar || bar.querySelector("#" + PINK_FULLSCREEN_MORE_ID)) return
+  const trigger = document.createElement("button")
+  trigger.id = PINK_FULLSCREEN_MORE_ID
+  trigger.type = "button"
+  trigger.className = "vjs-control vjs-button"
+  trigger.style.width = "48px"
+  trigger.style.minWidth = "48px"
+  trigger.style.display = "flex"
+  trigger.style.justifyContent = "center"
+  trigger.style.alignItems = "center"
+  trigger.title = t("livetv.moreActions")
+  trigger.setAttribute("aria-label", t("livetv.moreActions"))
+  trigger.setAttribute("aria-haspopup", "menu")
+  trigger.setAttribute("aria-expanded", "false")
+  trigger.innerHTML = ICON_DOTS
+  trigger.addEventListener("click", () => {
+    const ctx = lastPlayContext
+    if (!ctx || !vjs) return
+    if (currentMoreMenuTrigger === trigger) { closeCurrentMoreMenu(); return }
+    const channel = all.find((item) => String(item.id) === String(ctx.streamId))
+    openCurrentMoreMenu(trigger, ctx.streamId, channel, ctx.src, ctx.name)
+  })
+  bar.appendChild(trigger)
+}
+
+''' + web_marker)
+    mount_marker = '  bindAutoPip(vjs)\n  attachAudioOnlyDetection(vjs)'
+    if source.count(mount_marker) != 1:
+        raise SystemExit("Live fullscreen player mount drift")
+    source = source.replace(mount_marker, mount_marker + '''
+  pinkEnsureFullscreenMoreActions()
+  vjs.on("fullscreenchange", () => {
+    closeCurrentMoreMenu(false)
+    pinkEnsureFullscreenMoreActions()
+  })''')
+    pop_marker = '''  menu.append(...buildCurrentMoreMenuItems(streamId, channel, src, name))
+  document.body.appendChild(menu)'''
+    pop_replacement = '''  menu.append(...buildCurrentMoreMenuItems(streamId, channel, src, name))
+  const fullscreenRoot = trigger.closest(".video-js") as HTMLElement | null
+  const fullscreenHost = fullscreenRoot && (
+    fullscreenRoot.classList.contains("vjs-fullscreen") ||
+    (document.fullscreenElement != null && document.fullscreenElement.contains(trigger))
+  ) ? fullscreenRoot : null
+  if (fullscreenHost) {
+    fullscreenHost.appendChild(menu)
+    menu.style.position = "absolute"
+  } else {
+    document.body.appendChild(menu)
+  }'''
+    if source.count(pop_marker) != 1:
+        raise SystemExit("Live fullscreen popup parent drift")
+    source = source.replace(pop_marker, pop_replacement)
+    left_marker = '  const left = Math.min(anchorRect.right - rect.width, window.innerWidth - rect.width - margin)'
+    top_marker = '  const top = Math.min(anchorRect.bottom + 6, window.innerHeight - rect.height - margin)'
+    if source.count(left_marker) != 1 or source.count(top_marker) != 1:
+        raise SystemExit("Live fullscreen popup positioning drift")
+    source = source.replace(left_marker,
+      '''  const hostRect = fullscreenHost?.getBoundingClientRect()
+  const left = Math.min(anchorRect.right - (hostRect?.left || 0) - rect.width,
+    (hostRect?.width || window.innerWidth) - rect.width - margin)''')
+    source = source.replace(top_marker,
+      '''  const top = Math.min(anchorRect.bottom - (hostRect?.top || 0) + 6,
+    (hostRect?.height || window.innerHeight) - rect.height - margin)''')
     menu_path.write_text(source)
 
     vod_button = dest / 'src/scripts/lib/play-on-tv-button.ts'

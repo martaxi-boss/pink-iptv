@@ -42,6 +42,7 @@ class PinkVpnIdentityTest {
     @Test fun officialBackendAndMergedVpnServiceAreAvailable() {
         assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture()
         assertProtectedHealthFailuresEmitFixedKindsWithoutExceptionMessages()
+        assertVpnQuotaRequiresVerifiedCapacityHeader()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         assertTrue(GoBackend(context).version.isNotBlank())
         @Suppress("DEPRECATION")
@@ -51,6 +52,21 @@ class PinkVpnIdentityTest {
         assertFalse(service.exported)
         assertEquals("android.permission.BIND_VPN_SERVICE", service.permission)
         assertFalse(service.metaData.getBoolean("android.net.VpnService.SUPPORTS_ALWAYS_ON", true))
+    }
+
+    private fun assertVpnQuotaRequiresVerifiedCapacityHeader() {
+        val diagnostic = "ENROLL:PINNED_HTTPS_CONTROL:response_headers:OTHER;errno=0;status=429;admission=capacity;transport=WIFI"
+        assertEquals("VPN_LIMIT", PinkVpnRuntime.classifyLoginFailure("vpn_enroll", diagnostic, true))
+        assertEquals("VPN_ENROLL", PinkVpnRuntime.classifyLoginFailure(
+            "vpn_enroll", diagnostic.replace("admission=capacity", "admission=throttle"), true))
+        assertEquals("VPN_ENROLL", PinkVpnRuntime.classifyLoginFailure(
+            "vpn_enroll", diagnostic.replace("admission=capacity", "admission=unknown"), true))
+        assertEquals("VPN_ENROLL", PinkVpnRuntime.classifyLoginFailure(
+            "vpn_enroll", diagnostic.replace("status=429", "status=503"), true))
+        assertEquals("VPN_ENROLL", PinkVpnRuntime.classifyLoginFailure(
+            "vpn_enroll", "OTHER:status=429;admission=capacity;account=fixture", true))
+        assertEquals("VPN_PERMISSION", PinkVpnRuntime.classifyLoginFailure("vpn_enroll", diagnostic, false))
+        assertEquals("CONTROL_HTTPS", PinkVpnRuntime.classifyLoginFailure("session_resolve", diagnostic, true))
     }
 
     private fun assertStaleOfflineOrOtherVpnCannotMatchTheAuthorizedCapture() {

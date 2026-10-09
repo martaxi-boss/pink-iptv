@@ -25,9 +25,7 @@ class VpnAddressRelease(Base):
     __tablename__ = "vpn_address_releases"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    installation_id: Mapped[int] = mapped_column(
-        ForeignKey("vpn_installations.id"), nullable=False
-    )
+    installation_id: Mapped[int] = mapped_column(ForeignKey("vpn_installations.id"), nullable=False)
     address: Mapped[str] = mapped_column(Text, nullable=False)
     released_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     cause: Mapped[str] = mapped_column(String(16), nullable=False)

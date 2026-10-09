@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     vpn_server_public_key: str | None = None
     vpn_endpoint: str | None = None
     vpn_lease_seconds: int = Field(default=86400, ge=300, le=86400)
-    vpn_max_installations_per_account: int = Field(default=5, ge=1, le=10)
+    vpn_max_installations_per_account: int = Field(default=10, ge=1, le=10)
 
     @field_validator("vpn_server_public_key")
     @classmethod

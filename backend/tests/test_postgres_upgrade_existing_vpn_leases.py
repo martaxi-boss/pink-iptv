@@ -28,12 +28,10 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
 
     try:
         with engine.connect() as connection:
-            assert connection.execute(
-                text("SELECT version_num FROM alembic_version")
-            ).scalar_one() == "20261009_0006"
-            assert connection.execute(
-                text("SELECT COUNT(*) FROM vpn_installations")
-            ).scalar_one() == 0
+            version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+            active_rows = connection.execute(text("SELECT COUNT(*) FROM vpn_installations")).scalar_one()
+            assert version == "20261009_0006"
+            assert active_rows == 0
 
         subprocess.run(["alembic", "downgrade", "20261005_0002"], check=True)
         with engine.begin() as connection:
@@ -69,9 +67,8 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
         subprocess.run(["alembic", "upgrade", "head"], check=True)
 
         with engine.connect() as connection:
-            assert connection.execute(
-                text("SELECT version_num FROM alembic_version")
-            ).scalar_one() == "20261009_0006"
+            version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+            assert version == "20261009_0006"
             row = connection.execute(
                 text(
                     "SELECT mapping_id, public_key, address, token_sha256, revoked_at, "
@@ -86,21 +83,16 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
             assert row.token_sha256 == expected_token_hash
             assert row.revoked_at is None
             assert row.created_at is not None and row.last_authenticated_at is not None
-            assert connection.execute(
-                text("SELECT COUNT(*) FROM vpn_address_releases")
-            ).scalar_one() == 0
-            assert connection.execute(
-                text("SELECT COUNT(*) FROM auth_rate_windows")
-            ).scalar_one() == 0
-            assert connection.execute(
-                text("SELECT COUNT(*) FROM vpn_rate_windows")
-            ).scalar_one() == 0
-            assert connection.execute(
+            for table in ("vpn_address_releases", "auth_rate_windows", "vpn_rate_windows"):
+                count = connection.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar_one()
+                assert count == 0
+            nullable = connection.execute(
                 text(
                     "SELECT is_nullable FROM information_schema.columns "
                     "WHERE table_name='vpn_installations' AND column_name='address'"
                 )
-            ).scalar_one() == "YES"
+            ).scalar_one()
+            assert nullable == "YES"
     finally:
         # Always return CI to head, even if an assertion fails after downgrade.
         subprocess.run(["alembic", "upgrade", "head"], check=True)

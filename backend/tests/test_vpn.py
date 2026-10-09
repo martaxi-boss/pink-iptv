@@ -350,3 +350,106 @@ def test_subscription_expiry_address_is_reclaimed_by_another_account(
     db.refresh(previous)
     assert previous.address is None
     assert db.scalar(select(VpnAddressRelease)).cause == "expired"
+
+
+def test_account_can_list_and_release_only_its_own_opaque_installations(vpn, db):
+    assert enroll(vpn).status_code == 200
+    assert enroll(vpn, 2).status_code == 200
+    current = vpn.client.get(
+        "/v1/vpn/installations", headers=vpn.auth, params={"current_public_key": key()}
+    )
+    assert current.status_code == 200
+    assert current.headers["cache-control"] == "no-store"
+    devices = current.json()
+    assert len(devices) == 2
+    assert sum(d["is_current"] for d in devices) == 1
+    assert all(len(d["installation_id"]) == 64 for d in devices)
+    assert key() not in current.text and key(2) not in current.text
+    assert "device_token" not in current.text and "private_key" not in current.text
+    other = next(d for d in devices if not d["is_current"])
+    released = vpn.client.post(
+        "/v1/vpn/installations/release",
+        headers=vpn.auth,
+        json={"installation_id": other["installation_id"], "confirm": True},
+    )
+    assert released.status_code == 204
+    assert vpn.client.post(
+        "/v1/vpn/installations/release",
+        headers=vpn.auth,
+        json={"installation_id": other["installation_id"], "confirm": True},
+    ).status_code == 204
+    refreshed = vpn.client.get("/v1/vpn/installations", headers=vpn.auth)
+    assert refreshed.status_code == 200
+    assert len(refreshed.json()) == 1
+    peer = db.scalar(select(VpnInstallation).where(VpnInstallation.public_key == key(2)))
+    assert peer.revoked_at is not None and peer.address is None
+    assert enroll(vpn, 3).json()["address"] == "10.66.0.4/32"
+
+
+def test_installation_release_needs_valid_login_session_and_explicit_confirmation(vpn, db):
+    enrolled = enroll(vpn)
+    assert enrolled.status_code == 200
+    handle = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0][
+        "installation_id"
+    ]
+    assert vpn.client.get("/v1/vpn/installations").status_code == 401
+    assert vpn.client.post(
+        "/v1/vpn/installations/release",
+        json={"installation_id": handle, "confirm": True},
+    ).status_code == 401
+    assert vpn.client.post(
+        "/v1/vpn/installations/release",
+        headers=vpn.auth,
+        json={"installation_id": handle, "confirm": False},
+    ).status_code == 422
+    assert db.scalar(select(VpnInstallation)).revoked_at is None
+
+
+def test_installation_reclaim_is_account_isolated(vpn, db):
+    from app.models import SubscriptionMapping
+
+    assert enroll(vpn).status_code == 200
+    owned = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0][
+        "installation_id"
+    ]
+    other_mapping = SubscriptionMapping(
+        mega_subscription_id=123,
+        username="different-owner-fixture",
+        dns_link="https://other.example.com",
+        expiring_at=datetime.now(UTC) + timedelta(days=30),
+        last_synced_at=datetime.now(UTC),
+    )
+    db.add(other_mapping)
+    db.commit()
+    token, _ = issue_session_token(other_mapping.id, vpn.settings)
+    other_auth = {"Authorization": "Bearer " + token}
+    assert vpn.client.get("/v1/vpn/installations", headers=other_auth).json() == []
+    denied = vpn.client.post(
+        "/v1/vpn/installations/release",
+        headers=other_auth,
+        json={"installation_id": owned, "confirm": True},
+    )
+    assert denied.status_code == 404
+    assert "public_key" not in denied.text and "device_token" not in denied.text
+    assert db.scalar(select(VpnInstallation)).revoked_at is None
+
+
+def test_reclaim_gateway_unavailable_keeps_address_reserved(vpn, db):
+    assert enroll(vpn).status_code == 200
+    handle = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0][
+        "installation_id"
+    ]
+    payload = {"installation_id": handle, "confirm": True}
+    vpn.gateway.fail = True
+    failed = vpn.client.post("/v1/vpn/installations/release", headers=vpn.auth, json=payload)
+    assert failed.status_code == 503
+    peer = db.scalar(select(VpnInstallation))
+    assert peer.revoked_at is not None
+    assert peer.address == "10.66.0.3"
+    assert vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json() == []
+    vpn.gateway.fail = False
+    assert vpn.client.post(
+        "/v1/vpn/installations/release", headers=vpn.auth, json=payload
+    ).status_code == 204
+    db.refresh(peer)
+    assert peer.address is None

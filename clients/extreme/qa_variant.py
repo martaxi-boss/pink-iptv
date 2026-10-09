@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import sys
 
-PACKAGE = "com.pinkiptv.extreme.qa"
+PACKAGE = "com.pinkiptv.extreme.qa2"
 
 
 def apply(dest: Path) -> None:
@@ -21,9 +21,9 @@ def apply(dest: Path) -> None:
     assert "applicationIdSuffix" not in original
     amended = original.replace(
         marker,
-        '        getByName("debug") {\n            applicationIdSuffix = ".qa"\n            isDebuggable = true',
+        '        getByName("debug") {\n            applicationIdSuffix = ".qa2"\n            isDebuggable = true',
     )
-    assert amended.count('applicationIdSuffix = ".qa"') == 1
+    assert amended.count('applicationIdSuffix = ".qa2"') == 1
     assert 'getByName("release")' in amended
     gradle.write_text(amended)
 
@@ -33,7 +33,7 @@ def apply(dest: Path) -> None:
         matcher = re.compile(r'(<string name="' + re.escape(name) + r'"(?:\s+[^<>]*?)?>)([^<]+)(</string>)')
         found = matcher.search(resources)
         assert found and found.group(2) == "PINK IPTV", name
-        resources, count = matcher.subn(r"\g<1>PINK IPTV TESTE\g<3>", resources)
+        resources, count = matcher.subn(r"\g<1>PINK IPTV TESTE 2\g<3>", resources)
         assert count == 1
     strings.write_text(resources)
 
@@ -42,6 +42,7 @@ def apply(dest: Path) -> None:
     # installed app data, Android Keystore and WireGuard installation identity.
     assert 'namespace = "com.pinkiptv.extreme"' in amended
     assert 'applicationId = "com.pinkiptv.extreme"' in amended
+    assert PACKAGE not in ("com.pinkiptv.extreme", "com.pinkiptv.extreme.qa")
     print("PINK_QA_PARALLEL_PACKAGE=" + PACKAGE)
     print("PINK_QA_ORIGINAL_PACKAGE_UNMODIFIED=PASS")
     print("PINK_QA_DEBUG_ONLY_SUFFIX=PASS")
@@ -59,12 +60,12 @@ def repair_after_tauri_build(dest: Path) -> None:
     gradle = android / "build.gradle.kts"
     text = gradle.read_text()
     marker = '        getByName("debug") {\n            isDebuggable = true'
-    expected = 'applicationIdSuffix = ".qa"'
+    expected = 'applicationIdSuffix = ".qa2"'
     if expected not in text:
         assert text.count(marker) == 1, "Regenerated debug Gradle shape drift"
         text = text.replace(
             marker,
-            '        getByName("debug") {\n            applicationIdSuffix = ".qa"\n            isDebuggable = true',
+            '        getByName("debug") {\n            applicationIdSuffix = ".qa2"\n            isDebuggable = true',
         )
         gradle.write_text(text)
     assert text.count(expected) == 1, "Duplicate or unrecognized QA suffix"
@@ -83,11 +84,11 @@ def repair_after_tauri_build(dest: Path) -> None:
         )
         matches = list(matcher.finditer(values))
         assert len(matches) == 1, "Unexpected resource identity: " + name
-        assert matches[0].group(2) in ("PINK IPTV", "PINK IPTV TESTE")
+        assert matches[0].group(2) in ("PINK IPTV", "PINK IPTV TESTE 2")
         if matches[0].group(2) == "PINK IPTV":
-            values = matcher.sub(r"\g<1>PINK IPTV TESTE\g<3>", values)
+            values = matcher.sub(r"\g<1>PINK IPTV TESTE 2\g<3>", values)
     strings.write_text(values)
-    assert values.count("PINK IPTV TESTE") >= 2
+    assert values.count("PINK IPTV TESTE 2") >= 2
     print("PINK_QA_POST_TAURI_DEBUG_IDENTITY_REASSERTED=PASS")
     print("PINK_QA_POST_TAURI_ORIGINAL_PACKAGE_UNCHANGED=PASS")
 

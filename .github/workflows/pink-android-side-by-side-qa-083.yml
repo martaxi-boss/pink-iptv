@@ -1,4 +1,4 @@
-name: PINK Android Parallel QA 083
+name: PINK Android Owner QA2 087
 on:
   pull_request:
     branches: ["main"]
@@ -58,6 +58,8 @@ jobs:
               "clients/extreme/overlay/pink-catalog-diagnostic.test.ts",
               "clients/extreme/overlay/pink-catalog-browser.mjs",
               "clients/extreme/overlay/vpn-tests/PinkCatalogTransportChecks.kt",
+              "clients/extreme/overlay/vpn-tests/PinkVodTracksChecks.kt",
+              "clients/extreme/overlay/vpn-jvm/PinkCatalogPolicyTest.kt",
               "clients/extreme/overlay/pink-screen-cast.js",
               "clients/extreme/overlay/pink-screen-cast.test.ts",
               "clients/extreme/test_owner_menu_recovery.py",
@@ -111,6 +113,10 @@ jobs:
           native_video = (root / "src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/VideoActivity.kt").read_text()
           assert 'pink_video_cast_screen' in native_video and 'pink_video_picture_in_picture' in native_video
           assert (root / "src/scripts/lib/pink-screen-cast.js").is_file()
+          assert 'findViewById<View>(R.id.pink_more_actions)' in native_video
+          native_controller = (root / "src-tauri/gen/android/app/src/main/res/layout/player_controller_tv.xml").read_text()
+          assert 'android:id="@+id/pink_more_actions"' in native_controller
+          assert 'android:contentDescription="@string/pink_video_more_actions"' in native_controller
           print("PINK083_OWNER_LIVE_MOVIES_SERIES_MENUS_PRESENT=PASS")
           print("PINK083_QA_APK_LIVE_OFF_EPG_AND_THREE_MENU_BRAND=PASS")
           PY
@@ -197,8 +203,10 @@ jobs:
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink083-badging.txt"
           grep -E '^(package:|application-label:)' "$RUNNER_TEMP/pink083-badging.txt" | head -n 4
-          grep -Fq "package: name='com.pinkiptv.extreme.qa'" "$RUNNER_TEMP/pink083-badging.txt"
-          grep -Fq "application-label:'PINK IPTV TESTE'" "$RUNNER_TEMP/pink083-badging.txt"
+          grep -Fq "package: name='com.pinkiptv.extreme.qa2'" "$RUNNER_TEMP/pink083-badging.txt"
+          grep -Fq "application-label:'PINK IPTV TESTE 2'" "$RUNNER_TEMP/pink083-badging.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa'" "$RUNNER_TEMP/pink083-badging.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme'" "$RUNNER_TEMP/pink083-badging.txt"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/pink083-signature.txt"
           echo 'PINK083_DISTINCT_PACKAGE_AND_SIGNED_TEST_APK=PASS'
       - name: Set up actual Android emulator instrumented acceptance
@@ -215,9 +223,9 @@ jobs:
           cat > "$RUNNER_TEMP/pink083-emulator.sh" <<'SCRIPT'
           set -euo pipefail
           apk="app/build/outputs/apk/universal/debug/app-universal-debug.apk"
-          test_runner="com.pinkiptv.extreme.qa.test/androidx.test.runner.AndroidJUnitRunner"
+          test_runner="com.pinkiptv.extreme.qa2.test/androidx.test.runner.AndroidJUnitRunner"
           adb install -r "$apk"
-          adb shell pm list packages | grep -Fxq 'package:com.pinkiptv.extreme.qa'
+          adb shell pm list packages | grep -Fxq 'package:com.pinkiptv.extreme.qa2'
           adb install -r app/build/outputs/apk/androidTest/universal/debug/app-universal-debug-androidTest.apk
           adb shell am instrument -w -r -e class com.pinkiptv.extreme.PinkVpnIdentityTest "$test_runner" > "$RUNNER_TEMP/pink083-identity.txt"
           cat "$RUNNER_TEMP/pink083-identity.txt"
@@ -239,7 +247,8 @@ jobs:
           grep -q 'PINK_ANDROID_CATALOG_WORKER=PASS;ROWS=10000' "$RUNNER_TEMP/pink083-startup.txt"
           grep -q 'REAL_MEDIA3_MULTI_AUDIO_MULTI_SUBTITLE_FORCED_SELECTION_AND_PRESENTED_VIDEO=PASS' "$RUNNER_TEMP/pink083-startup.txt"
           grep -q 'REAL_MEDIA3_SINGLE_AUDIO_NO_SUBTITLES_AND_PROTECTED_LAUNCH_FALLBACK=PASS' "$RUNNER_TEMP/pink083-startup.txt"
-          adb shell am force-stop com.pinkiptv.extreme.qa
+          grep -q 'PINK_ANDROID_NATIVE_DOTS_MENU_PIP_CAST_AND_REAL_DISPLAY_MODE=PASS' "$RUNNER_TEMP/pink083-startup.txt"
+          adb shell am force-stop com.pinkiptv.extreme.qa2
           echo PINK083_KEYSTORE_VPN_CONSENT_FAIL_CLOSED_RECREATION=PASS
           SCRIPT
       - name: Android emulator Keystore and app-scoped VPN tests
@@ -268,21 +277,25 @@ jobs:
           apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
           folder="$GITHUB_WORKSPACE/clients/extreme/qa-deliverable"
           mkdir -p "$folder"
-          cp "$apk" "$folder/PINK-IPTV-TESTE.apk"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$folder/PINK-IPTV-TESTE.apk" > "$folder/package-check.txt"
-          grep -Fq "package: name='com.pinkiptv.extreme.qa'" "$folder/package-check.txt"
-          grep -Fq "application-label:'PINK IPTV TESTE'" "$folder/package-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$folder/PINK-IPTV-TESTE.apk" > "$folder/signing-check.txt"
+          cp "$apk" "$folder/PINK-IPTV-TESTE2.apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$folder/PINK-IPTV-TESTE2.apk" > "$folder/package-check.txt"
+          grep -Fq "package: name='com.pinkiptv.extreme.qa2'" "$folder/package-check.txt"
+          grep -Fq "application-label:'PINK IPTV TESTE 2'" "$folder/package-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$folder/PINK-IPTV-TESTE2.apk" > "$folder/signing-check.txt"
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, json, os
           output=Path(os.environ["GITHUB_WORKSPACE"])/"clients/extreme/qa-deliverable"
-          artifact=output/"PINK-IPTV-TESTE.apk"
+          artifact=output/"PINK-IPTV-TESTE2.apk"
           sha=hashlib.sha256(artifact.read_bytes()).hexdigest()
           properties={
               "file":artifact.name,
-              "application_id":"com.pinkiptv.extreme.qa",
+              "application_id":"com.pinkiptv.extreme.qa2",
               "original_application_id":"com.pinkiptv.extreme",
+              "previous_test_application_id":"com.pinkiptv.extreme.qa",
+              "owner_physical_test_required":True,
+              "android_debug_signing_not_stable_between_builds":True,
+              "tv_stream_handoff_disabled_screen_mirroring_only":True,
               "source_sha":os.environ["GITHUB_SHA"],
               "github_run":int(os.environ["GITHUB_RUN_ID"]),
               "sha256":sha,
@@ -291,14 +304,14 @@ jobs:
               "production_release":False,
               "original_apk_must_not_be_uninstalled":True,
           }
-          assert properties["application_id"]!=properties["original_application_id"]
+          assert properties["application_id"] not in (properties["original_application_id"],properties["previous_test_application_id"])
           (output/"provenance.json").write_text(json.dumps(properties,indent=2)+"\n")
           (output/"SHA256SUMS").write_text(f"{sha}  {artifact.name}\n")
           print("PINK083_BOUND_DISTINCT_TEST_APK_SHA256="+sha)
           PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: PINK-IPTV-TESTE-083
+          name: PINK-IPTV-TESTE2-087
           path: clients/extreme/qa-deliverable
           if-no-files-found: error
           retention-days: 30

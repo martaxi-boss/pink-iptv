@@ -25,12 +25,13 @@ def main() -> None:
 <string name="dream_label">PINK IPTV</string></resources>""")
         apply(Path(temp))
         amended = gradle.read_text()
-        assert amended.count('applicationIdSuffix = ".qa"') == 1
+        assert amended.count('applicationIdSuffix = ".qa2"') == 1
         assert amended.count('applicationId = "com.pinkiptv.extreme"') == 1
         assert 'getByName("release") { isMinifyEnabled = true }' in amended
-        assert PACKAGE == "com.pinkiptv.extreme.qa"
-        assert strings.read_text().count("PINK IPTV TESTE") == 2
-        assert '<string name="app_name" translatable="false">PINK IPTV TESTE</string>' in strings.read_text()
+        assert PACKAGE == "com.pinkiptv.extreme.qa2"
+        assert PACKAGE not in ("com.pinkiptv.extreme", "com.pinkiptv.extreme.qa")
+        assert strings.read_text().count("PINK IPTV TESTE 2") == 2
+        assert '<string name="app_name" translatable="false">PINK IPTV TESTE 2</string>' in strings.read_text()
         assert '<string name="dream_label">PINK IPTV</string>' in strings.read_text()
         try:
             apply(Path(temp))
@@ -47,14 +48,14 @@ def main() -> None:
         # Reproduce Tauri overwriting the package suffix and launcher names:
         # after repair the QA remains a separate installable app.
         gradle.write_text(amended.replace(
-            '            applicationIdSuffix = ".qa"\n', "", 1
+            '            applicationIdSuffix = ".qa2"\n', "", 1
         ))
         strings.write_text(strings.read_text().replace(
-            "PINK IPTV TESTE", "PINK IPTV"
+            "PINK IPTV TESTE 2", "PINK IPTV"
         ))
         repair_after_tauri_build(Path(temp))
         assert gradle.read_text() == amended
-        assert strings.read_text().count("PINK IPTV TESTE") == 2
+        assert strings.read_text().count("PINK IPTV TESTE 2") == 2
         assert 'getByName("release") { isMinifyEnabled = true }' in gradle.read_text()
         print("PINK_QA_POST_TAURI_REGENERATION_RECOVERY=PASS")
     print("PINK_QA_INSTALLATION_ISOLATION_FAST_TEST=PASS")

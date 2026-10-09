@@ -111,7 +111,11 @@ object PinkWebBridge {
                         response.put("code", PinkVpnRuntime.get(app).loginFailureCode())
                     }
                     if (request.optString("operation") in setOf("vodCatalog", "vodCatalogChunk", "vodCatalogClose")) {
-                        response.put("code", if (error is PinkCatalogFailure) error.phase else "STAGE")
+                        response.put("code", if (error is PinkCatalogFailure) error.phase else when (request.optString("operation")) {
+                            "vodCatalog" -> "BRIDGE_OPEN"
+                            "vodCatalogChunk" -> "BRIDGE_CHUNK"
+                            else -> "STAGE_LIFECYCLE"
+                        })
                         if (error is PinkCatalogFailure) {
                             error.bytes?.let { response.put("bytes", it) }
                             error.elapsedMs?.let { response.put("elapsedMs", it) }

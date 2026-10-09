@@ -373,11 +373,14 @@ def test_account_can_list_and_release_only_its_own_opaque_installations(vpn, db)
         json={"installation_id": other["installation_id"], "confirm": True},
     )
     assert released.status_code == 204
-    assert vpn.client.post(
-        "/v1/vpn/installations/release",
-        headers=vpn.auth,
-        json={"installation_id": other["installation_id"], "confirm": True},
-    ).status_code == 204
+    assert (
+        vpn.client.post(
+            "/v1/vpn/installations/release",
+            headers=vpn.auth,
+            json={"installation_id": other["installation_id"], "confirm": True},
+        ).status_code
+        == 204
+    )
     refreshed = vpn.client.get("/v1/vpn/installations", headers=vpn.auth)
     assert refreshed.status_code == 200
     assert len(refreshed.json()) == 1
@@ -389,19 +392,23 @@ def test_account_can_list_and_release_only_its_own_opaque_installations(vpn, db)
 def test_installation_release_needs_valid_login_session_and_explicit_confirmation(vpn, db):
     enrolled = enroll(vpn)
     assert enrolled.status_code == 200
-    handle = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0][
-        "installation_id"
-    ]
+    handle = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0]["installation_id"]
     assert vpn.client.get("/v1/vpn/installations").status_code == 401
-    assert vpn.client.post(
-        "/v1/vpn/installations/release",
-        json={"installation_id": handle, "confirm": True},
-    ).status_code == 401
-    assert vpn.client.post(
-        "/v1/vpn/installations/release",
-        headers=vpn.auth,
-        json={"installation_id": handle, "confirm": False},
-    ).status_code == 422
+    assert (
+        vpn.client.post(
+            "/v1/vpn/installations/release",
+            json={"installation_id": handle, "confirm": True},
+        ).status_code
+        == 401
+    )
+    assert (
+        vpn.client.post(
+            "/v1/vpn/installations/release",
+            headers=vpn.auth,
+            json={"installation_id": handle, "confirm": False},
+        ).status_code
+        == 422
+    )
     assert db.scalar(select(VpnInstallation)).revoked_at is None
 
 
@@ -409,9 +416,7 @@ def test_installation_reclaim_is_account_isolated(vpn, db):
     from app.models import SubscriptionMapping
 
     assert enroll(vpn).status_code == 200
-    owned = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0][
-        "installation_id"
-    ]
+    owned = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0]["installation_id"]
     other_mapping = SubscriptionMapping(
         mega_subscription_id=123,
         username="different-owner-fixture",
@@ -448,8 +453,9 @@ def test_reclaim_gateway_unavailable_keeps_address_reserved(vpn, db):
     assert peer.address == "10.66.0.3"
     assert vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json() == []
     vpn.gateway.fail = False
-    assert vpn.client.post(
-        "/v1/vpn/installations/release", headers=vpn.auth, json=payload
-    ).status_code == 204
+    assert (
+        vpn.client.post("/v1/vpn/installations/release", headers=vpn.auth, json=payload).status_code
+        == 204
+    )
     db.refresh(peer)
     assert peer.address is None

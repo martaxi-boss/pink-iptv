@@ -5,6 +5,7 @@ on:
     paths:
       - "clients/extreme/qa_variant.py"
       - "clients/extreme/test_qa_variant.py"
+      - "clients/extreme/scan_qa_repo.py"
       - "clients/extreme/QA_ANDROID_TEST_083.md"
       - ".github/workflows/pink-android-side-by-side-qa-083.yml"
 permissions:
@@ -31,19 +32,25 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import subprocess
-          base = "697893fe7ca1697c3638e436b167c51fb3c74e4c"
+          base = "ef369e3ab12776e15fac81e5ca94c2e70c09ca39"
           subprocess.run(["git","merge-base","--is-ancestor",base,"HEAD"],check=True)
           changed = set(subprocess.check_output(
               ["git","diff","--name-only",base,"HEAD"],text=True).splitlines())
           allowed = {
               "clients/extreme/qa_variant.py",
               "clients/extreme/test_qa_variant.py",
+              "clients/extreme/scan_qa_repo.py",
               "clients/extreme/QA_ANDROID_TEST_083.md",
               ".github/workflows/pink-android-side-by-side-qa-083.yml",
           }
           assert changed and changed <= allowed, sorted(changed - allowed)
           print("PINK083_NO_PRODUCTION_ANDROID_SOURCE_CHANGES=PASS")
           PY
+      - name: Run complete committed source security scan before Android build
+        run: |
+          set -euo pipefail
+          python3 -m py_compile clients/extreme/scan_qa_repo.py
+          python3 clients/extreme/scan_qa_repo.py
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
         with:
           version: 10.31.0
@@ -209,12 +216,6 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: "${{ runner.temp }}/pink-extreme/src-tauri/gen/android"
           script: bash "$RUNNER_TEMP/pink083-emulator.sh"
-      - name: Check committed source for accidentally exposed credentials
-        run: |
-          set -euo pipefail
-          python3 -m pip install --disable-pip-version-check detect-secrets==1.5.0
-          detect-secrets scan --all-files --exclude-files '(^|/)(\.git|\.pytest_cache|\.ruff_cache|.*egg-info)/' > /tmp/pink083-scan.json
-          python3 .github/scripts/filter_scan_findings.py /tmp/pink083-scan.json
       - name: Verify Android lint
         run: |
           set -euo pipefail

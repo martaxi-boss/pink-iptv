@@ -37,6 +37,16 @@ class VpnAddressRelease(Base):
     cause: Mapped[str] = mapped_column(String(16), nullable=False)
 
 
+class VpnRateWindow(Base):
+    """Shared VPN admission counters; keys never hold plaintext credentials."""
+
+    __tablename__ = "vpn_rate_windows"
+
+    bucket_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    window_number: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class AuthRateWindow(Base):
     """Shared PostgreSQL-backed login budgets; no plaintext identifiers."""
 

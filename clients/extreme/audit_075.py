@@ -21,6 +21,7 @@ ALLOWED = {
     "clients/extreme/overlay/pink-login.test.ts",
     ".project-leader/transitions/PINK-IPTV-VPN-ANDROID-075-MERGE.authorization.json",
     ".project-leader/transitions/PINK-IPTV-VPN-ANDROID-075-MERGE-R2.authorization.json",
+    ".project-leader/transitions/PINK-IPTV-VPN-ANDROID-075-MERGE-R3.authorization.json",
 }
 
 
@@ -32,9 +33,9 @@ def main() -> None:
     assert changed and changed <= ALLOWED, sorted(changed - ALLOWED)
 
     # Authorization-only descendants preserve tested application logic.
-    # Admit only the two exact Owner grants, never arbitrary control records.
+    # Admit only these exact Owner grants, never arbitrary control records.
     transition_dir = Path(".project-leader/transitions")
-    for suffix in ("MERGE", "MERGE-R2"):
+    for suffix in ("MERGE", "MERGE-R2", "MERGE-R3"):
         item = transition_dir / (
             "PINK-IPTV-VPN-ANDROID-075-" + suffix + ".authorization.json"
         )
@@ -52,13 +53,20 @@ def main() -> None:
             ["git", "merge-base", "--is-ancestor", grant["target"]["revision"], "HEAD"],
             check=True,
         )
-        if suffix == "MERGE-R2":
+        if suffix in ("MERGE-R2", "MERGE-R3"):
+            # A pull_request job checks out a synthetic GitHub merge commit.
+            # HEAD^ is the target base, NOT the source branch parent. Instead
+            # resolve the exact immutable commit introducing this grant.
+            auth_commit = subprocess.check_output(
+                ["git", "log", "-n", "1", "--format=%H", "--", str(item)], text=True
+            ).strip()
+            assert auth_commit
             parent = subprocess.check_output(
-                ["git", "rev-parse", "HEAD^"], text=True
+                ["git", "rev-parse", auth_commit + "^"], text=True
             ).strip()
             assert parent == grant["target"]["revision"]
             assert subprocess.check_output(
-                ["git", "diff", "--name-only", "HEAD^", "HEAD"], text=True
+                ["git", "diff", "--name-only", parent, auth_commit], text=True
             ).splitlines() == [str(item)]
 
     source = Path("clients/extreme/overlay/vpn/PinkConnection.kt").read_text()

@@ -1,16 +1,16 @@
-# Verified read-only inventory 37999614152: all 10 listed refs merged into pinned main.
-name: PINK exact merged-ref hygiene 088
+# Verified read-only inventory 38000142479: four exact remaining refs merged into pinned main.
+name: PINK exact merged-ref hygiene 089
 on:
   push:
     branches: ["control/pink-efficiency-hygiene-088"]
-    paths: ["ops/pink_hygiene_088.py", ".github/workflows/pink-hygiene-088.yml", ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-088-DELETE-*"]
+    paths: ["ops/pink_hygiene_088.py", ".github/workflows/pink-hygiene-088.yml", ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-089-DELETE-*"]
 permissions:
   contents: read
   actions: read
   pull-requests: read
 jobs:
   inventory:
-    if: github.event.head_commit.message != 'Execute exact merged branch cleanup 088'
+    if: github.event.head_commit.message != 'Execute exact merged branch cleanup 089'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,7 +24,7 @@ jobs:
           name: PINK-hygiene-057-inventory
           path: pink-hygiene-088-inventory.json
   cleanup:
-    if: github.event.head_commit.message == 'Execute exact merged branch cleanup 088'
+    if: github.event.head_commit.message == 'Execute exact merged branch cleanup 089'
     permissions:
       contents: write
       actions: read

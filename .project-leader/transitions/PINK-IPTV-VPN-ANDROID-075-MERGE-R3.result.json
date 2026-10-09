@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-VPN-ANDROID-075-MERGE-R3",
+  "task_id": "PINK-IPTV-VPN-AUTONOMY-056",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E2_CONSEQUENTIAL_TRANSITION",
+  "action": "merge_to_main",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-VPN-ANDROID-075-MERGE-R3.authorization.json",
+  "exact_source_head": "5515270d1c25bc64841f89cae81b9141588addf0",
+  "code_implementation_sha": "9b42a172245221533b396ae77c078392139a965d",
+  "main_merge_sha": "460690a7a07d2bcb3b665a9e247476a038c7eab5",
+  "ci": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37951944669",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37951944808"
+  ],
+  "audit": "Native Android Keystore/consent, emulator, source privacy scan, login JS, full backend migrations/tests, secret scan all terminal SUCCESS",
+  "effects": {
+    "repository_code": "merged",
+    "installed_owner_apk": "unchanged",
+    "production_vps": "unchanged by this transition",
+    "signed_release": "not created"
+  },
+  "remaining_material_gates": [
+    "Production backend code upgrade and 0003..0006 migrations separate E2 rollout",
+    "No safe in-place upgrade without original APK signing identity; physical Owner device remains preserved"
+  ]
+}

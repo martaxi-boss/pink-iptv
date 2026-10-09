@@ -19,6 +19,11 @@ SHA_FIELDS = {
     "revision",
     "authorization_commit_sha",
     "authorization_sha256",
+    # Public immutable Git commit revisions in Project Leader transition results.
+    # Only these exact field names, control JSON paths and 40-hex strings qualify.
+    "exact_source_head",
+    "code_implementation_sha",
+    "main_merge_sha",
 }
 HEX_CHARS = frozenset("0123456789abcdef")
 

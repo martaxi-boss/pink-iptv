@@ -1,5 +1,15 @@
 import { addEntry, getEntries, removeEntry } from "@/scripts/lib/creds.js"
 import { resolvePinkSession } from "@/scripts/lib/pink-session.js"
+export function parseRecoverableInstallations(raw) {
+  const data = JSON.parse(raw)
+  if (!Array.isArray(data) || data.length > 10 || !data.every(x =>
+    typeof x?.installation_id === 'string' && /^[0-9a-f]{64}$/.test(x.installation_id) &&
+    typeof x?.is_current === 'boolean' &&
+    typeof x?.last_authenticated_at === 'string' &&
+    Number.isFinite(Date.parse(x.last_authenticated_at)))) throw new Error('Untrusted recovery list')
+  if (new Set(data.map(x => x.installation_id)).size !== data.length) throw new Error('Duplicate recovery handle')
+  return data
+}
 export const loginMarkup = `
   <section class="mx-auto w-full max-w-md px-6 py-10">
     <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-8 w-64" />
@@ -74,10 +84,7 @@ export function mountPinkLogin(root, navigate) {
     try {
       const native = typeof window !== 'undefined' && window.PinkConnection
       if (typeof native?.listInstallations !== 'function' || !devicesView) throw new Error()
-      const data = JSON.parse(await native.listInstallations())
-      if (!Array.isArray(data) || data.length > 10 || !data.every(x =>
-        typeof x.installation_id === 'string' && /^[0-9a-f]{64}$/.test(x.installation_id) &&
-        typeof x.is_current === 'boolean')) throw new Error()
+      const data = parseRecoverableInstallations(await native.listInstallations())
       if (!alive) return
       devicesView.replaceChildren()
       data.forEach((device, index) => {
@@ -86,6 +93,11 @@ export function mountPinkLogin(root, navigate) {
         const title = document.createElement('p')
         title.textContent = device.is_current ? 'Esta instalação — protegida' : `Instalação antiga ${index + 1}`
         row.append(title)
+        const lastUsed = document.createElement('p')
+        lastUsed.className = 'text-fg-3'
+        lastUsed.textContent = 'Última autenticação: ' +
+          new Date(device.last_authenticated_at).toLocaleDateString('pt-PT')
+        row.append(lastUsed)
         if (!device.is_current) {
           const action = document.createElement('button')
           action.type = 'button'

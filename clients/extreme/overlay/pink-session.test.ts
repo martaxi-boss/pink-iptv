@@ -69,6 +69,18 @@ describe('PINK managed account contract', () => {
     } finally { vi.unstubAllGlobals() }
   })
 
+  it('preserves only the public VPN_LIMIT code for recovery UI', async () => {
+    vi.stubGlobal('window', { PinkConnection: { resolve: async () => {
+      throw Object.assign(new Error('private account and token'), {code:'VPN_LIMIT'})
+    } } })
+    try {
+      await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.toMatchObject({
+        code:'VPN_LIMIT',
+        message:expect.stringContaining('Limite de 10 instalações VPN')
+      })
+    } finally { vi.unstubAllGlobals() }
+  })
+
   it('cannot silently use a direct transport without the native bridge', async () => {
     vi.stubGlobal('window', {})
     try { await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.toThrow('Serviço PINK indisponível') }

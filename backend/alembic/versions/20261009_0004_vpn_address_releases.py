@@ -17,9 +17,7 @@ depends_on = None
 def upgrade() -> None:
     # Unique PostgreSQL/SQLite indexes accept multiple NULLs while still
     # protecting every currently assigned address against double allocation.
-    op.alter_column(
-        "vpn_installations", "address", existing_type=sa.Text(), nullable=True
-    )
+    op.alter_column("vpn_installations", "address", existing_type=sa.Text(), nullable=True)
     op.create_table(
         "vpn_address_releases",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -45,6 +43,4 @@ def downgrade() -> None:
             "Cannot downgrade released VPN addresses without a separate safe ownership migration"
         )
     op.drop_table("vpn_address_releases")
-    op.alter_column(
-        "vpn_installations", "address", existing_type=sa.Text(), nullable=False
-    )
+    op.alter_column("vpn_installations", "address", existing_type=sa.Text(), nullable=False)

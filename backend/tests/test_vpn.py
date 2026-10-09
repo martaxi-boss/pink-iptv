@@ -11,7 +11,7 @@ from sqlalchemy import select
 from app import vpn as vpn_module
 from app.config import Settings
 from app.main import create_app
-from app.models import VpnAddressRelease, VpnInstallation
+from app.models import VpnAddressRelease, VpnInstallation, VpnRateWindow
 from app.security import issue_session_token
 from app.vpn import GatewayUnavailable, LocalGateway
 
@@ -457,3 +457,53 @@ def test_reclaim_gateway_unavailable_keeps_address_reserved(vpn, db):
     )
     db.refresh(peer)
     assert peer.address is None
+
+
+def test_vpn_global_budget_catches_malformed_requests_before_handler(vpn):
+    vpn.settings.vpn_rate_global = 2
+    for _ in range(2):
+        rejected = vpn.client.post(
+            "/v1/vpn/enroll", headers=vpn.auth, json={"public_key": "not-base64"}
+        )
+        assert rejected.status_code == 422
+    blocked = vpn.client.get("/v1/vpn/installations", headers=vpn.auth)
+    assert blocked.status_code == 429
+    assert blocked.headers["x-pink-vpn-admission"] == "throttle"
+    assert 1 <= int(blocked.headers["retry-after"]) <= 60
+    assert blocked.json() == {"detail": "PINK connection temporarily unavailable"}
+    assert not vpn.calls
+
+
+def test_vpn_keyed_budget_hashes_bearer_and_blocks_repeated_enrollment(vpn, db):
+    vpn.settings.vpn_rate_per_credential = 1
+    assert enroll(vpn).status_code == 200
+    limited = enroll(vpn)
+    assert limited.status_code == 429
+    assert limited.headers["x-pink-vpn-admission"] == "throttle"
+    assert limited.headers["cache-control"] == "no-store"
+    rows = db.scalars(select(VpnRateWindow)).all()
+    assert any(row.bucket_key.startswith("c:") for row in rows)
+    assert not any(vpn.auth["Authorization"] in row.bucket_key for row in rows)
+
+
+def test_vpn_device_token_refresh_budget_does_not_extend_lease(vpn):
+    body = enroll(vpn).json()
+    vpn.settings.vpn_rate_per_credential = 1
+    request = device_payload(body)
+    assert vpn.client.post("/v1/vpn/refresh", json=request).status_code == 200
+    limited = vpn.client.post("/v1/vpn/refresh", json=request)
+    assert limited.status_code == 429
+    assert limited.headers["x-pink-vpn-admission"] == "throttle"
+
+
+def test_capacity_and_throttle_have_distinct_private_fixed_reason(vpn):
+    for number in range(1, 11):
+        assert enroll(vpn, number).status_code == 200
+    capacity = enroll(vpn, 11)
+    assert capacity.status_code == 429
+    assert capacity.headers["x-pink-vpn-admission"] == "capacity"
+    assert 1 <= int(capacity.headers["retry-after"]) <= 86400
+    vpn.settings.vpn_rate_per_credential = 10
+    throttle = enroll(vpn, 12)
+    assert throttle.status_code == 429
+    assert throttle.headers["x-pink-vpn-admission"] == "throttle"

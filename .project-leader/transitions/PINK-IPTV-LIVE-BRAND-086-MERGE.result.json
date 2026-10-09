@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-LIVE-BRAND-086-MERGE",
+  "task_id": "PINK-IPTV-LIVE-BRAND-086",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-LIVE-BRAND-086-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "65",
+    "revision": "25413a296a5b5237ae148e321b594af7c978dac7",
+    "base_revision": "ef369e3ab12776e15fac81e5ca94c2e70c09ca39",
+    "environment": "repository_main"
+  },
+  "observed_at": "2026-10-09T21:14:21.736Z",
+  "final_state": {
+    "status": "merged_to_repository_main",
+    "revision": "feb7a8dfc455051919b55f6c81990f908c68b693"
+  },
+  "evidence": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/65",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37991928331",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37991923216",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37991928358",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37992060881",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37992055932",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37992060979",
+    "Exact authorized implementation 25413a296a5b5237ae148e321b594af7c978dac7; merged evidence-only descendant 69e9afd29114d7e19091f93f20c0eb7b19a3dd00",
+    "Scope audited: visual overlay and tests, official PostgreSQL 16.4-alpine registry mirror, focused/full static/front-end/backend validations, no production VPS or installed Android action."
+  ],
+  "residual_blockers": []
+}

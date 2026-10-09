@@ -441,9 +441,7 @@ def test_installation_reclaim_is_account_isolated(vpn, db):
 
 def test_reclaim_gateway_unavailable_keeps_address_reserved(vpn, db):
     assert enroll(vpn).status_code == 200
-    handle = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0][
-        "installation_id"
-    ]
+    handle = vpn.client.get("/v1/vpn/installations", headers=vpn.auth).json()[0]["installation_id"]
     payload = {"installation_id": handle, "confirm": True}
     vpn.gateway.fail = True
     failed = vpn.client.post("/v1/vpn/installations/release", headers=vpn.auth, json=payload)

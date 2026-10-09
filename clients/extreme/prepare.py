@@ -339,4 +339,6 @@ from vod_overlay import apply as apply_vod
 apply_vod(ROOT, DEST, replace)
 from catalog_overlay import apply as apply_catalog
 apply_catalog(ROOT, DEST)
+from brand_overlay import apply as apply_brand
+apply_brand(ROOT, DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

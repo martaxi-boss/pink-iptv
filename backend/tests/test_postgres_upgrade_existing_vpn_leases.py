@@ -103,7 +103,7 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
             ).scalar_one() == "YES"
     finally:
         # Always return CI to head, even if an assertion fails after downgrade.
-        command.upgrade(config, "head")
+        subprocess.run(["alembic", "upgrade", "head"], check=True)
         if fixture_mapping_id is not None:
             with engine.begin() as connection:
                 connection.execute(

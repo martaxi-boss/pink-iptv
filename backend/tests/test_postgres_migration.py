@@ -148,9 +148,10 @@ def test_vpn_budget_serializes_postgres_connections(settings) -> None:
     assert results.count(429) == 4
     with engine.connect() as connection:
         rows = connection.execute(text("SELECT bucket_key, attempts FROM vpn_rate_windows")).all()
-    assert len(rows) == 1
-    assert rows[0][1] == 2
-    assert "fixture-token-never-persist" not in rows[0][0]
+    assert len(rows) == 2
+    assert {attempts for _, attempts in rows} == {0, 2}
+    assert any(key == "global" for key, _ in rows)
+    assert all("fixture-token-never-persist" not in key for key, _ in rows)
     with engine.begin() as connection:
         connection.execute(text("DELETE FROM vpn_rate_windows"))
     engine.dispose()

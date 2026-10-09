@@ -356,7 +356,7 @@ def test_account_can_list_and_release_only_its_own_opaque_installations(vpn, db)
     assert enroll(vpn).status_code == 200
     assert enroll(vpn, 2).status_code == 200
     current = vpn.client.get(
-        "/v1/vpn/installations", headers=vpn.auth, params={"current_public_key": key()}
+        "/v1/vpn/installations", headers=vpn.auth | {"X-Pink-Device-Public-Key": key()}
     )
     assert current.status_code == 200
     assert current.headers["cache-control"] == "no-store"

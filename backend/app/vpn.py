@@ -13,13 +13,14 @@ from typing import Literal
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
-from sqlalchemy import select, text
+from sqlalchemy import or_, select, text
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import SubscriptionMapping, VpnInstallation
+from app.models import SubscriptionMapping, VpnAddressRelease, VpnInstallation
 
 router = APIRouter(prefix="/v1/vpn")
+ADDRESS_POOL = tuple(f"10.66.0.{number}" for number in range(3, 255))
 
 
 def public_key(value: str) -> str:
@@ -148,6 +149,8 @@ def gateway(request: Request):
 
 
 def config(peer: VpnInstallation, settings, device_token: str | None = None) -> LeaseResponse:
+    if peer.address is None:
+        deny(503)
     host = int(ipaddress.ip_address(peer.address)) & 255
     return LeaseResponse(
         device_token=device_token,
@@ -163,6 +166,69 @@ def token_matches(peer: VpnInstallation, token: str) -> bool:
     return hmac.compare_digest(peer.token_sha256, hashlib.sha256(token.encode()).hexdigest())
 
 
+def available_address(db: Session) -> str | None:
+    assigned = set(db.scalars(select(VpnInstallation.address)).all())
+    return next((address for address in ADDRESS_POOL if address not in assigned), None)
+
+
+def release_address(
+    request: Request,
+    db: Session,
+    peer: VpnInstallation,
+    *,
+    cause: str,
+) -> None:
+    """Release ownership only after root gateway confirms removing that exact key."""
+    if peer.address is None:
+        return
+    old_address = peer.address
+    try:
+        gateway(request).apply("remove", peer)
+    except GatewayUnavailable:
+        # On an unreachable gateway the address remains exclusively reserved.
+        deny(503)
+    db.add(
+        VpnAddressRelease(
+            installation_id=peer.id,
+            address=old_address,
+            released_at=datetime.now(UTC),
+            cause=cause,
+        )
+    )
+    peer.address = None
+    try:
+        db.commit()
+    except Exception:
+        # Gateway remove already succeeded; retaining database ownership is safe.
+        db.rollback()
+        deny(503)
+
+
+def reclaim_expired_addresses(request: Request, db: Session) -> None:
+    """Bounded on-demand cleanup. Never interpret absence of handshake as expiry."""
+    now = datetime.now(UTC)
+    candidates = db.scalars(
+        select(VpnInstallation)
+        .join(SubscriptionMapping, VpnInstallation.mapping_id == SubscriptionMapping.id)
+        .where(
+            VpnInstallation.address.is_not(None),
+            or_(
+                VpnInstallation.revoked_at.is_not(None),
+                VpnInstallation.expires_at <= now,
+                SubscriptionMapping.expiring_at <= now,
+            ),
+        )
+        .order_by(VpnInstallation.id)
+        .limit(len(ADDRESS_POOL))
+    ).all()
+    for candidate in candidates:
+        release_address(request, db, candidate, cause="expired" if candidate.revoked_at is None else "revoked")
+        # release_address committed, and therefore released the PostgreSQL lock.
+        lock_allocations(db)
+        if available_address(db) is not None:
+            return
+
+
 @router.post("/enroll", response_model=LeaseResponse)
 def enroll(
     payload: EnrollRequest, request: Request, response: Response, db: Session = Depends(get_db)
@@ -173,7 +239,7 @@ def enroll(
     peer = db.scalar(
         select(VpnInstallation).where(VpnInstallation.public_key == payload.public_key)
     )
-    if peer is None or peer.mapping_id != mapping.id:
+    if peer is None or peer.mapping_id != mapping.id or peer.address is None:
         active = db.scalars(
             select(VpnInstallation).where(
                 VpnInstallation.mapping_id == mapping.id,
@@ -191,15 +257,22 @@ def enroll(
             deny()
         if peer.revoked_at is not None:
             deny()
-    else:
-        used = set(db.scalars(select(VpnInstallation.address)).all())
-        address = next((f"10.66.0.{n}" for n in range(3, 255) if f"10.66.0.{n}" not in used), None)
+    if peer is None or peer.address is None:
+        address = available_address(db)
+        if address is None:
+            reclaim_expired_addresses(request, db)
+            address = available_address(db)
         if address is None:
             deny(503)
-        peer = VpnInstallation(
-            public_key=payload.public_key, address=address, mapping_id=mapping.id
-        )
-        db.add(peer)
+        if peer is None:
+            peer = VpnInstallation(
+                public_key=payload.public_key, address=address, mapping_id=mapping.id
+            )
+            db.add(peer)
+        else:
+            # An expired same-installation identity can be reauthenticated with
+            # a fresh PINK session, but its old device token cannot refresh.
+            peer.address = address
     # A new authenticated PINK session renews the installation lease; refresh never extends it.
     peer.mapping_id = mapping.id
     expires = datetime.now(UTC) + timedelta(seconds=settings.vpn_lease_seconds)
@@ -243,10 +316,7 @@ def refresh(
         or mapping is None
         or expired_mapping(mapping)
     ):
-        try:
-            gateway(request).apply("remove", peer)
-        except GatewayUnavailable:
-            deny(503)
+        release_address(request, db, peer, cause="expired")
         deny()
     try:
         gateway(request).apply("upsert", peer)
@@ -265,7 +335,5 @@ def revoke(
     # Persist revocation first: gateway failure cannot turn this into a renewable grant.
     peer.revoked_at = datetime.now(UTC)
     db.commit()
-    try:
-        gateway(request).apply("remove", peer)
-    except GatewayUnavailable:
-        deny(503)
+    lock_allocations(db)
+    release_address(request, db, peer, cause="revoked")

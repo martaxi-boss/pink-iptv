@@ -1,6 +1,7 @@
 """Bounded non-production audit of 10-slot VPN Android self-service recovery."""
 
 from pathlib import Path
+import json
 import subprocess
 
 BASE = "0c4b0b93fa77a433cf4d2d2ccd3076539643adef"  # pragma: allowlist secret - Git SHA
@@ -18,6 +19,8 @@ ALLOWED = {
     "clients/extreme/overlay/pink-session.test.ts",
     "clients/extreme/overlay/pink-login.js",
     "clients/extreme/overlay/pink-login.test.ts",
+    ".project-leader/transitions/PINK-IPTV-VPN-ANDROID-075-MERGE.authorization.json",
+    ".project-leader/transitions/PINK-IPTV-VPN-ANDROID-075-MERGE-R2.authorization.json",
 }
 
 
@@ -27,6 +30,36 @@ def main() -> None:
         ["git", "diff", "--name-only", BASE, "HEAD"], text=True
     ).splitlines())
     assert changed and changed <= ALLOWED, sorted(changed - ALLOWED)
+
+    # Authorization-only descendants preserve tested application logic.
+    # Admit only the two exact Owner grants, never arbitrary control records.
+    transition_dir = Path(".project-leader/transitions")
+    for suffix in ("MERGE", "MERGE-R2"):
+        item = transition_dir / (
+            "PINK-IPTV-VPN-ANDROID-075-" + suffix + ".authorization.json"
+        )
+        if not item.exists():
+            continue
+        grant = json.loads(item.read_text())
+        assert grant["repository"] == "martaxi-boss/pink-iptv"
+        assert grant["action"] == "merge_to_main"
+        assert grant["effect_class"] == "E2_CONSEQUENTIAL_TRANSITION"
+        assert grant["authority"]["source"] == "STANDING_OWNER_GRANT"
+        assert grant["target"]["identifier"] == "61"
+        assert grant["target"]["base_revision"] == BASE
+        assert grant["target"]["environment"] == "repository_main"
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", grant["target"]["revision"], "HEAD"],
+            check=True,
+        )
+        if suffix == "MERGE-R2":
+            parent = subprocess.check_output(
+                ["git", "rev-parse", "HEAD^"], text=True
+            ).strip()
+            assert parent == grant["target"]["revision"]
+            assert subprocess.check_output(
+                ["git", "diff", "--name-only", "HEAD^", "HEAD"], text=True
+            ).splitlines() == [str(item)]
 
     source = Path("clients/extreme/overlay/vpn/PinkConnection.kt").read_text()
     bridge = Path("clients/extreme/overlay/PinkWebBridge.kt").read_text()

@@ -49,9 +49,7 @@ def charge_vpn_attempt(
 
         shared = db.get(VpnRateWindow, _GLOBAL)
         if shared is None:
-            shared = VpnRateWindow(
-                bucket_key=_GLOBAL, window_number=window_number, attempts=0
-            )
+            shared = VpnRateWindow(bucket_key=_GLOBAL, window_number=window_number, attempts=0)
             db.add(shared)
         elif shared.window_number != window_number:
             db.execute(delete(VpnRateWindow).where(VpnRateWindow.bucket_key != _GLOBAL))

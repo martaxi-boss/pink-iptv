@@ -80,6 +80,7 @@ describe('origin-restricted native transport', () => {
     ['VPN_PERMISSION','VPN_PERMISSION'],
     ['CONTROL_HTTPS','CONTROL_HTTPS'],
     ['VPN_ENROLL','VPN_ENROLL'],
+    ['VPN_LIMIT','VPN_LIMIT'],
     ['VPN_ACTIVATION','VPN_ACTIVATION'],
     ['DEVICE_SECURITY','DEVICE_SECURITY'],
     ['private host and token','LOGIN_UNAVAILABLE'],
@@ -92,6 +93,25 @@ describe('origin-restricted native transport', () => {
     })
     native.onmessage({ data: JSON.stringify({ id: request.id, ok: false, code: raw, error: 'private token' }) })
     await assertion
+  })
+
+  it('uses only the restricted native bridge for opaque VPN recovery', async () => {
+    const { native, host } = create()
+    const listing = host.PinkConnection.listInstallations()
+    let request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request).toMatchObject({operation: 'vpnInstallations', payload: {}})
+    native.onmessage({data: JSON.stringify({id:request.id,ok:true,result:'[]'})})
+    expect(await listing).toBe('[]')
+
+    const handle = 'a'.repeat(64)
+    const releasing = host.PinkConnection.releaseInstallation(handle)
+    request = JSON.parse(native.postMessage.mock.calls.at(-1)[0])
+    expect(request).toMatchObject({
+      operation:'vpnReleaseInstallation', payload:{installation_id:handle}
+    })
+    expect(JSON.stringify(request)).not.toContain('Bearer')
+    native.onmessage({data:JSON.stringify({id:request.id,ok:true,result:true})})
+    expect(await releasing).toBe(true)
   })
 
   it('bounds a missing native response and ignores its later arrival', async () => {

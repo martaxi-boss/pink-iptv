@@ -30,7 +30,7 @@ def apply(dest: Path) -> None:
     strings = android / "src/main/res/values/strings.xml"
     resources = strings.read_text()
     for name in ("app_name", "main_activity_title"):
-        matcher = re.compile(r'(<string name="' + name + r'">)([^<]+)(</string>)')
+        matcher = re.compile(r'(<string name="' + re.escape(name) + r'"(?:\s+[^<>]*?)?>)([^<]+)(</string>)')
         found = matcher.search(resources)
         assert found and found.group(2) == "PINK IPTV", name
         resources, count = matcher.subn(r"\g<1>PINK IPTV TESTE\g<3>", resources)

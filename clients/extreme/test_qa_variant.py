@@ -20,7 +20,7 @@ def main() -> None:
     }
 }""")
         strings = app / "src/main/res/values/strings.xml"
-        strings.write_text("""<resources><string name="app_name">PINK IPTV</string>
+        strings.write_text("""<resources><string name="app_name" translatable="false">PINK IPTV</string>
 <string name="main_activity_title">PINK IPTV</string>
 <string name="dream_label">PINK IPTV</string></resources>""")
         apply(Path(temp))
@@ -30,6 +30,7 @@ def main() -> None:
         assert 'getByName("release") { isMinifyEnabled = true }' in amended
         assert PACKAGE == "com.pinkiptv.extreme.qa"
         assert strings.read_text().count("PINK IPTV TESTE") == 2
+        assert '<string name="app_name" translatable="false">PINK IPTV TESTE</string>' in strings.read_text()
         assert '<string name="dream_label">PINK IPTV</string>' in strings.read_text()
         try:
             apply(Path(temp))

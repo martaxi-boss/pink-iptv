@@ -39,6 +39,7 @@ jobs:
               "clients/extreme/prepare.py",
               ".github/workflows/pink-three-menu-brand-085.yml",
               ".github/workflows/backend-ci.yml",
+              ".project-leader/transitions/PINK-IPTV-LIVE-BRAND-086-MERGE.authorization.json",
           }
           assert files and files<=allowed, sorted(files-allowed)
           image=Path("clients/extreme/assets/pink-idle.webp").read_bytes()

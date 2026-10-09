@@ -274,6 +274,7 @@ def test_expired_lease_is_reclaimed_only_after_gateway_removal(vpn, db, monkeypa
     next_lease = enroll(vpn, 2)
     assert next_lease.status_code == 200
     assert next_lease.json()["address"] == "10.66.0.3/32"
+    db.refresh(previous)
     assert previous.address is None
     assert db.scalar(select(VpnAddressRelease)).cause == "expired"
     assert vpn.calls[-2:] == [
@@ -346,5 +347,6 @@ def test_subscription_expiry_address_is_reclaimed_by_another_account(
     result = vpn.client.post("/v1/vpn/enroll", headers=other_auth, json={"public_key": key(2)})
     assert result.status_code == 200
     assert result.json()["address"] == "10.66.0.3/32"
+    db.refresh(previous)
     assert previous.address is None
     assert db.scalar(select(VpnAddressRelease)).cause == "expired"

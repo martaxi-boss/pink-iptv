@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
       - name: Audit immutable certification061 or bounded login recovery062
         run: |
-          if [ "${{ github.ref_name }}" = 'builder/vpn-android-recovery-075' ]; then
+          if [ "${{ github.event_name }}" = 'pull_request' ] && [ "${{ github.head_ref }}" = 'builder/vpn-android-recovery-075' ]; then
             python clients/extreme/audit_075.py
           elif [ "${{ github.ref_name }}" = 'builder/device-login-recovery-062' ]; then
             python clients/extreme/audit_062.py

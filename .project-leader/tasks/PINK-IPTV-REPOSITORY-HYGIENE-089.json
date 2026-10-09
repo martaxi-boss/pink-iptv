@@ -1,0 +1,118 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-089",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-09T22:35:54.732Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner wants completed Project Leader/Pink IPTV residue cleanup. Audit Task088 exact pinned main inventory run 37999614152 found four additional non-active fully merged SHA ancestors of current main. Task089 separately authorizes only those four safe branch reference removals, keeping Task088 authorization immutable and preserving app, VPN, APK, user data, still-open PRs, unique historical evidence and security checks."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7",
+    "task_branch": "control/pink-efficiency-hygiene-088"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "ops/pink_hygiene_088.py",
+    ".github/workflows/pink-hygiene-088.yml",
+    ".project-leader/tasks/PINK-IPTV-REPOSITORY-HYGIENE-089.json",
+    ".project-leader/results/PINK-IPTV-REPOSITORY-HYGIENE-089.json",
+    ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-089-DELETE-*",
+    ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-089-EXECUTE.*"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "main_branch_deletion",
+    "unmerged_branch_deletion",
+    "open_pr_head_deletion",
+    "commit_history_rewrite",
+    "application_runtime_mutation",
+    "artifact_or_audit_record_deletion"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Exact current-main SHA, proven four SHA ancestors and no-open-PR/no-active-work review",
+    "Independent per-ref deletion grant and live revision check",
+    "No runtime, permission, CI security or app changes",
+    "Post-write absence and pinned main read-back"
+  ],
+  "required_ci": [
+    "PINK exact merged-ref hygiene 088"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "5b58a29526295b2827b619630a392ab8d7531502cf245458d9cf82e3c1d6b357",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "55b7a054df5408ed82f4d7771e5a8c843af26563"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Delete only four individually authorized exact fully-merged inactive refs, with unchanged main, per-branch live SHA/ancestry/active-work guards and post-write absence. Protect the existing Task088's historical authorizations/results.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

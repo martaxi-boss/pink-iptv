@@ -1,0 +1,118 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-088",
+  "project": "PINK IPTV",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-09T22:29:16.258Z",
+  "authority": {
+    "kind": "TRANSACTIONAL_GRANT",
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "OBJECTIVE_SCOPE_BOUND",
+    "summary": "Owner requested immediate repair of Project Leader workflow inefficiency and safe hygiene of obsolete Pink IPTV repository branches, preserving the active Android test, VPN/media code, all project audit evidence and mandatory security checks. This task prepares a read-only exact-ref inventory and at most ten individual deletions of refs whose live head equals the final merged PR head and is an ancestor of pinned main. Only per-ref authorization plus independent active-PR/workflow and lease recheck may permit deletion. No release, main merge, production runtime or installed APK modification."
+  },
+  "starting_state": {
+    "default_branch": "main",
+    "base_sha": "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7",
+    "task_branch": "control/pink-efficiency-hygiene-088"
+  },
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "mutation_scope": [
+    "ops/pink_hygiene_088.py",
+    ".github/workflows/pink-hygiene-088.yml",
+    ".project-leader/tasks/PINK-IPTV-REPOSITORY-HYGIENE-088.json",
+    ".project-leader/results/PINK-IPTV-REPOSITORY-HYGIENE-088.json",
+    ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-088-DELETE-*",
+    ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-088-EXECUTE.*"
+  ],
+  "allowed_actions": [
+    "create_branch",
+    "edit_project_files",
+    "create_commits",
+    "run_ci",
+    "open_or_update_pull_request"
+  ],
+  "prohibited_actions": [
+    "merge_to_main",
+    "branch_protection_or_ruleset_change",
+    "release_or_publish",
+    "production_deploy",
+    "destructive_data_change",
+    "repository_or_history_deletion",
+    "production_secret_change",
+    "irreversible_infrastructure_change",
+    "paid_service_activation",
+    "main_branch_deletion",
+    "unmerged_branch_deletion",
+    "open_pr_head_deletion",
+    "commit_history_rewrite",
+    "application_runtime_mutation",
+    "artifact_or_audit_record_deletion"
+  ],
+  "transition_controls": [
+    {
+      "action": "merge_to_main",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "branch_protection_or_ruleset_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "release_or_publish",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_deploy",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "destructive_data_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "repository_or_history_deletion",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "production_secret_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "irreversible_infrastructure_change",
+      "requires_authority_resolution": true
+    },
+    {
+      "action": "paid_service_activation",
+      "requires_authority_resolution": true
+    }
+  ],
+  "required_validation": [
+    "Project architecture scope audit",
+    "Mutation scope audit",
+    "GitHub evidence verification",
+    "Exact current-main SHA, closed merged PR heads, live ref ancestry and no-open-PR/no-active-work review",
+    "Only ref deletion after independent exact per-ref grant",
+    "No mutation of android app, VPN, backend, main, release artifacts or CI security checks",
+    "Post-write absence and preserved main verification"
+  ],
+  "required_ci": [
+    "PINK exact merged-branch hygiene 088"
+  ],
+  "policy": {
+    "profile": "generic-project-v1",
+    "path": "control/generic-project-policy.json",
+    "sha256": "5b58a29526295b2827b619630a392ab8d7531502cf245458d9cf82e3c1d6b357",
+    "binding_mode": "CENTRAL_CONTROL_V1",
+    "repository": "martaxi-boss/Project-leader",
+    "revision": "55b7a054df5408ed82f4d7771e5a8c843af26563"
+  },
+  "recovery": {
+    "mode": "APPEND_ONLY_V1"
+  },
+  "integrity_mode": "IMMUTABLE_AUTHORIZATION_V1",
+  "terminal_condition": "Only exact independently authorized, fully merged, non-main, inactive refs are deleted with live lease and ancestry checks; preserve SHA-reachable history, active PRs, divergent branches, all runtime & APK evidence. Terminal read-back confirms absent refs and unchanged canonical main; preserve durable results on control branch.",
+  "privacy": {
+    "contains_secrets": false,
+    "contains_private_conversation_text": false
+  }
+}

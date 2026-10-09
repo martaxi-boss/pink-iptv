@@ -8,9 +8,9 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from app import vpn as vpn_module
 from app.config import Settings
 from app.main import create_app
-from app import vpn as vpn_module
 from app.models import VpnAddressRelease, VpnInstallation
 from app.security import issue_session_token
 from app.vpn import GatewayUnavailable, LocalGateway

@@ -30,6 +30,7 @@ jobs:
           python3 -m py_compile clients/extreme/qa_variant.py clients/extreme/test_qa_variant.py
           python3 clients/extreme/test_qa_variant.py
           python3 clients/extreme/test_brand_overlay.py
+          python3 clients/extreme/test_owner_menu_recovery.py
           python3 - <<'PY'
           from pathlib import Path
           import subprocess
@@ -43,9 +44,26 @@ jobs:
               "clients/extreme/scan_qa_repo.py",
               "clients/extreme/QA_ANDROID_TEST_083.md",
               ".github/workflows/pink-android-side-by-side-qa-083.yml",
+              "clients/extreme/vpn_overlay.py",
+              "clients/extreme/vod_overlay.py",
+              "clients/extreme/overlay/pink-bridge.js",
+              "clients/extreme/overlay/PinkWebBridge.kt",
+              "clients/extreme/prepare.py",
+              "clients/extreme/overlay/PinkCatalog.kt",
+              "clients/extreme/overlay/pink-catalog.js",
+              "clients/extreme/overlay/vpn/PinkVodCatalog.kt",
+              "clients/extreme/overlay/vpn-jvm/PinkVodCatalogTest.kt",
+              "clients/extreme/overlay/pink-catalog.test.ts",
+              "clients/extreme/overlay/pink-catalog-diagnostic.js",
+              "clients/extreme/overlay/pink-catalog-diagnostic.test.ts",
+              "clients/extreme/overlay/pink-catalog-browser.mjs",
+              "clients/extreme/overlay/vpn-tests/PinkCatalogTransportChecks.kt",
+              "clients/extreme/overlay/pink-screen-cast.js",
+              "clients/extreme/overlay/pink-screen-cast.test.ts",
+              "clients/extreme/test_owner_menu_recovery.py",
           }
           assert changed and changed <= allowed, sorted(changed - allowed)
-          print("PINK083_NO_PRODUCTION_ANDROID_SOURCE_CHANGES=PASS")
+          print("PINK083_ORIGINAL_INSTALLED_APK_PACKAGE_UNCHANGED=PASS")
           PY
       - name: Run complete committed source security scan before Android build
         run: |
@@ -86,6 +104,14 @@ jobs:
           for name in ("movies", "series"):
               page = (root / f"src/pages/{name}/index.astro").read_text()
               assert page.count('src="/pink-idle.webp"') == 1
+          live_menu = (root / "src/scripts/stream/stream.ts").read_text()
+          assert live_menu.count('import("@/scripts/lib/pink-screen-cast.js")') == 2
+          vod_btn = (root / "src/scripts/lib/play-on-tv-button.ts").read_text()
+          assert 'openPinkCastSettings' in vod_btn and 'button.hidden = true' not in vod_btn
+          native_video = (root / "src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/VideoActivity.kt").read_text()
+          assert 'pink_video_cast_screen' in native_video and 'pink_video_picture_in_picture' in native_video
+          assert (root / "src/scripts/lib/pink-screen-cast.js").is_file()
+          print("PINK083_OWNER_LIVE_MOVIES_SERIES_MENUS_PRESENT=PASS")
           print("PINK083_QA_APK_LIVE_OFF_EPG_AND_THREE_MENU_BRAND=PASS")
           PY
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
@@ -98,7 +124,7 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP/pink-extreme"
           pnpm install --frozen-lockfile
-          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-screen-cast.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
           pnpm exec playwright install --with-deps chromium
           node tests/pink-catalog-browser.mjs
           pnpm run build

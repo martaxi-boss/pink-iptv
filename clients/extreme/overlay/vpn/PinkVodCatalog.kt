@@ -18,8 +18,7 @@ import org.json.JSONObject
 /** Movies/Series only: fixed provider reads through the existing admitted VPN. */
 internal class PinkVodCatalog(context: Context, private val vault: PinkVault, private val runtime: PinkVpnRuntime) {
     private val directory = File(context.cacheDir, "pink-catalog").apply { mkdirs() }
-    private data class Stage(val entryId: String, val file: File, val reader: RandomAccessFile)
-    private val stages = mutableMapOf<String, Stage>()
+    private val stages = PinkVodStageStore()
     private val lease = PinkCatalogTransfer.Lease()
     init { directory.listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 300000 }?.forEach { it.delete() } }
     private fun selected(entryId: String): JSONObject {
@@ -34,47 +33,47 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     }
     fun open(action: String, entryId: String): JSONObject {
         val policy = PinkCatalogTransfer.policy(action)
-        val entry = selected(entryId)
-        val url = requestUrl(entry.getString("serverUrl"), entry.getString("username"), entry.getString("password"), action)
+        val entry = PinkCatalogStage.attempt("ACCOUNT_BINDING") { selected(entryId) }
+        val url = PinkCatalogStage.attempt("SOURCE_VALIDATION") {
+            requestUrl(entry.getString("serverUrl"), entry.getString("username"), entry.getString("password"), action)
+        }
         val token = UUID.randomUUID().toString()
         val file = File(directory, token)
         try {
-            val request = runtime.openProtectedConnection(url)
+            val request = PinkCatalogStage.attempt("VPN_NETWORK") { runtime.openProtectedConnection(url) }
             try {
-                lease.attach(request)
+                PinkCatalogStage.attempt("STAGE_LIFECYCLE") { lease.attach(request) }
                 PinkCatalogTransfer.download(request, file, policy) { lease.active() && PinkVpnRuntime.isReady() }
             } finally { request.disconnect(); lease.release() }
-            selected(entryId)
-            synchronized(stages) {
-                check(stages.size < 4)
-                stages[token] = Stage(entryId, file, RandomAccessFile(file, "r"))
+            PinkCatalogStage.attempt("ACCOUNT_BINDING") { selected(entryId) }
+            PinkCatalogStage.attempt("STAGE_FILE") {
+                stages.admit(token, entryId, action, file)
             }
-            cleanup.schedule(Runnable { close(token) }, 300, TimeUnit.SECONDS)
+            PinkCatalogStage.attempt("STAGE_LIFECYCLE") {
+                cleanup.schedule(Runnable { close(token) }, 300, TimeUnit.SECONDS)
+            }
             return JSONObject().put("token", token).put("size", file.length())
-        } catch (error: Exception) { file.delete(); throw error }
+        } catch (error: Exception) {
+            // A failure after opening the reader must release both lease and file.
+            try { stages.close(token) } catch (_: Exception) { }
+            file.delete()
+            throw error
+        }
     }
     fun chunk(token: String, entryId: String): JSONObject {
         try {
             selected(entryId)
-            return synchronized(stages) {
-                val stage = checkNotNull(stages[token])
-                check(stage.entryId == entryId)
-                val chunk = PinkCatalogTransfer.readChunk(stage.reader)
-                check(lease.active() && PinkVpnRuntime.isReady())
-                if (chunk.optBoolean("done")) close(token)
-                chunk
-            }
+            val chunk = stages.chunk(token, entryId)
+            check(lease.active() && PinkVpnRuntime.isReady())
+            return chunk
         } catch (error: Exception) { close(token); throw error }
     }
-    fun close(token: String): Boolean = synchronized(stages) {
-        stages.remove(token)?.let { try { it.reader.close() } finally { it.file.delete() } }
-        true
-    }
+    fun close(token: String): Boolean = stages.close(token)
     fun dispose() {
         lease.invalidate()
         cleanup.execute {
             lease.close()
-            synchronized(stages) { stages.keys.toList().forEach { close(it) } }
+            stages.closeAll()
         }
     }
     companion object {
@@ -92,9 +91,66 @@ internal class PinkVodCatalog(context: Context, private val vault: PinkVault, pr
     }
 }
 
+/** Strictly bounded native staging: only the selected account's current action survives.
+ * A superseded page/request cannot occupy all four native file-reader slots.
+ * Each token remains bound to its original account; no URL or identity escapes native. */
+internal class PinkVodStageStore(private val maxOpen: Int = 4) {
+    private data class Stage(val entryId: String, val action: String,
+        val file: File, val reader: RandomAccessFile)
+    private val held = mutableMapOf<String, Stage>()
+
+    @Synchronized fun admit(token: String, entryId: String, action: String, file: File) {
+        require(action in setOf("get_vod_streams", "get_series"))
+        require(token !in held)
+        // Validate the new reader *before* evicting any previous healthy stage.
+        val reader = try { RandomAccessFile(file, "r") }
+            catch (_: Exception) { throw PinkCatalogFailure("STAGE_FILE") }
+        try {
+            // Old account bytes can no longer be read; repeated action means a
+            // newer request superseded an abandoned or still-pending old token.
+            val stale = held.filterValues { it.entryId != entryId || it.action == action }.keys.toList()
+            stale.forEach { close(it) }
+            if (held.size >= maxOpen) throw PinkCatalogFailure("STAGE_CAPACITY")
+            held[token] = Stage(entryId, action, file, reader)
+        } catch (error: Exception) {
+            try { reader.close() } catch (_: Exception) { }
+            throw error
+        }
+    }
+
+    @Synchronized fun chunk(token: String, entryId: String): JSONObject {
+        val stage = held[token] ?: throw PinkCatalogFailure("STAGE_EXPIRED")
+        if (stage.entryId != entryId) throw PinkCatalogFailure("ACCOUNT_BINDING")
+        val reply = PinkCatalogTransfer.readChunk(stage.reader)
+        if (reply.optBoolean("done")) close(token)
+        return reply
+    }
+
+    @Synchronized fun close(token: String): Boolean {
+        held.remove(token)?.let { stage ->
+            try { stage.reader.close() } finally { stage.file.delete() }
+        }
+        return true
+    }
+
+    @Synchronized fun closeAll() { held.keys.toList().forEach { close(it) } }
+    @Synchronized fun count(): Int = held.size
+}
+
 // Only fixed phase codes cross the bridge; never exception messages or provider data.
 internal class PinkCatalogFailure(val phase: String, val bytes: Long? = null,
     val elapsedMs: Long? = null, val httpStatus: Int? = null) : IllegalStateException(phase)
+
+/** Fixed phase boundaries only; never include upstream URLs, exceptions or account data. */
+internal object PinkCatalogStage {
+    fun <T> attempt(phase: String, operation: () -> T): T {
+        require(phase in setOf("ACCOUNT_BINDING", "SOURCE_VALIDATION", "VPN_NETWORK",
+            "STAGE_FILE", "STAGE_LIFECYCLE"))
+        return try { operation() }
+        catch (failure: PinkCatalogFailure) { throw failure }
+        catch (_: Exception) { throw PinkCatalogFailure(phase) }
+    }
+}
 
 /** Bounded disk transfer; no full native String or JSONArray for large catalogs. */
 internal object PinkCatalogTransfer {

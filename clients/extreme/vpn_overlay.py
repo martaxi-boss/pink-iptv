@@ -107,6 +107,45 @@ def apply(root, dest, replace):
     # API requirement to callers of the application's own Activity/constants.
     replace(native + 'VideoActivity.kt', '@UnstableApi\nclass VideoActivity',
             '@androidx.annotation.OptIn(UnstableApi::class)\nclass VideoActivity')
+    replace(native + 'VideoActivity.kt', '''    if (mode == MODE_LIVE) {
+      showDisplayModeChooser()
+      return
+    }
+    val labels = arrayOf(
+      getString(R.string.xt_video_display_mode),
+      getString(R.string.xt_video_playback_speed),
+    )
+    AlertDialog.Builder(this)
+      .setTitle(R.string.xt_video_settings_title)
+      .setItems(labels) { _, which ->
+        if (which == 0) showDisplayModeChooser() else showPlaybackSpeedChooser()
+      }
+      .show()''', '''    // Keep display sizing and native PiP / system Cast in all playback modes.
+    val labels = mutableListOf(getString(R.string.xt_video_display_mode))
+    val speedIndex = if (mode == MODE_VOD) {
+      labels.add(getString(R.string.xt_video_playback_speed))
+      1
+    } else -1
+    val pipIndex = labels.size
+    labels.add(getString(R.string.pink_video_picture_in_picture))
+    val castIndex = labels.size
+    labels.add(getString(R.string.pink_video_cast_screen))
+    AlertDialog.Builder(this)
+      .setTitle(R.string.xt_video_settings_title)
+      .setItems(labels.toTypedArray()) { _, which ->
+        when (which) {
+          0 -> showDisplayModeChooser()
+          speedIndex -> showPlaybackSpeedChooser()
+          pipIndex -> enterPictureInPictureMode(PictureInPictureParams.Builder().build())
+          castIndex -> try {
+            startActivity(Intent(android.provider.Settings.ACTION_CAST_SETTINGS))
+          } catch (_: Exception) {
+            android.widget.Toast.makeText(this, R.string.pink_video_cast_unavailable, android.widget.Toast.LENGTH_LONG).show()
+          }
+        }
+      }
+      .setOnDismissListener { playerView?.showController() }
+      .show()''')
     # Preserve the existing TV back hierarchy while supporting Android gestures.
     replace(native + 'VideoActivity.kt', '    setupCustomControls()', '''    setupCustomControls()
     onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
@@ -157,12 +196,47 @@ def apply(root, dest, replace):
     # Disable cross-device cast POST before any credential-bearing receiver request.
     replace('src/scripts/lib/tv-cast.ts', '    return await providerFetch(url, init)',
             '    throw new Error("Reprodução disponível apenas neste dispositivo PINK.")')
-    replace('src/scripts/lib/play-on-tv-button.ts', '    button.hidden = !isTauri || !hasSource', '    button.hidden = true')
     replace('src/scripts/lib/player-runtime.ts', '''export const androidExternalAvailable =
   isTauri &&
   isAndroid &&
   typeof window !== "undefined" &&
   !!(window as any).AndroidIntent''', 'export const androidExternalAvailable = false')
+
+    # Keep both original Live Play on TV menus, using Android system screen
+    # mirroring instead of sending a protected provider URL to a second device.
+    menu_path = dest / 'src/scripts/stream/stream.ts'
+    source = menu_path.read_text()
+    old_cast = 'import("@/scripts/lib/tv-cast.ts").then(({ castLiveChannelToTv }) => {'
+    if source.count(old_cast) != 2:
+        raise SystemExit("Pinned upstream must contain both Live cast menu actions")
+    for _ in range(2):
+        start = source.index(old_cast)
+        stop = source.index('\n      })', start) + len('\n      })')
+        old_action = source[start:stop]
+        if 'castLiveChannelToTv({' not in old_action or 'releaseLocalPlaybackForHandoff' not in old_action:
+            raise SystemExit("Live cast action changed: fail closed")
+        source = source[:start] + (
+            'import("@/scripts/lib/pink-screen-cast.js")'
+            '.then(({ openPinkCastSettings }) => openPinkCastSettings())'
+        ) + source[stop:]
+    menu_path.write_text(source)
+
+    vod_button = dest / 'src/scripts/lib/play-on-tv-button.ts'
+    text = vod_button.read_text()
+    start = text.index('  const onClick = async () => {')
+    end = text.index('  button.addEventListener("click", onClick)', start)
+    text = text[:start] + '''  const onClick = async () => {
+    await (await import("@/scripts/lib/pink-screen-cast.js")).openPinkCastSettings()
+  }
+
+''' + text[end:]
+    text = text.replace('import { resolveStreamUrl } from "@/scripts/lib/xtream-api.js"\n', '')
+    text = text.replace('import { isCastableSrc, buildVodCastDescriptor } from "@/scripts/lib/tv-cast-descriptor.js"\n', '')
+    text = text.replace('import { playOnTv, type PlayOnTvOptions } from "@/scripts/lib/tv-cast.js"',
+                        'import type { PlayOnTvOptions } from "@/scripts/lib/tv-cast.js"')
+    text = text.replace('import { log } from "@/scripts/lib/log.js"\n', '')
+    vod_button.write_text(text)
+
     # Mobile receiver IPC can start a separate lifecycle without authenticated account.
     lib = dest / 'src-tauri/src/lib.rs'
     text = lib.read_text()

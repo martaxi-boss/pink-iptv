@@ -77,6 +77,18 @@ object PinkWebBridge {
                                 true
                             }
                         }
+                        // Origin-restricted to the local main frame; no URLs or keys sent.
+                        "castPicker" -> {
+                            val activity = context as? MainActivity
+                            if (activity != null) {
+                                main.post {
+                                    try {
+                                        activity.startActivity(android.content.Intent(android.provider.Settings.ACTION_CAST_SETTINGS))
+                                    } catch (_: Exception) { /* Cast is not present on this Android. */ }
+                                }
+                                true
+                            } else false
+                        }
                         "liveCatalog" -> PinkCatalog.read(vault, PinkVpnRuntime.get(app),
                             payload.getString("action"), payload.getString("entryId"))
                         "resolve" -> PinkVpnRuntime.get(app).resolve(

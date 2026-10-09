@@ -28,8 +28,12 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
 
     try:
         with engine.connect() as connection:
-            version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-            active_rows = connection.execute(text("SELECT COUNT(*) FROM vpn_installations")).scalar_one()
+            version = connection.execute(
+                text("SELECT version_num FROM alembic_version")
+            ).scalar_one()
+            active_rows = connection.execute(
+                text("SELECT COUNT(*) FROM vpn_installations")
+            ).scalar_one()
             assert version == "20261009_0006"
             assert active_rows == 0
 
@@ -67,7 +71,9 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
         subprocess.run(["alembic", "upgrade", "head"], check=True)
 
         with engine.connect() as connection:
-            version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+            version = connection.execute(
+                text("SELECT version_num FROM alembic_version")
+            ).scalar_one()
             assert version == "20261009_0006"
             row = connection.execute(
                 text(

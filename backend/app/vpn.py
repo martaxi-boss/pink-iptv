@@ -222,7 +222,9 @@ def reclaim_expired_addresses(request: Request, db: Session) -> None:
         .limit(len(ADDRESS_POOL))
     ).all()
     for candidate in candidates:
-        release_address(request, db, candidate, cause="expired" if candidate.revoked_at is None else "revoked")
+        release_address(
+            request, db, candidate, cause="expired" if candidate.revoked_at is None else "revoked"
+        )
         # release_address committed, and therefore released the PostgreSQL lock.
         lock_allocations(db)
         if available_address(db) is not None:

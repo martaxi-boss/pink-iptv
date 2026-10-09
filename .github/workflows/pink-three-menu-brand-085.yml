@@ -1,0 +1,96 @@
+name: PINK Approved TV Movies Series Brand 085
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "clients/extreme/brand_overlay.py"
+      - "clients/extreme/test_brand_overlay.py"
+      - "clients/extreme/assets/pink-idle.webp"
+      - "clients/extreme/prepare.py"
+      - ".github/workflows/pink-three-menu-brand-085.yml"
+permissions:
+  contents: read
+jobs:
+  focused:
+    if: github.event.pull_request.head.ref == 'builder/pink-three-menu-idle-085' && github.event.pull_request.head.repo.full_name == 'martaxi-boss/pink-iptv'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate approved real image, exact source scope and three-menu fixture
+        run: |
+          set -euo pipefail
+          python3 -m py_compile clients/extreme/brand_overlay.py clients/extreme/test_brand_overlay.py clients/extreme/prepare.py
+          python3 clients/extreme/test_brand_overlay.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, subprocess
+          base="697893fe7ca1697c3638e436b167c51fb3c74e4c"
+          subprocess.run(["git","merge-base","--is-ancestor",base,"HEAD"],check=True)
+          files=set(subprocess.check_output(
+              ["git","diff","--name-only",base,"HEAD"],text=True).splitlines())
+          allowed={
+              "clients/extreme/brand_overlay.py",
+              "clients/extreme/test_brand_overlay.py",
+              "clients/extreme/assets/pink-idle.webp",
+              "clients/extreme/prepare.py",
+              ".github/workflows/pink-three-menu-brand-085.yml",
+          }
+          assert files and files<=allowed, sorted(files-allowed)
+          image=Path("clients/extreme/assets/pink-idle.webp").read_bytes()
+          assert image[:4]==b"RIFF" and image[8:12]==b"WEBP"
+          assert hashlib.sha256(image).hexdigest()=="46e986a996946fb8b718241c29353330b9d599075f032c5bb3cc672e46a0cc92"
+          print("PINK085_APPROVED_MOCKUP_ARTWORK_EXACT_HASH=PASS")
+          print("PINK085_VISUAL_ONLY_SOURCE_SCOPE=PASS")
+          PY
+  full:
+    needs: focused
+    runs-on: ubuntu-22.04
+    timeout-minutes: 24
+    env:
+      XT_SKIP_FFMPEG_SIDECAR: "1"
+      ASTRO_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          version: 10.31.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Patch exact pinned TV, movie and series source without route changes
+        run: |
+          set -euo pipefail
+          git clone --no-checkout https://github.com/infinitel8p/Extreme-InfiniTV.git "$RUNNER_TEMP/pink-extreme"
+          git -C "$RUNNER_TEMP/pink-extreme" checkout --detach 1efcc1b4ab3468db04aedd1c466228c52ef001b7
+          python3 clients/extreme/prepare.py "$RUNNER_TEMP/pink-extreme"
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          root=Path(os.environ["RUNNER_TEMP"])/"pink-extreme/src"
+          live=(root/"pages/livetv.astro").read_text()
+          assert "PINK approved mobile layout" in live
+          assert "pink-idle.webp" in live
+          assert ":global(#current), :global(#epg) { display: none !important; }" in live
+          assert 'id="player"' in live and 'id="player-empty"' in live
+          assert 'id="epg-toggle"' in live
+          for name in ("movies","series"):
+              page=(root/f"pages/{name}/index.astro").read_text()
+              assert page.count('src="/pink-idle.webp"')==1
+          print("PINK085_PINNED_UPSTREAM_THREE_MENUS=PASS")
+          PY
+      - name: Verify protected player, VOD and bridge behavior plus production Astro build
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/pink-extreme"
+          pnpm install --frozen-lockfile
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-login.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts
+          pnpm run build
+          test -s dist/pink-idle.webp
+          echo PINK085_ALL_THREE_MENUS_BUILT_NO_PLAYER_OR_VPN_REGRESSION=PASS

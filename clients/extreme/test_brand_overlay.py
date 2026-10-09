@@ -1,4 +1,4 @@
-"""Focused tests for the identical, non-interactive PINK 3-menu artwork."""
+"""Focused tests for PINK artwork while preserving Live TV EPG/status controls."""
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -61,7 +61,13 @@ def test() -> None:
         assert (dest / "public/pink-idle.webp").read_bytes() == b"synthetic-brand-fixture"
         live = (dest / "src/pages/livetv.astro").read_text()
         assert 'src="/pink-idle.webp"' in live
-        assert ":global(#current), :global(#epg) { display: none !important; }" in live
+        # Previously hidden by the visual overlay: both native controls must
+        # now remain displayed and interactive according to upstream behavior.
+        assert ":global(#current), :global(#epg)" not in live
+        assert "Preserve upstream OFF/current status and EPG controls." in live
+        assert 'id="epg-expand-toggle"' in live
+        assert 'id="epg-toggle"' in live
+        assert live.index('id="player-wrap"') < live.index('id="current"') < live.index('id="epg"')
         assert 'id="current"' in live and 'id="epg"' in live
         assert 'id="epg-toggle"' in live and 'id="category-picker-trigger"' in live
         assert 'id="player-wrap"' in live and 'id="player"' in live
@@ -85,7 +91,7 @@ def test() -> None:
             pass
         else:
             raise AssertionError("Second overlay unexpectedly duplicated the logo")
-    print("PINK085_THREE_MENU_BRAND_AND_SOURCE_ISOLATION_FAST_TEST=PASS")
+    print("PINK086_THREE_MENU_BRAND_OFF_EPG_PRESERVATION_FAST_TEST=PASS")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-name: PINK Approved TV Movies Series Brand 085
+name: PINK TV Movies Series Brand + Live EPG 086
 on:
   pull_request:
     branches: ["main"]
@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   focused:
-    if: github.event.pull_request.head.ref == 'builder/pink-three-menu-idle-085' && github.event.pull_request.head.repo.full_name == 'martaxi-boss/pink-iptv'
+    if: github.event.pull_request.head.ref == 'builder/restore-live-off-epg-086' && github.event.pull_request.head.repo.full_name == 'martaxi-boss/pink-iptv'
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
@@ -28,7 +28,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, subprocess
-          base="697893fe7ca1697c3638e436b167c51fb3c74e4c"
+          base="ef369e3ab12776e15fac81e5ca94c2e70c09ca39"
           subprocess.run(["git","merge-base","--is-ancestor",base,"HEAD"],check=True)
           files=set(subprocess.check_output(
               ["git","diff","--name-only",base,"HEAD"],text=True).splitlines())
@@ -38,13 +38,15 @@ jobs:
               "clients/extreme/assets/pink-idle.webp",
               "clients/extreme/prepare.py",
               ".github/workflows/pink-three-menu-brand-085.yml",
+              ".github/workflows/backend-ci.yml",
+              ".project-leader/transitions/PINK-IPTV-LIVE-BRAND-086-MERGE.authorization.json",
           }
           assert files and files<=allowed, sorted(files-allowed)
           image=Path("clients/extreme/assets/pink-idle.webp").read_bytes()
           assert image[:4]==b"RIFF" and image[8:12]==b"WEBP"
           assert hashlib.sha256(image).hexdigest()=="46e986a996946fb8b718241c29353330b9d599075f032c5bb3cc672e46a0cc92"
-          print("PINK085_APPROVED_MOCKUP_ARTWORK_EXACT_HASH=PASS")
-          print("PINK085_VISUAL_ONLY_SOURCE_SCOPE=PASS")
+          print("PINK086_APPROVED_MOCKUP_ARTWORK_EXACT_HASH=PASS")
+          print("PINK086_VISUAL_ONLY_SOURCE_SCOPE=PASS")
           PY
   full:
     needs: focused
@@ -75,15 +77,17 @@ jobs:
           import os
           root=Path(os.environ["RUNNER_TEMP"])/"pink-extreme/src"
           live=(root/"pages/livetv.astro").read_text()
-          assert "PINK approved mobile layout" in live
+          assert "Preserve upstream OFF/current status and EPG controls." in live
           assert "pink-idle.webp" in live
-          assert ":global(#current), :global(#epg) { display: none !important; }" in live
+          assert ":global(#current), :global(#epg)" not in live
+          assert 'id="current"' in live and 'id="epg"' in live
+          assert 'id="epg-expand-toggle"' in live
           assert 'id="player"' in live and 'id="player-empty"' in live
           assert 'id="epg-toggle"' in live
           for name in ("movies","series"):
               page=(root/f"pages/{name}/index.astro").read_text()
               assert page.count('src="/pink-idle.webp"')==1
-          print("PINK085_PINNED_UPSTREAM_THREE_MENUS=PASS")
+          print("PINK086_PINNED_UPSTREAM_THREE_MENUS_OFF_EPG_VISIBLE=PASS")
           PY
       - name: Verify protected player, VOD and bridge behavior plus production Astro build
         run: |
@@ -93,4 +97,4 @@ jobs:
           pnpm exec vitest run tests/pink-session.test.ts tests/pink-login.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts
           pnpm run build
           test -s dist/pink-idle.webp
-          echo PINK085_ALL_THREE_MENUS_BUILT_NO_PLAYER_OR_VPN_REGRESSION=PASS
+          echo PINK086_ALL_THREE_MENUS_BUILT_NO_PLAYER_OR_VPN_REGRESSION=PASS

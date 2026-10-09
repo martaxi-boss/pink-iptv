@@ -25,7 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16.4-alpine
+        # Official PostgreSQL image mirrored by AWS Public ECR, avoiding the
+        # unauthenticated Docker Hub pull quota on shared GitHub runners.
+        image: public.ecr.aws/docker/library/postgres:16.4-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres # pragma: allowlist secret

@@ -29,10 +29,11 @@ jobs:
           set -euo pipefail
           python3 -m py_compile clients/extreme/qa_variant.py clients/extreme/test_qa_variant.py
           python3 clients/extreme/test_qa_variant.py
+          python3 clients/extreme/test_brand_overlay.py
           python3 - <<'PY'
           from pathlib import Path
           import subprocess
-          base = "ef369e3ab12776e15fac81e5ca94c2e70c09ca39"
+          base = "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7"
           subprocess.run(["git","merge-base","--is-ancestor",base,"HEAD"],check=True)
           changed = set(subprocess.check_output(
               ["git","diff","--name-only",base,"HEAD"],text=True).splitlines())
@@ -73,6 +74,20 @@ jobs:
           git clone --no-checkout https://github.com/infinitel8p/Extreme-InfiniTV.git "$RUNNER_TEMP/pink-extreme"
           git -C "$RUNNER_TEMP/pink-extreme" checkout --detach 1efcc1b4ab3468db04aedd1c466228c52ef001b7
           python3 clients/extreme/prepare.py "$RUNNER_TEMP/pink-extreme"
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          root = Path(os.environ["RUNNER_TEMP"]) / "pink-extreme"
+          live = (root / "src/pages/livetv.astro").read_text()
+          assert 'id="current"' in live and 'id="epg"' in live
+          assert 'id="epg-expand-toggle"' in live
+          assert ":global(#current), :global(#epg)" not in live
+          assert (root / "public/pink-idle.webp").is_file()
+          for name in ("movies", "series"):
+              page = (root / f"src/pages/{name}/index.astro").read_text()
+              assert page.count('src="/pink-idle.webp"') == 1
+          print("PINK083_QA_APK_LIVE_OFF_EPG_AND_THREE_MENU_BRAND=PASS")
+          PY
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
         with:
           workspaces: "${{ runner.temp }}/pink-extreme/src-tauri -> target"

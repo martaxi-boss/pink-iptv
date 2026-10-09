@@ -38,6 +38,7 @@ jobs:
               "clients/extreme/assets/pink-idle.webp",
               "clients/extreme/prepare.py",
               ".github/workflows/pink-three-menu-brand-085.yml",
+              ".github/workflows/backend-ci.yml",
           }
           assert files and files<=allowed, sorted(files-allowed)
           image=Path("clients/extreme/assets/pink-idle.webp").read_bytes()

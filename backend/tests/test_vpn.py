@@ -175,10 +175,39 @@ def test_expired_installation_or_account_removes_peer(vpn, db, future_mapping):
 
 
 def test_account_installation_cap(vpn):
+    assert vpn.settings.vpn_max_installations_per_account == 10
+    for number in range(1, 11):
+        assert enroll(vpn, number).status_code == 200
+    assert enroll(vpn, 11).status_code == 429
+    # An existing installation is reusable even when all ten slots are occupied.
+    assert enroll(vpn).status_code == 200
+
+
+def test_legacy_five_installation_override_remains_enforced(vpn):
+    vpn.settings.vpn_max_installations_per_account = 5
     for number in range(1, 6):
         assert enroll(vpn, number).status_code == 200
     assert enroll(vpn, 6).status_code == 429
     assert enroll(vpn).status_code == 200
+
+
+def test_thirty_authenticated_reenrollments_reuse_one_installation(vpn, db):
+    for _ in range(30):
+        assert enroll(vpn).status_code == 200
+    assert len(db.scalars(select(VpnInstallation)).all()) == 1
+    for number in range(2, 11):
+        assert enroll(vpn, number).status_code == 200
+    assert enroll(vpn, 11).status_code == 429
+
+
+def test_expired_installations_no_longer_reserve_a_slot(vpn, db):
+    for number in range(1, 11):
+        assert enroll(vpn, number).status_code == 200
+    expired = db.scalar(select(VpnInstallation).where(VpnInstallation.public_key == key(2)))
+    assert expired is not None
+    expired.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+    db.commit()
+    assert enroll(vpn, 11).status_code == 200
 
 
 def test_gateway_failure_never_releases_configuration(vpn):

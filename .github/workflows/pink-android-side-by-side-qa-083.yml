@@ -225,7 +225,7 @@ jobs:
         run: |
           set -euo pipefail
           apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
-          folder="$GITHUB_WORKSPACE/clients/extreme/.qa-deliverable"
+          folder="$GITHUB_WORKSPACE/clients/extreme/qa-deliverable"
           mkdir -p "$folder"
           cp "$apk" "$folder/PINK-IPTV-TESTE.apk"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$folder/PINK-IPTV-TESTE.apk" > "$folder/package-check.txt"
@@ -235,7 +235,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, json, os
-          output=Path(os.environ["GITHUB_WORKSPACE"])/"clients/extreme/.qa-deliverable"
+          output=Path(os.environ["GITHUB_WORKSPACE"])/"clients/extreme/qa-deliverable"
           artifact=output/"PINK-IPTV-TESTE.apk"
           sha=hashlib.sha256(artifact.read_bytes()).hexdigest()
           properties={
@@ -258,6 +258,6 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: PINK-IPTV-TESTE-083
-          path: clients/extreme/.qa-deliverable
+          path: clients/extreme/qa-deliverable
           if-no-files-found: error
           retention-days: 30

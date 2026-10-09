@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import ipaddress
 import json
+import math
 import secrets
 import socket
 from datetime import UTC, datetime, timedelta
@@ -18,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import SubscriptionMapping, VpnAddressRelease, VpnInstallation
+from app.vpn_rate_limit import charge_vpn_attempt
 
 router = APIRouter(prefix="/v1/vpn")
 ADDRESS_POOL = tuple(f"10.66.0.{number}" for number in range(3, 255))
@@ -249,6 +251,7 @@ def enroll(
     payload: EnrollRequest, request: Request, response: Response, db: Session = Depends(get_db)
 ) -> LeaseResponse:
     settings = enabled(request, response)
+    charge_vpn_attempt(db, settings, request.headers.get("authorization", ""))
     mapping = mapping_for_session(request, db)
     lock_allocations(db)
     peer = db.scalar(
@@ -263,7 +266,17 @@ def enroll(
             )
         ).all()
         if len(active) >= settings.vpn_max_installations_per_account:
-            deny(429)
+            earliest = min(aware(installation.expires_at) for installation in active)
+            seconds = max(1, min(86400, math.ceil((earliest - datetime.now(UTC)).total_seconds())))
+            raise HTTPException(
+                429,
+                "PINK connection unavailable",
+                headers={
+                    "Cache-Control": "no-store",
+                    "Retry-After": str(seconds),
+                    "X-Pink-Vpn-Admission": "capacity",
+                },
+            )
     if peer is not None:
         if peer.mapping_id != mapping.id and (
             payload.device_token is None
@@ -323,6 +336,7 @@ def refresh(
     payload: DeviceRequest, request: Request, response: Response, db: Session = Depends(get_db)
 ) -> LeaseResponse:
     settings = enabled(request, response)
+    charge_vpn_attempt(db, settings, payload.device_token.get_secret_value())
     lock_allocations(db)
     peer = installation(payload, db)
     mapping = db.get(SubscriptionMapping, peer.mapping_id)
@@ -356,6 +370,7 @@ def list_installations(
     db: Session = Depends(get_db),
 ) -> list[InstallationStatus]:
     settings = enabled(request, response)
+    charge_vpn_attempt(db, settings, request.headers.get("authorization", ""))
     mapping = mapping_for_session(request, db)
     installations = db.scalars(
         select(VpnInstallation)
@@ -385,6 +400,7 @@ def release_installation(
     db: Session = Depends(get_db),
 ) -> None:
     settings = enabled(request, response)
+    charge_vpn_attempt(db, settings, request.headers.get("authorization", ""))
     mapping = mapping_for_session(request, db)
     lock_allocations(db)
     peers = db.scalars(
@@ -417,7 +433,8 @@ def release_installation(
 def revoke(
     payload: DeviceRequest, request: Request, response: Response, db: Session = Depends(get_db)
 ) -> None:
-    enabled(request, response)
+    settings = enabled(request, response)
+    charge_vpn_attempt(db, settings, payload.device_token.get_secret_value())
     lock_allocations(db)
     peer = installation(payload, db)
     # Persist revocation first: gateway failure cannot turn this into a renewable grant.

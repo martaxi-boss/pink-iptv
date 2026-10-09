@@ -47,7 +47,55 @@ def apply(dest: Path) -> None:
     print("PINK_QA_DEBUG_ONLY_SUFFIX=PASS")
 
 
+def repair_after_tauri_build(dest: Path) -> None:
+    """Guard and re-assert only the disposable Android debug identity.
+
+    Tauri's Android build/synchronization may regenerate Gradle resources.
+    Re-apply the debug-only suffix and user-visible QA label *after* Tauri
+    has finished, then let Gradle repackage already-built native libraries.
+    Never edit release config, Kotlin namespace or original app identity.
+    """
+    android = dest / "src-tauri/gen/android/app"
+    gradle = android / "build.gradle.kts"
+    text = gradle.read_text()
+    marker = '        getByName("debug") {\\n            isDebuggable = true'
+    expected = 'applicationIdSuffix = ".qa"'
+    if expected not in text:
+        assert text.count(marker) == 1, "Regenerated debug Gradle shape drift"
+        text = text.replace(
+            marker,
+            '        getByName("debug") {\\n            applicationIdSuffix = ".qa"\\n            isDebuggable = true',
+        )
+        gradle.write_text(text)
+    assert text.count(expected) == 1, "Duplicate or unrecognized QA suffix"
+    assert 'namespace = "com.pinkiptv.extreme"' in text
+    assert 'applicationId = "com.pinkiptv.extreme"' in text
+    debug_pos = text.index('getByName("debug")')
+    suffix_pos = text.index(expected)
+    release_pos = text.index('getByName("release")')
+    assert debug_pos < suffix_pos < release_pos, "QA suffix escaped debug build"
+
+    strings = android / "src/main/res/values/strings.xml"
+    values = strings.read_text()
+    for name in ("app_name", "main_activity_title"):
+        matcher = re.compile(
+            r'(<string name="' + re.escape(name) + r'"(?:\\s+[^<>]*?)?>)([^<]+)(</string>)'
+        )
+        matches = list(matcher.finditer(values))
+        assert len(matches) == 1, "Unexpected resource identity: " + name
+        assert matches[0].group(2) in ("PINK IPTV", "PINK IPTV TESTE")
+        if matches[0].group(2) == "PINK IPTV":
+            values = matcher.sub(r"\\g<1>PINK IPTV TESTE\\g<3>", values)
+    strings.write_text(values)
+    assert values.count("PINK IPTV TESTE") >= 2
+    print("PINK_QA_POST_TAURI_DEBUG_IDENTITY_REASSERTED=PASS")
+    print("PINK_QA_POST_TAURI_ORIGINAL_PACKAGE_UNCHANGED=PASS")
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise SystemExit("Usage: qa_variant.py <disposable-pinned-source>")
-    apply(Path(sys.argv[1]).resolve())
+    if len(sys.argv) == 2:
+        apply(Path(sys.argv[1]).resolve())
+    elif len(sys.argv) == 3 and sys.argv[2] == "--postbuild":
+        repair_after_tauri_build(Path(sys.argv[1]).resolve())
+    else:
+        raise SystemExit("Usage: qa_variant.py <disposable-source> [--postbuild]")

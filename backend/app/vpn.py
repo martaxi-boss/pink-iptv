@@ -62,7 +62,6 @@ class DeviceRequest(BaseModel):
     _key = field_validator("public_key")(public_key)
 
 
-
 class InstallationStatus(BaseModel):
     installation_id: str
     expires_at: datetime
@@ -342,7 +341,6 @@ def refresh(
     return config(peer, settings)
 
 
-
 def installation_handle(peer: VpnInstallation, settings) -> str:
     """Account-scoped opaque reference. Neither public keys nor device tokens leave the API."""
     data = f"pink-vpn-installation-v1:{peer.mapping_id}:{peer.public_key}".encode()
@@ -394,7 +392,8 @@ def release_installation(
     ).all()
     matched = next(
         (
-            peer for peer in peers
+            peer
+            for peer in peers
             if hmac.compare_digest(installation_handle(peer, settings), payload.installation_id)
         ),
         None,

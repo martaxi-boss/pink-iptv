@@ -12,10 +12,39 @@ class VpnInstallation(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     mapping_id: Mapped[int] = mapped_column(ForeignKey("subscription_mappings.id"), nullable=False)
     public_key: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
-    address: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    # NULL only after the root gateway confirms removal of the old peer.
+    address: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
     token_sha256: Mapped[str] = mapped_column(Text, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    last_authenticated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class VpnAddressRelease(Base):
+    """Append-only history of acknowledged gateway peer removals."""
+
+    __tablename__ = "vpn_address_releases"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    installation_id: Mapped[int] = mapped_column(ForeignKey("vpn_installations.id"), nullable=False)
+    address: Mapped[str] = mapped_column(Text, nullable=False)
+    released_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    cause: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class VpnRateWindow(Base):
+    """Shared VPN admission counters; keys never hold plaintext credentials."""
+
+    __tablename__ = "vpn_rate_windows"
+
+    bucket_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    window_number: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class AuthRateWindow(Base):

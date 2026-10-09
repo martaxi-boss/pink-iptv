@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -12,6 +12,7 @@ from app.logging_config import configure_logging
 from app.schemas import ResolveRequest, ResolveResponse
 from app.services.session import SessionResolver
 from app.vpn import router as vpn_router
+from app.vpn_rate_limit import charge_vpn_attempt
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -22,6 +23,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = runtime_settings
     app.include_router(vpn_router)
     app.state.session_factory = build_session_factory(runtime_settings.database_url)
+
+    @app.middleware("http")
+    async def vpn_global_admission(request: Request, call_next):
+        if request.url.path.startswith("/v1/vpn/"):
+            # This middleware runs before Pydantic parses the body, so even
+            # malformed/unauthenticated VPN traffic charges the global budget.
+            with app.state.session_factory() as session:
+                try:
+                    charge_vpn_attempt(session, runtime_settings)
+                except HTTPException as failure:
+                    return JSONResponse(
+                        status_code=failure.status_code,
+                        content={"detail": failure.detail},
+                        headers=failure.headers,
+                    )
+        return await call_next(request)
+
     app.state.xtream_client_factory = XtreamClient
     app.state.mega_client_factory = lambda: MegaOTTClient(
         base_url=runtime_settings.mega_ott_api_base,

@@ -524,6 +524,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
             if (!isList) connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
             session?.let { connection.setRequestProperty("Authorization", "Bearer $it") }
+            if (isList) connection.setRequestProperty(
+                "X-Pink-Device-Public-Key", pair().publicKey.toBase64()
+            )
             try {
                 phase = if (isList) "connect_read" else "connect_write"
                 if (!isList) connection.outputStream.use {

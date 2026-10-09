@@ -64,9 +64,7 @@ def test_alembic_schema_on_real_postgres() -> None:
     release_columns = {
         column["name"] for column in inspect(engine).get_columns("vpn_address_releases")
     }
-    assert release_columns == {
-        "id", "installation_id", "address", "released_at", "cause"
-    }
+    assert release_columns == {"id", "installation_id", "address", "released_at", "cause"}
     vpn_unique = {
         tuple(constraint["column_names"])
         for constraint in inspect(engine).get_unique_constraints("vpn_installations")

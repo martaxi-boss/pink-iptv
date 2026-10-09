@@ -62,6 +62,20 @@ class DeviceRequest(BaseModel):
     _key = field_validator("public_key")(public_key)
 
 
+
+class InstallationStatus(BaseModel):
+    installation_id: str
+    expires_at: datetime
+    last_authenticated_at: datetime
+    is_current: bool
+
+
+class ReleaseInstallationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    installation_id: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    confirm: Literal[True]
+
+
 class GatewayUnavailable(Exception):
     """Deliberately carries no socket payload, credentials or upstream exception."""
 
@@ -281,6 +295,7 @@ def enroll(
     peer.expires_at = min(expires, aware(mapping.expiring_at)) if mapping.expiring_at else expires
     token = secrets.token_urlsafe(32)
     peer.token_sha256 = hashlib.sha256(token.encode()).hexdigest()
+    peer.last_authenticated_at = datetime.now(UTC)
     # Commit ownership first. A lost HTTP reply is recoverable with the same authenticated
     # account/key; a gateway failure returns no usable lease and can be retried safely.
     try:
@@ -325,6 +340,78 @@ def refresh(
     except GatewayUnavailable:
         deny(503)
     return config(peer, settings)
+
+
+
+def installation_handle(peer: VpnInstallation, settings) -> str:
+    """Account-scoped opaque reference. Neither public keys nor device tokens leave the API."""
+    data = f"pink-vpn-installation-v1:{peer.mapping_id}:{peer.public_key}".encode()
+    secret = settings.session_signing_key.get_secret_value().encode()
+    return hmac.new(secret, data, "sha256").hexdigest()
+
+
+@router.get("/installations", response_model=list[InstallationStatus])
+def list_installations(
+    request: Request,
+    response: Response,
+    current_public_key: str | None = None,
+    db: Session = Depends(get_db),
+) -> list[InstallationStatus]:
+    settings = enabled(request, response)
+    mapping = mapping_for_session(request, db)
+    installations = db.scalars(
+        select(VpnInstallation)
+        .where(
+            VpnInstallation.mapping_id == mapping.id,
+            VpnInstallation.revoked_at.is_(None),
+            VpnInstallation.expires_at > datetime.now(UTC),
+        )
+        .order_by(VpnInstallation.last_authenticated_at, VpnInstallation.id)
+    ).all()
+    return [
+        InstallationStatus(
+            installation_id=installation_handle(peer, settings),
+            expires_at=aware(peer.expires_at),
+            last_authenticated_at=aware(peer.last_authenticated_at),
+            is_current=peer.public_key == current_public_key,
+        )
+        for peer in installations
+    ]
+
+
+@router.post("/installations/release", status_code=204)
+def release_installation(
+    payload: ReleaseInstallationRequest,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> None:
+    settings = enabled(request, response)
+    mapping = mapping_for_session(request, db)
+    lock_allocations(db)
+    peers = db.scalars(
+        select(VpnInstallation).where(VpnInstallation.mapping_id == mapping.id)
+    ).all()
+    matched = next(
+        (
+            peer for peer in peers
+            if hmac.compare_digest(installation_handle(peer, settings), payload.installation_id)
+        ),
+        None,
+    )
+    if matched is None:
+        deny(404)
+    # The owner explicitly selects an obsolete installation; do not ever evict
+    # a valid offline device based on missing recent handshake alone.
+    if matched.revoked_at is None:
+        matched.revoked_at = datetime.now(UTC)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            deny(503)
+    lock_allocations(db)
+    release_address(request, db, matched, cause="revoked")
 
 
 @router.post("/revoke", status_code=204)

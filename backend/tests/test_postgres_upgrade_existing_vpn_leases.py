@@ -5,11 +5,10 @@ This test touches only the isolated CI pink_test database, never production.
 
 import base64
 import os
+import subprocess
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from alembic import command
-from alembic.config import Config
 from sqlalchemy import create_engine, text
 
 
@@ -21,7 +20,6 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
     database_url = os.environ["DATABASE_URL"]
     assert database_url.rsplit("/", 1)[-1] == "pink_test"
     engine = create_engine(database_url)
-    config = Config("alembic.ini")
     key = base64.b64encode(bytes(range(32))).decode()
     expected_address = "10.66.0.170"
     expected_token_hash = "a" * 64  # pragma: allowlist secret -- synthetic one-way fixture
@@ -37,7 +35,7 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
                 text("SELECT COUNT(*) FROM vpn_installations")
             ).scalar_one() == 0
 
-        command.downgrade(config, "20261005_0002")
+        subprocess.run(["alembic", "downgrade", "20261005_0002"], check=True)
         with engine.begin() as connection:
             fixture_mapping_id = connection.execute(
                 text(
@@ -68,7 +66,7 @@ def test_existing_vpn_installation_survives_additive_0002_to_0006_migrations():
                     "expires_at": now + timedelta(hours=12),
                 },
             )
-        command.upgrade(config, "head")
+        subprocess.run(["alembic", "upgrade", "head"], check=True)
 
         with engine.connect() as connection:
             assert connection.execute(

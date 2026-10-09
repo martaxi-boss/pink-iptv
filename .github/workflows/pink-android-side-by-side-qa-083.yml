@@ -109,6 +109,22 @@ jobs:
           cd "$RUNNER_TEMP/pink-extreme"
           export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
           pnpm tauri android build --debug --apk --target aarch64 --target armv7 --target x86_64
+      - name: Restore opt-in QA debug identity after Tauri Android synchronization
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          test -s "$apk"
+          # Only print non-secret public Android identifiers, so a future
+          # Tauri regeneration mismatch is diagnosed without another blind run.
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" \
+            | grep -E '^(package:|application-label:)' | head -n 4
+          python3 clients/extreme/qa_variant.py "$RUNNER_TEMP/pink-extreme" --postbuild
+          cd "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android"
+          export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
+          # Native Rust payload is already compiled. Rebuild only the Android
+          # debug package so its final manifest/resources use the QA identity.
+          ./gradlew --no-daemon app:assembleUniversalDebug -x app:rustBuildUniversalDebug
       - name: Compile native instrumentation and inspect official non-root WireGuard
         run: |
           set -euo pipefail
@@ -132,6 +148,7 @@ jobs:
           apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink083-badging.txt"
+          grep -E '^(package:|application-label:)' "$RUNNER_TEMP/pink083-badging.txt" | head -n 4
           grep -Fq "package: name='com.pinkiptv.extreme.qa'" "$RUNNER_TEMP/pink083-badging.txt"
           grep -Fq "application-label:'PINK IPTV TESTE'" "$RUNNER_TEMP/pink083-badging.txt"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/pink083-signature.txt"

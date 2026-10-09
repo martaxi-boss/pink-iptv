@@ -19,6 +19,8 @@ def _replace_once(path: Path, before: str, after: str) -> None:
 
 def _patch_live(page: Path) -> None:
     text = page.read_text()
+    if 'class="pink-brand-image ' in text:
+        raise ValueError("PINK live visual overlay already applied")
     begin_token = '\t\t\t\t\t\t<div\n\t\t\t\t\t\t\tid="player-empty"'
     video_token = '\t\t\t\t\t\t<video\n\t\t\t\t\t\t\tid="player"'
     assert text.count(begin_token) == 1 and text.count(video_token) == 1
@@ -70,6 +72,8 @@ def _patch_live(page: Path) -> None:
 
 def _patch_catalog(page: Path, name: str) -> None:
     assert name in ("movie", "series")
+    if 'data-pink-idle-brand=' in page.read_text():
+        raise ValueError("PINK catalogue visual overlay already applied")
     start = '\t\t<header class="route-hero shrink-0">'
     image = f"""\t\t<!-- PINK artwork is purely decorative. Card navigation and VOD
 \t\t     playback remain in the existing, unmodified catalogue scripts. -->

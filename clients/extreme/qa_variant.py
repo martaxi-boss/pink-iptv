@@ -58,13 +58,13 @@ def repair_after_tauri_build(dest: Path) -> None:
     android = dest / "src-tauri/gen/android/app"
     gradle = android / "build.gradle.kts"
     text = gradle.read_text()
-    marker = '        getByName("debug") {\\n            isDebuggable = true'
+    marker = '        getByName("debug") {\n            isDebuggable = true'
     expected = 'applicationIdSuffix = ".qa"'
     if expected not in text:
         assert text.count(marker) == 1, "Regenerated debug Gradle shape drift"
         text = text.replace(
             marker,
-            '        getByName("debug") {\\n            applicationIdSuffix = ".qa"\\n            isDebuggable = true',
+            '        getByName("debug") {\n            applicationIdSuffix = ".qa"\n            isDebuggable = true',
         )
         gradle.write_text(text)
     assert text.count(expected) == 1, "Duplicate or unrecognized QA suffix"
@@ -79,13 +79,13 @@ def repair_after_tauri_build(dest: Path) -> None:
     values = strings.read_text()
     for name in ("app_name", "main_activity_title"):
         matcher = re.compile(
-            r'(<string name="' + re.escape(name) + r'"(?:\\s+[^<>]*?)?>)([^<]+)(</string>)'
+            r'(<string name="' + re.escape(name) + r'"(?:\s+[^<>]*?)?>)([^<]+)(</string>)'
         )
         matches = list(matcher.finditer(values))
         assert len(matches) == 1, "Unexpected resource identity: " + name
         assert matches[0].group(2) in ("PINK IPTV", "PINK IPTV TESTE")
         if matches[0].group(2) == "PINK IPTV":
-            values = matcher.sub(r"\\g<1>PINK IPTV TESTE\\g<3>", values)
+            values = matcher.sub(r"\g<1>PINK IPTV TESTE\g<3>", values)
     strings.write_text(values)
     assert values.count("PINK IPTV TESTE") >= 2
     print("PINK_QA_POST_TAURI_DEBUG_IDENTITY_REASSERTED=PASS")

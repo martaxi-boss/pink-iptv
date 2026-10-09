@@ -128,9 +128,7 @@ def test_vpn_budget_serializes_postgres_connections(settings) -> None:
     database_url = os.environ["DATABASE_URL"]
     assert database_url.rsplit("/", 1)[-1] == "pink_test"
     engine = create_engine(database_url)
-    limited = settings.model_copy(
-        update={"vpn_rate_per_credential": 2, "vpn_rate_global": 100}
-    )
+    limited = settings.model_copy(update={"vpn_rate_per_credential": 2, "vpn_rate_global": 100})
     fixed = datetime(2026, 10, 9, 12, 0, tzinfo=UTC)
 
     with engine.begin() as connection:

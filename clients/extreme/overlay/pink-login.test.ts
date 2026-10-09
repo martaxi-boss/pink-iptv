@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const deps = vi.hoisted(() => ({ addEntry: vi.fn(), getEntries: vi.fn(), removeEntry: vi.fn(), resolvePinkSession: vi.fn() }))
 vi.mock('@/scripts/lib/creds.js', () => deps)
 vi.mock('@/scripts/lib/pink-session.js', () => deps)
-import { mountPinkLogin } from '../src/scripts/lib/pink-login.js'
+import { mountPinkLogin, parseRecoverableInstallations } from '../src/scripts/lib/pink-login.js'
 function formHarness() {
   const button = { disabled: false }
   const status = { textContent: '' }
@@ -21,6 +21,34 @@ beforeEach(() => {
   deps.getEntries.mockResolvedValue([])
   deps.addEntry.mockResolvedValue({})
 })
+describe('VPN quota self-service recovery', () => {
+  const device = (index: number) => ({
+    installation_id: String(index % 10).repeat(64),
+    last_authenticated_at: '2026-10-08T12:00:00Z',
+    is_current: index === 0,
+  })
+  it('accepts only bounded opaque, uniquely identified installations', () => {
+    expect(parseRecoverableInstallations(JSON.stringify([device(0),device(1)]))).toHaveLength(2)
+    expect(() => parseRecoverableInstallations(JSON.stringify([device(1),device(1)]))).toThrow()
+    expect(() => parseRecoverableInstallations(JSON.stringify(Array.from({length:11},(_,i)=>device(i))))).toThrow()
+    expect(() => parseRecoverableInstallations(JSON.stringify([
+      {...device(1), installation_id:'invalid-private-key'},
+    ]))).toThrow()
+    expect(() => parseRecoverableInstallations(JSON.stringify([
+      {...device(1), last_authenticated_at:'garbage'},
+    ]))).toThrow()
+  })
+  it('only exposes recovery after the fixed VPN_LIMIT error', async () => {
+    const h = formHarness()
+    deps.resolvePinkSession.mockRejectedValue(Object.assign(
+      new Error('Limite de 10 instalações VPN atingido. (PINK: VPN_LIMIT)'), {code:'VPN_LIMIT'}
+    ))
+    await h.submit()
+    expect(h.status.hidden).toBe(false)
+    expect(h.status.textContent).toContain('VPN_LIMIT')
+  })
+})
+
 describe('protected login transaction checkpoints', () => {
   it('waits for account persistence before navigation', async () => {
     let save: any

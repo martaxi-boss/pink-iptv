@@ -12,6 +12,7 @@ const NATIVE_ERRORS = {
   VPN_PERMISSION: "Não foi possível autorizar a VPN PINK no Android. Confirme o pedido de VPN e toque novamente em Entrar. (PINK: VPN_PERMISSION)",
   CONTROL_HTTPS: "Não foi possível contactar o serviço de autenticação PINK nesta rede. Verifique Wi-Fi/dados móveis e tente novamente. (PINK: CONTROL_HTTPS)",
   VPN_ENROLL: "Não foi possível registar a ligação VPN PINK. Tente novamente. (PINK: VPN_ENROLL)",
+  VPN_LIMIT: "Limite de 10 instalações VPN atingido. Pode libertar uma instalação antiga de forma segura, sem desinstalar esta aplicação. (PINK: VPN_LIMIT)",
   VPN_ACTIVATION: "Não foi possível estabelecer a ligação VPN PINK neste dispositivo. (PINK: VPN_ACTIVATION)",
   DEVICE_SECURITY: "Não foi possível preparar o armazenamento seguro do Android. (PINK: DEVICE_SECURITY)",
   LOGIN_TIMEOUT: "Não foi possível concluir o login no tempo disponível. (PINK: LOGIN_TIMEOUT)",
@@ -30,7 +31,7 @@ export async function resolvePinkSession(username, password, transport = null) {
       data = JSON.parse(await native.resolve(username, password))
     } catch (error) {
       if (error?.code && Object.hasOwn(NATIVE_ERRORS, error.code))
-        throw new Error(NATIVE_ERRORS[error.code])
+        throw Object.assign(new Error(NATIVE_ERRORS[error.code]), { code: error.code })
       throw error
     }
   } else {

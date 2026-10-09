@@ -12,7 +12,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Literal
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from sqlalchemy import or_, select, text
 from sqlalchemy.orm import Session
@@ -366,7 +366,7 @@ def installation_handle(peer: VpnInstallation, settings) -> str:
 def list_installations(
     request: Request,
     response: Response,
-    current_public_key: str | None = None,
+    current_public_key: str | None = Header(default=None, alias="X-Pink-Device-Public-Key"),
     db: Session = Depends(get_db),
 ) -> list[InstallationStatus]:
     settings = enabled(request, response)

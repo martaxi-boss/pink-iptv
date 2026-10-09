@@ -50,6 +50,10 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     @Volatile private var admitted = false
     @Volatile private var accepting = false
     @Volatile private var consentRequested = false
+    // Only an authenticated capacity denial may retain a short-lived PINK session.
+    // The bearer never reaches WebView/JS, disk or application logs.
+    private var pendingRecoveryBearer: String? = null
+    private var recoveryDeadline: Long = 0L
     private var config: Config? = null
     private var sealed = false
     private var failures = 0
@@ -109,13 +113,27 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     /** Fixed public codes only: never propagate account data, URLs or exceptions. */
-    internal fun loginFailureCode(): String = when {
-        !accepting -> "VPN_PERMISSION"
-        protectedStage == "session_resolve" -> "CONTROL_HTTPS"
-        protectedStage == "vpn_enroll" -> "VPN_ENROLL"
-        protectedStage == "activate_tunnel" -> "VPN_ACTIVATION"
-        protectedStage in setOf("identity", "save_grant") -> "DEVICE_SECURITY"
-        else -> "LOGIN_UNAVAILABLE"
+    internal fun loginFailureCode(): String =
+        classifyLoginFailure(protectedStage, protectedControlFailure, accepting)
+
+    private fun authorizedRecoveryBearer(): String {
+        val bearer = pendingRecoveryBearer ?: throw IllegalStateException("Unavailable recovery")
+        check(accepting && android.os.SystemClock.elapsedRealtime() < recoveryDeadline)
+        return bearer
+    }
+
+    fun listRecoverableInstallations(): String = work.submit<String> {
+        control("/v1/vpn/installations", JSONObject(), authorizedRecoveryBearer())
+            .getJSONArray("installations").toString()
+    }.get(40, TimeUnit.SECONDS)
+
+    fun releaseRecoverableInstallation(handle: String): Boolean {
+        require(Regex("^[0-9a-f]{64}$").matches(handle))
+        return work.submit<Boolean> {
+            control("/v1/vpn/installations/release", JSONObject()
+                .put("installation_id", handle).put("confirm", true), authorizedRecoveryBearer())
+            true
+        }.get(40, TimeUnit.SECONDS)
     }
 
     fun resume() { work.execute { failures = 0; nextAttempt = 0; maintain() } }
@@ -191,6 +209,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         require(username.isNotBlank() && username.length <= 256 && password.length <= 4096)
         check(permission.await(45, TimeUnit.SECONDS) && accepting)
         return work.submit<JSONObject> {
+            pendingRecoveryBearer = null
+            recoveryDeadline = 0L
+            var authenticatedSession: String? = null
             try {
                 protectedStage = "identity"
                 protectedFailure = "none"
@@ -207,7 +228,8 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                     payload.put("device_token", it)
                 }
                 protectedStage = "vpn_enroll"
-                val grant = control("/v1/vpn/enroll", payload, reply.getString("session_token"))
+                authenticatedSession = reply.getString("session_token")
+                val grant = control("/v1/vpn/enroll", payload, authenticatedSession)
                 protectedStage = "save_grant"
                 saveGrant(grant)
                 protectedStage = "activate_tunnel"
@@ -216,6 +238,13 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                 // Session/enrollment bearer never enters JavaScript or account storage.
                 JSONObject().put("code", "SUCCESS").put("xtream_base_url", reply.getString("xtream_base_url"))
             } catch (failure: Exception) {
+                if (authenticatedSession != null &&
+                    classifyLoginFailure(protectedStage, protectedControlFailure, accepting) == "VPN_LIMIT") {
+                    // PINK session lifetime is <=5 minutes. This 4-minute bound
+                    // also limits who can release a lost device from this login.
+                    pendingRecoveryBearer = authenticatedSession
+                    recoveryDeadline = android.os.SystemClock.elapsedRealtime() + 240_000L
+                }
                 protectedActivation = activationStage
                 protectedHealthDiagnostic = latestHealthDiagnostic
                 protectedFailure = failure.javaClass.simpleName
@@ -435,7 +464,11 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
     }
 
     private fun control(path: String, payload: JSONObject, session: String? = null): JSONObject {
-        check(path in setOf("/v1/session/resolve", "/v1/vpn/enroll", "/v1/vpn/refresh"))
+        check(path in setOf("/v1/session/resolve", "/v1/vpn/enroll", "/v1/vpn/refresh",
+            "/v1/vpn/installations", "/v1/vpn/installations/release"))
+        if (path in setOf("/v1/vpn/installations", "/v1/vpn/installations/release")) {
+            check(session != null)
+        }
         // Fixed PINK HTTPS endpoints are the control plane that creates/repairs
         // the WireGuard data plane. Keep them on an explicitly selected physical
         // Network so recovery never depends circularly on the tunnel it is
@@ -479,23 +512,38 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
         val v6 = link?.linkAddresses?.any { it.address is java.net.Inet6Address } == true
         var phase = "open_connection"
         var status = -1
+        var admission = "unknown"
         try {
             controlPlaneRequests++
             val connection = controlNetwork.openConnection(URL("https://pink-iptv.duckdns.org$path")) as javax.net.ssl.HttpsURLConnection
             connection.instanceFollowRedirects = false
             connection.connectTimeout = 15000
             connection.readTimeout = 20000
-            connection.requestMethod = "POST"
-            connection.doOutput = true
-            connection.setRequestProperty("Content-Type", "application/json")
+            val isList = path == "/v1/vpn/installations"
+            connection.requestMethod = if (isList) "GET" else "POST"
+            connection.doOutput = !isList
+            if (!isList) connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
             session?.let { connection.setRequestProperty("Authorization", "Bearer $it") }
+            if (isList) connection.setRequestProperty(
+                "X-Pink-Device-Public-Key", pair().publicKey.toBase64()
+            )
             try {
-                phase = "connect_write"
-                connection.outputStream.use { it.write(payload.toString().toByteArray(Charsets.UTF_8)) }
+                phase = if (isList) "connect_read" else "connect_write"
+                if (!isList) connection.outputStream.use {
+                    it.write(payload.toString().toByteArray(Charsets.UTF_8))
+                }
                 phase = "response_headers"
                 status = connection.responseCode
-                check(status == 200)
+                if (path == "/v1/vpn/enroll" && status == 429 && session != null) {
+                    admission = when (connection.getHeaderField("X-Pink-Vpn-Admission")) {
+                        "capacity" -> "capacity"
+                        "throttle" -> "throttle"
+                        else -> "unknown"
+                    }
+                }
+                check(status == if (path == "/v1/vpn/installations/release") 204 else 200)
+                if (status == 204) return JSONObject()
                 phase = "response_body"
                 val raw = connection.inputStream.use { source ->
                     val output = java.io.ByteArrayOutputStream()
@@ -508,7 +556,9 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                     output.toByteArray()
                 }
                 check(raw.size <= 65536)
-                return JSONObject(String(raw, Charsets.UTF_8))
+                val json = String(raw, Charsets.UTF_8)
+                return if (isList) JSONObject().put("installations", org.json.JSONArray(json))
+                else JSONObject(json)
             } finally { connection.disconnect() }
         } catch (failure: Exception) {
             if (path != "/v1/vpn/refresh") {
@@ -533,13 +583,29 @@ class PinkVpnRuntime private constructor(context: Context) : Tunnel {
                     else -> "OTHER"
                 }
                 // Fixed enums/booleans/OS errno and HTTP status only; never message/URL/account.
-                protectedControlFailure = "$role:$route:$phase:$category;errno=$errno;status=$status;transport=$transport;validated=$validated;selectedDefault=$selectedDefault;v4=$v4;v6=$v6"
+                protectedControlFailure = "$role:$route:$phase:$category;errno=$errno;status=$status;admission=$admission;transport=$transport;validated=$validated;selectedDefault=$selectedDefault;v4=$v4;v6=$v6"
             }
             throw failure
         }
     }
 
     companion object {
+        /** A rate limit must never be misreported as a ten-device quota.
+         * Only the authenticated enrollment endpoint plus fixed server reason count. */
+        internal fun classifyLoginFailure(
+            stage: String, controlFailure: String, authorized: Boolean
+        ): String = when {
+            !authorized -> "VPN_PERMISSION"
+            stage == "session_resolve" -> "CONTROL_HTTPS"
+            stage == "vpn_enroll" &&
+                controlFailure.startsWith("ENROLL:PINNED_HTTPS_CONTROL:") &&
+                controlFailure.contains(";status=429;admission=capacity;") -> "VPN_LIMIT"
+            stage == "vpn_enroll" -> "VPN_ENROLL"
+            stage == "activate_tunnel" -> "VPN_ACTIVATION"
+            stage in setOf("identity", "save_grant") -> "DEVICE_SECURITY"
+            else -> "LOGIN_UNAVAILABLE"
+        }
+
         internal fun ownsCapturedAddress(addresses: List<InetAddress>?, expected: String): Boolean =
             addresses?.any { it.hostAddress == expected } == true
 

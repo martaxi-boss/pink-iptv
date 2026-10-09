@@ -81,6 +81,11 @@ object PinkWebBridge {
                             payload.getString("action"), payload.getString("entryId"))
                         "resolve" -> PinkVpnRuntime.get(app).resolve(
                             payload.getString("username"), payload.getString("password")).toString()
+                        // The short-lived session is kept strictly in Kotlin; JS sees
+                        // only opaque device handles and never bearer/private keys.
+                        "vpnInstallations" -> PinkVpnRuntime.get(app).listRecoverableInstallations()
+                        "vpnReleaseInstallation" -> PinkVpnRuntime.get(app)
+                            .releaseRecoverableInstallation(payload.getString("installation_id"))
                         "vaultRead" -> vault.read()
                         "vaultReadValidated" -> vault.readValidated()
                         "vaultMarkValidated" -> vault.markValidated(payload.getString("value"))

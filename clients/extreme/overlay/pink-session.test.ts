@@ -52,6 +52,7 @@ describe('PINK managed account contract', () => {
     ['VPN_PERMISSION','VPN_PERMISSION'],
     ['CONTROL_HTTPS','CONTROL_HTTPS'],
     ['VPN_ENROLL','VPN_ENROLL'],
+    ['VPN_LIMIT','VPN_LIMIT'],
     ['VPN_ACTIVATION','VPN_ACTIVATION'],
     ['DEVICE_SECURITY','DEVICE_SECURITY'],
     ['LOGIN_TIMEOUT','LOGIN_TIMEOUT'],
@@ -65,6 +66,18 @@ describe('PINK managed account contract', () => {
     try {
       await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.toThrow('PINK: ' + marker)
       await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.not.toThrow('private endpoint')
+    } finally { vi.unstubAllGlobals() }
+  })
+
+  it('preserves only the public VPN_LIMIT code for recovery UI', async () => {
+    vi.stubGlobal('window', { PinkConnection: { resolve: async () => {
+      throw Object.assign(new Error('private account and token'), {code:'VPN_LIMIT'})
+    } } })
+    try {
+      await expect(resolvePinkSession('fixture-user', 'fixture-password')).rejects.toMatchObject({
+        code:'VPN_LIMIT',
+        message:expect.stringContaining('Limite de 10 instalações VPN')
+      })
     } finally { vi.unstubAllGlobals() }
   })
 

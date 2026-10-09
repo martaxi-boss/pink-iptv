@@ -1,5 +1,15 @@
 import { addEntry, getEntries, removeEntry } from "@/scripts/lib/creds.js"
 import { resolvePinkSession } from "@/scripts/lib/pink-session.js"
+export function parseRecoverableInstallations(raw) {
+  const data = JSON.parse(raw)
+  if (!Array.isArray(data) || data.length > 10 || !data.every(x =>
+    typeof x?.installation_id === 'string' && /^[0-9a-f]{64}$/.test(x.installation_id) &&
+    typeof x?.is_current === 'boolean' &&
+    typeof x?.last_authenticated_at === 'string' &&
+    Number.isFinite(Date.parse(x.last_authenticated_at)))) throw new Error('Untrusted recovery list')
+  if (new Set(data.map(x => x.installation_id)).size !== data.length) throw new Error('Duplicate recovery handle')
+  return data
+}
 export const loginMarkup = `
   <section class="mx-auto w-full max-w-md px-6 py-10">
     <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-8 w-64" />
@@ -11,12 +21,21 @@ export const loginMarkup = `
       <p data-pink-status role="status" aria-live="polite" class="min-h-6 text-fg-3"></p>
       <button type="submit" data-focus-key="pink:submit" class="min-h-12 w-full rounded-2xl bg-accent px-6 py-3 font-semibold text-black tv-focus-inset">Entrar</button>
     </form>
+    <section data-pink-recovery hidden class="mt-6 space-y-3">
+      <p class="text-fg-3">Pode libertar uma instalação antiga da sua conta. A instalação escolhida perderá o acesso VPN até voltar a ser autorizada.</p>
+      <button type="button" data-pink-manage class="min-h-12 w-full rounded-2xl border border-line px-4 py-3 font-semibold text-fg tv-focus-inset">Gerir instalações VPN</button>
+      <div data-pink-device-list class="space-y-2"></div>
+    </section>
   </section>`
 export function mountPinkLogin(root, navigate) {
   root.innerHTML = loginMarkup
   const form = root.querySelector('form')
   const status = root.querySelector('[data-pink-status]')
   const button = form.querySelector('button')
+  const recovery = root.querySelector('[data-pink-recovery]')
+  const manage = root.querySelector('[data-pink-manage]')
+  const devicesView = root.querySelector('[data-pink-device-list]')
+  let recovering = false
   let alive = true
   let busy = false
   form.dataset.pinkPhase = "idle"
@@ -46,13 +65,82 @@ export function mountPinkLogin(root, navigate) {
     } catch (error) {
       form.dataset.pinkFailure = form.dataset.pinkPhase
       form.dataset.pinkPhase = "failed"
-      if (alive) status.textContent = error instanceof Error && error.message.startsWith('A sua') ? error.message :
-        (error instanceof Error && /^(Utilizador|Não foi|Serviço|O serviço)/.test(error.message) ? error.message : 'Não foi possível entrar. Verifique a ligação e tente novamente.')
+      if (alive) {
+        if (recovery) recovery.hidden = error?.code !== 'VPN_LIMIT'
+        status.textContent = error instanceof Error && error.message.startsWith('A sua') ? error.message :
+          (error instanceof Error && /^(Utilizador|Não foi|Serviço|O serviço|Limite)/.test(error.message) ? error.message : 'Não foi possível entrar. Verifique a ligação e tente novamente.')
+      }
     } finally {
       busy = false
       if (alive) button.disabled = false
     }
   }
+  // Installation handles are ephemeral opaque references; the bearer remains
+  // native-only. No account passwords, public keys or handles are rendered.
+  const onManage = async () => {
+    if (!alive || recovering || busy) return
+    recovering = true
+    if (manage) manage.disabled = true
+    try {
+      const native = typeof window !== 'undefined' && window.PinkConnection
+      if (typeof native?.listInstallations !== 'function' || !devicesView) throw new Error()
+      const data = parseRecoverableInstallations(await native.listInstallations())
+      if (!alive) return
+      devicesView.replaceChildren()
+      data.forEach((device, index) => {
+        const row = document.createElement('div')
+        row.className = 'rounded-2xl border border-line p-3 text-fg'
+        const title = document.createElement('p')
+        title.textContent = device.is_current ? 'Esta instalação — protegida' : `Instalação antiga ${index + 1}`
+        row.append(title)
+        const lastUsed = document.createElement('p')
+        lastUsed.className = 'text-fg-3'
+        lastUsed.textContent = 'Última autenticação: ' +
+          new Date(device.last_authenticated_at).toLocaleDateString('pt-PT')
+        row.append(lastUsed)
+        if (!device.is_current) {
+          const action = document.createElement('button')
+          action.type = 'button'
+          action.className = 'mt-2 min-h-12 rounded-xl bg-accent px-4 font-semibold text-black tv-focus-inset'
+          action.textContent = 'Libertar esta vaga'
+          action.addEventListener('click', async () => {
+            if (!alive || recovering || busy) return
+            recovering = true
+            action.disabled = true
+            try {
+              if (typeof native.releaseInstallation !== 'function') throw new Error()
+              const released = await native.releaseInstallation(device.installation_id)
+              if (released !== true) throw new Error()
+              if (!alive) return
+              devicesView.replaceChildren()
+              recovery.hidden = true
+              status.textContent = 'Vaga libertada. A entrar novamente…'
+              await onSubmit({ preventDefault() {} })
+            } catch {
+              if (alive) status.textContent = 'Não foi possível libertar esta vaga. Volte a tentar.'
+            } finally {
+              recovering = false
+              if (alive) action.disabled = false
+            }
+          })
+          row.append(action)
+        }
+        devicesView.append(row)
+      })
+      if (data.length === 0) status.textContent = 'Não existem instalações disponíveis para libertar.'
+    } catch {
+      if (alive) status.textContent = 'Não foi possível consultar as instalações. Entre novamente.'
+    } finally {
+      recovering = false
+      if (alive && manage) manage.disabled = false
+    }
+  }
   form.addEventListener('submit', onSubmit)
-  return () => { alive = false; form.removeEventListener('submit', onSubmit); root.replaceChildren() }
+  manage?.addEventListener?.('click', onManage)
+  return () => {
+    alive = false
+    form.removeEventListener('submit', onSubmit)
+    manage?.removeEventListener?.('click', onManage)
+    root.replaceChildren()
+  }
 }

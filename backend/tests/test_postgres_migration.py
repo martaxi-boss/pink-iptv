@@ -52,8 +52,21 @@ def test_alembic_schema_on_real_postgres() -> None:
         "token_sha256",
         "expires_at",
         "revoked_at",
+        "created_at",
+        "last_authenticated_at",
     }
     assert not {"password", "private_key", "device_token"}.intersection(vpn_columns)
+    vpn_column_details = {
+        column["name"]: column for column in inspect(engine).get_columns("vpn_installations")
+    }
+    assert vpn_column_details["address"]["nullable"] is True
+    assert vpn_column_details["last_authenticated_at"]["type"].timezone is True
+    release_columns = {
+        column["name"] for column in inspect(engine).get_columns("vpn_address_releases")
+    }
+    assert release_columns == {
+        "id", "installation_id", "address", "released_at", "cause"
+    }
     vpn_unique = {
         tuple(constraint["column_names"])
         for constraint in inspect(engine).get_unique_constraints("vpn_installations")

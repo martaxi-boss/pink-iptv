@@ -1,14 +1,17 @@
 name: PINK Extreme Android 042
 on:
   push:
-    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059", "builder/device-login-recovery-062", "builder/vpn-android-recovery-075"]
+    branches: ["builder/extreme-live-certification-055", "builder/physical-ui-recovery-059", "builder/device-login-recovery-062"]
     paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml", "docs/PHYSICAL_UI_RECOVERY_059.md"]
+  pull_request:
+    branches: ["main"]
+    paths: ["clients/extreme/**", ".github/workflows/pink-extreme-042.yml"]
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   android:
-    if: github.event.head_commit.message != 'Validate bounded hosted recovery records 055'
+    if: (github.event_name == 'pull_request' && github.event.pull_request.number == 61) || (github.event_name != 'pull_request' && github.event.head_commit.message != 'Validate bounded hosted recovery records 055')
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     env:

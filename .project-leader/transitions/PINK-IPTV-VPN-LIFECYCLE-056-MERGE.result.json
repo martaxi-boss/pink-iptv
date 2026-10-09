@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-VPN-LIFECYCLE-056-MERGE",
+  "task_id": "PINK-IPTV-VPN-AUTONOMY-056",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-VPN-LIFECYCLE-056-MERGE.authorization.json",
+  "action": "merge_to_main",
+  "target": {
+    "kind": "pull_request",
+    "identifier": "60",
+    "revision": "aff3158b5df444a22d09d6d95e159d665f20f3bf",
+    "base_revision": "377c24ecd209a1bf1955da23fc7f1baf95f4f6fe",
+    "environment": "repository_main"
+  },
+  "observed_at": "2026-10-09T14:32:59.801Z",
+  "final_state": {
+    "status": "MERGED",
+    "revision": "d1e701163dff851bf93928df45dc05856d986138"
+  },
+  "evidence": [
+    "https://github.com/martaxi-boss/pink-iptv/pull/60",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37936801389",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37937151191",
+    "GitHub PR60 merged=true, state=closed, merge_sha=d1e701163dff851bf93928df45dc05856d986138; verified default main head equals merge SHA"
+  ],
+  "residual_blockers": [
+    "No live VPS/DB migrations or gateway peer changes performed; future staging/production transition needs separate exact-state evidence",
+    "Client PR47 Android capacity vs throttle and optional VOD PR53 remain separately open",
+    "Physical owner device, signing continuity and release artifact integrity are not yet certified"
+  ]
+}

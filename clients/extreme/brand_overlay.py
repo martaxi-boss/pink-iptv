@@ -49,13 +49,11 @@ def _patch_live(page: Path) -> None:
     text = text[:begin] + branded + text[end:]
     style_marker = '\t<style>\n'
     assert text.count(style_marker) == 1
-    # Hidden status/EPG controls retain their nodes to avoid breaking
-    # upstream code that reads them. No pointer, keyboard or screen-reader
-    # interaction is possible in a display:none subtree.
-    # The separate calendar icon in the channel toolbar is untouched.
+    # Keep the exact upstream OFF/current status, EPG panel, and toggle.
+    # Only the empty-player illustration changes; no player or EPG behavior
+    # is patched.
     css = """\t<style>
-\t\t/* PINK approved mobile layout: no OFF, no EPG block or hidden hitboxes. */
-\t\t:global(#current), :global(#epg) { display: none !important; }
+\t\t/* Preserve upstream OFF/current status and EPG controls. */
 \t\t:global(#player-empty .pink-player-runtime-status) { display: none; }
 \t\t/* External-player status must remain visible (MPV/VLC); original
 \t\t   stream.ts owns these state changes and is deliberately untouched. */
@@ -105,5 +103,5 @@ def apply(root: Path, dest: Path) -> None:
     _patch_catalog(dest / "src/pages/movies/index.astro", "movie")
     _patch_catalog(dest / "src/pages/series/index.astro", "series")
     print("PINK085_THREE_MENUS_SAME_IDLE_IMAGE=PASS")
-    print("PINK085_LIVE_OFF_EPG_INVISIBLE_NO_HITBOX=PASS")
+    print("PINK086_LIVE_OFF_EPG_PRESENT_AND_INTERACTIVE=PASS")
     print("PINK085_NATIVE_PLAYER_AND_TV_MOVIE_SERIES_URLS_UNCHANGED=PASS")

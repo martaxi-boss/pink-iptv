@@ -1,0 +1,71 @@
+{
+  "schema_version": "2.0",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-088",
+  "terminal_status": "TERMINAL_SUCCESS",
+  "repository": "martaxi-boss/pink-iptv",
+  "effect_class": "E1_RECOVERABLE_PROJECT_LOCAL",
+  "authorization_record": ".project-leader/tasks/PINK-IPTV-REPOSITORY-HYGIENE-088.json",
+  "branch": "control/pink-efficiency-hygiene-088",
+  "implementation_head_sha": "9c5b5a844c9177da59f690814ffc9fe39838973a",
+  "recorded_at": "2026-10-09T22:34:22.611Z",
+  "validation": [
+    {
+      "name": "Mutation scope audit",
+      "status": "PASS",
+      "evidence": "Only one control evidence branch was created; no main, app, VPN, backend, APK, signing, service, PR or artifact modified by this hygiene task."
+    },
+    {
+      "name": "Current main revision",
+      "status": "PASS",
+      "evidence": "Main pinned a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7 unchanged before/after execution."
+    },
+    {
+      "name": "Exact ref eligibility",
+      "status": "PASS",
+      "evidence": "All ten target branch tips were the exact head of a closed merged PR and live ancestors of main; none were a current open PR or had a live workflow."
+    },
+    {
+      "name": "Gated read-only inventory",
+      "status": "PASS",
+      "evidence": "PINK exact merged-ref hygiene 088 run 37999614152 completed SUCCESS; every listed target appeared as deletion candidate."
+    },
+    {
+      "name": "Per-ref effects and post-read",
+      "status": "PASS",
+      "evidence": "PINK exact merged-ref hygiene 088 cleanup run 37999758285 completed SUCCESS, verifying per-target lease, ancestry, active work, deletion and 404 read-back."
+    },
+    {
+      "name": "Preserved ref inventory",
+      "status": "PASS",
+      "evidence": "Branch total from 53 to 44: ten removed; one new control branch retained for audit. Three open PR head refs intact, no history rewrite."
+    }
+  ],
+  "ci": [
+    {
+      "name": "PINK exact merged-ref hygiene 088 inventory",
+      "status": "SUCCESS",
+      "run_id": 37999614152
+    },
+    {
+      "name": "PINK exact merged-ref hygiene 088 cleanup",
+      "status": "SUCCESS",
+      "run_id": 37999758285
+    }
+  ],
+  "changes": [
+    "Safely removed exactly ten SHA-bound fully merged inactive builder ref names.",
+    "Retained control branch with task, exact per-ref authorizations, execution grant, script derived from old audited hygiene implementation and post-effects.",
+    "Kept commits/PR history and artifacts intact."
+  ],
+  "material_non_effects": [
+    "No change to main or to live development PR #63, draft #53 or open #47.",
+    "No change to backend, APK, Android app, VPN leases or security checks.",
+    "Separate efficiency fix on active PR #63 adds per-PR QA concurrency; its expensive exact-head Android certification is independent of this completed ref hygiene task and may still be pending.",
+    "main branch protection remains off and requires GitHub administrator/settings action, not falsely represented as repaired."
+  ],
+  "artifacts": [
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37999758285",
+    "https://github.com/martaxi-boss/pink-iptv/actions/runs/37999614152"
+  ],
+  "residual_blockers": []
+}

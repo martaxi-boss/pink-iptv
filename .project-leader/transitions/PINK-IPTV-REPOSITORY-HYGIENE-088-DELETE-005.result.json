@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-088-DELETE-005",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-088",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-088-DELETE-005.authorization.json",
+  "action": "delete_fully_merged_non_main_branch_ref",
+  "target": {
+    "kind": "repository_branch",
+    "identifier": "builder/vpn-rate-protection-074",
+    "revision": "aff3158b5df444a22d09d6d95e159d665f20f3bf",
+    "base_revision": "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7",
+    "environment": null
+  },
+  "observed_at": "2026-10-09T22:33:35.863Z",
+  "final_state": {
+    "status": "DELETED",
+    "revision": null
+  },
+  "evidence": [
+    "Read-only exact-main inventory run 37999614152 SUCCESS confirmed full ancestry and isolation from active work.",
+    "GitHub Actions cleanup run 37999758285 SUCCESS completed exact per-ref SHA verification, no open-PR/active-work check, delete and 404 read-back for builder/vpn-rate-protection-074.",
+    "Independent post-run branches listing confirms target absent and canonical main still a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7; history and signed QA evidence retained."
+  ],
+  "residual_blockers": []
+}

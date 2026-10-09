@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-REPOSITORY-HYGIENE-088-EXECUTE-001",
+  "task_id": "PINK-IPTV-REPOSITORY-HYGIENE-088",
+  "repository": "martaxi-boss/pink-iptv",
+  "terminal_status": "SUCCESS",
+  "authorization_record": ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-088-EXECUTE.authorization.json",
+  "action": "execute_exact_authorized_merged_ref_hygiene",
+  "target": {
+    "kind": "repository_branch_cleanup",
+    "identifier": "control/pink-efficiency-hygiene-088",
+    "revision": "9c5b5a844c9177da59f690814ffc9fe39838973a",
+    "base_revision": "a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7",
+    "environment": null
+  },
+  "observed_at": "2026-10-09T22:34:32.689Z",
+  "final_state": {
+    "status": "COMPLETED",
+    "revision": "9c5b5a844c9177da59f690814ffc9fe39838973a"
+  },
+  "evidence": [
+    "Owner-requested material cleanup authorized in ten exact per-ref records, audited read-only run 37999614152 success.",
+    "Exact-branch execution commit 9c5b5a844c9177da59f690814ffc9fe39838973a activated hygiene run 37999758285, completed SUCCESS on ten deletions; script checked live ref/ancestor/active PR and verified 404 for each.",
+    "Live main remains a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7; total branches now 44; all three open PR heads and history preserved."
+  ],
+  "residual_blockers": []
+}

@@ -85,7 +85,7 @@ def apply(dest: Path) -> None:
       }
     )
     // Return to the same web page to use the trusted, existing cast device picker.
-    // The stream stays bound to the native VPN identity and no secret is queued.
+    // The event queues only item IDs; trusted web cast code resolves the source.
     finish()
   }
 """

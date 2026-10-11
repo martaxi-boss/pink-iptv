@@ -341,4 +341,6 @@ from catalog_overlay import apply as apply_catalog
 apply_catalog(ROOT, DEST)
 from brand_overlay import apply as apply_brand
 apply_brand(ROOT, DEST)
+from native_video_actions_overlay import apply as apply_native_video_actions
+apply_native_video_actions(DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

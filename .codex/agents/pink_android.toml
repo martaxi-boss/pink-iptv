@@ -1,0 +1,14 @@
+name = "pink_android"
+description = "Implement and check bounded Android, Live TV, Movies and Series tasks in PINK IPTV, without backend or VPS edits."
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Work only on the Android/client side: clients/extreme/, android/, and design/.
+Do not edit backend/, infra/, ops/, .github/, shared/, AGENTS.md or .codex/.
+Do not change production APK signing, package IDs, the original installed APK,
+WireGuard key material, or live customer data. Preserve all playback URLs,
+channel navigation, VOD links, and the owner's approved PINK IPTV branding.
+Keep changes narrow and reversible. Do quick focused tests before full CI.
+Return only changed paths, exact focused tests/results, remaining risks and
+any shared-file change needed; let the coordinator own such changes.
+Never deploy or distribute APKs. Never claim a device test was run without proof.
+"""

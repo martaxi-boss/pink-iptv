@@ -1,0 +1,43 @@
+name: PINK Codex Two Subagents Configuration 086
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".codex/**"
+      - "AGENTS.md"
+      - "tests/test_codex_parallel_086.py"
+      - "docs/CODEX_PARALLEL_086.md"
+      - ".github/workflows/pink-codex-two-subagents-086.yml"
+permissions:
+  contents: read
+jobs:
+  two-agent-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check two-subagent config, bounded scopes and token honesty
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p 'test_codex_parallel_086.py' -v
+          python3 - <<'PY'
+          import subprocess
+          base="a6c5b7e73b2d7014b927acd47b9f4c2d633ad7c7"
+          subprocess.run(["git","merge-base","--is-ancestor",base,"HEAD"],check=True)
+          changed=set(subprocess.check_output(
+              ["git","diff","--name-only",base,"HEAD"],text=True).splitlines())
+          allowed={
+              ".codex/config.toml",
+              ".codex/agents/pink_android.toml",
+              ".codex/agents/pink_backend.toml",
+              "AGENTS.md",
+              "tests/test_codex_parallel_086.py",
+              "docs/CODEX_PARALLEL_086.md",
+              ".github/workflows/pink-codex-two-subagents-086.yml",
+          }
+          assert changed and changed<=allowed,sorted(changed-allowed)
+          print("PINK086_PROJECT_LEADER_DUAL_CODEX_SCOPE_AND_TESTS=PASS")
+          PY

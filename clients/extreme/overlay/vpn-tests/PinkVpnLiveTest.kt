@@ -4,8 +4,23 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.VpnService
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckedTextView
+import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.DefaultTrackNameProvider
+import androidx.media3.ui.PlayerView
+import androidx.media3.ui.TrackSelectionView
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isFocusable
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
@@ -16,6 +31,7 @@ import java.net.URLEncoder
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
+import org.hamcrest.Matchers.allOf
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -28,6 +44,60 @@ class PinkVpnLiveTest {
     private var catalogBoundary = "not_started"
     private var catalogStatus = -1
     private var catalogKind = "not_started"
+
+    private fun descendants(root: View): List<View> = listOf(root) +
+        if (root is ViewGroup) (0 until root.childCount).flatMap { descendants(root.getChildAt(it)) } else emptyList()
+
+    private fun selectAvailableLiveTrack(video: VideoActivity) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        lateinit var view: PlayerView
+        lateinit var player: ExoPlayer
+        lateinit var group: androidx.media3.common.Tracks.Group
+        var index = 0
+        var name = ""
+        var before = 0
+        instrumentation.runOnMainSync {
+            view = checkNotNull(video.findViewById(R.id.player_view))
+            player = checkNotNull(view.player as? ExoPlayer)
+            val audio = player.currentTracks.groups.filter {
+                it.type == C.TRACK_TYPE_AUDIO && it.length > 0
+            }
+            group = audio.firstOrNull { candidate ->
+                (0 until candidate.length).any { candidate.isTrackSelected(it) }
+            } ?: audio.first()
+            index = (0 until group.length).firstOrNull { group.isTrackSelected(it) }
+                ?: (0 until group.length).firstOrNull { group.isTrackSupported(it) }
+                ?: 0
+            name = DefaultTrackNameProvider(instrumentation.targetContext.resources)
+                .getTrackName(group.getTrackFormat(index))
+            before = player.videoDecoderCounters?.renderedOutputBufferCount ?: 0
+            view.showController()
+        }
+        onView(allOf(withContentDescription(R.string.pink_player_options), isDisplayed(), isFocusable()))
+            .perform(click())
+        onView(withText(R.string.pink_vod_audio)).check(matches(isDisplayed())).perform(click())
+        onView(isAssignableFrom(TrackSelectionView::class.java)).check { selection, failure ->
+            if (failure != null) throw failure
+            check(descendants(selection).filterIsInstance<CheckedTextView>()
+                .any { it.visibility == View.VISIBLE && it.text.toString() == name })
+        }
+        onView(withText(name)).perform(click())
+        onView(withText(android.R.string.ok)).perform(click())
+        val deadline = System.currentTimeMillis() + 15000
+        var selectedAndPlaying = false
+        while (!selectedAndPlaying && System.currentTimeMillis() < deadline) {
+            instrumentation.runOnMainSync {
+                selectedAndPlaying = player.currentTracks.groups.any {
+                    it.mediaTrackGroup == group.mediaTrackGroup && it.isTrackSelected(index)
+                } && player.playerError == null && player.isPlaying &&
+                    (player.videoDecoderCounters?.renderedOutputBufferCount ?: 0) > before &&
+                    (player.audioDecoderCounters?.renderedOutputBufferCount ?: 0) > 0
+            }
+            if (!selectedAndPlaying) Thread.sleep(100)
+        }
+        check(selectedAndPlaying)
+    }
+
     private fun catalog(url: String): JSONArray {
         catalogBoundary = "connect"
         catalogStatus = -1
@@ -382,6 +452,10 @@ class PinkVpnLiveTest {
                                     (player.audioDecoderCounters?.renderedOutputBufferCount ?: 0)>0
                             }
                             Thread.sleep(250)
+                        }
+                        if (decoded) {
+                            selectAvailableLiveTrack(checkNotNull(video))
+                            report("LIVE_VISIBLE_TRACK_OPTIONS_SELECTION_AND_CONTINUED_PLAYBACK=PASS")
                         }
                     } finally {
                         video?.let { host -> instrumentation.runOnMainSync { host.finish() } }

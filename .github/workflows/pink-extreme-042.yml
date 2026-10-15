@@ -92,6 +92,7 @@ jobs:
           pnpm exec playwright install --with-deps chromium
           node tests/pink-catalog-browser.mjs
           pnpm run build
+          node tests/pink-vod-page-smoke.mjs
           python - <<'PY'
           from pathlib import Path
           workers = list(Path('dist/_astro').glob('pink-catalog-worker-*.js'))

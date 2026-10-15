@@ -36,6 +36,27 @@ class PinkCatalogWorkerChecks {
             }
             if (!ready) Thread.sleep(100)
         }
+        if (!ready) {
+            // Diagnose without ever exporting origin, selected account or provider data.
+            // Do not relax the redirect gate: an offline user must reach /login.
+            val latch = CountDownLatch(1)
+            var state: String? = null
+            instrumentation.runOnMainSync {
+                val pagePath = web.url?.let { android.net.Uri.parse(it).path } ?: "(none)"
+                val progress = web.progress
+                web.evaluateJavascript(
+                    """JSON.stringify({path:location.pathname,ready:document.readyState,bridge:!!window.PinkNative?.postMessage,vault:!!window.PinkAccountVault?.read,selected:!!JSON.parse(localStorage.getItem('xt_playlists')||'{}').selectedId})"""
+                ) { result ->
+                    state = "pagePath=" + pagePath + ";progress=" + progress +
+                        ";document=" + (result ?: "(no-js-response)")
+                    latch.countDown()
+                }
+            }
+            latch.await(2, TimeUnit.SECONDS)
+            instrumentation.sendStatus(2, android.os.Bundle().apply {
+                putString("stream", "\\nPINK_QA_OFFLINE_LOGIN_DIAGNOSTIC=" + (state ?: "(no-webview-callback)") + "\\n")
+            })
+        }
         assertTrue("Offline WebView did not finish its empty-account redirect", ready)
         val path = instrumentation.context.assets.open("pink-catalog-worker-path.txt").bufferedReader().use { it.readText().trim() }
         val script = """

@@ -143,21 +143,9 @@ let pinkFastGeneration = 0
         end = source.index("\n})", start)
         before = source[start:end + 3]
         assert before.count("  applyFilter()") == 1
-        after = before.replace("  applyFilter()", f'''  if (pinkFastCategoryOnly && activeCat !== pinkFastCurrentName) {{
-    if (!activeCat) pinkFastAllRequested = true
-    void load{page}()
-    return
-  }}
-  applyFilter()''')
-        # The explicit All-categories selection must survive a return to the
-        # page; otherwise a later visit silently resets back to the preview.
+        # Build the listener atomically; replacing a generated fragment a
+        # second time is brittle and breaks against upstream indentation.
         full_choice_key = f'"pink:full-catalog:{kind}:" + activePlaylistId'
-        old_filter = '''  if (pinkFastCategoryOnly && activeCat !== pinkFastCurrentName) {
-    if (!activeCat) pinkFastAllRequested = true
-    void load''' + page + '''()
-    return
-  }
-  applyFilter()'''
         new_filter = f'''  if (PINK_FAST_PHONE && activePlaylistId) {{
     const key = {full_choice_key}
     if (!activeCat) {{
@@ -173,7 +161,8 @@ let pinkFastGeneration = 0
     return
   }}
   applyFilter()'''
-        replace_once(dest, file, old_filter, new_filter)
+        after = before.replace("  applyFilter()", new_filter, 1)
+        replace_once(dest, file, before, after)
 
         # Showing a 500-row category should not request a full 120k-title
         # genre index. Genre selections still fall back to the full view.

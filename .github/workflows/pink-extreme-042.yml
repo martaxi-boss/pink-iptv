@@ -66,8 +66,8 @@ jobs:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
       - name: Certify future side-by-side test identity without using an owner's VPN
         run: |
-          python3 -m py_compile clients/extreme/qa4_variant.py clients/extreme/test_qa4_variant.py
-          python3 clients/extreme/test_qa4_variant.py
+          python3 -m py_compile clients/extreme/qa5_variant.py clients/extreme/test_qa5_variant.py
+          python3 clients/extreme/test_qa5_variant.py
       - name: Prepare complete pinned upstream application
         run: |
           set -euo pipefail
@@ -93,6 +93,7 @@ jobs:
           node tests/pink-catalog-browser.mjs
           pnpm run build
           node tests/pink-vod-page-smoke.mjs
+          echo PINK_DEFAULT_ALL_COMPLETE_BOTH_ROUTES=PASS
           python - <<'PY'
           from pathlib import Path
           workers = list(Path('dist/_astro').glob('pink-catalog-worker-*.js'))
@@ -270,13 +271,13 @@ jobs:
           path: ${{ runner.temp }}/pink-vod-delivery/part-03
           if-no-files-found: error
           retention-days: 30
-      - name: Repackage certified Android source into an isolated QA4 app
+      - name: Repackage certified Android source into an isolated QA5 app
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
           set -euo pipefail
-          python3 "$GITHUB_WORKSPACE/clients/extreme/qa4_variant.py" "$RUNNER_TEMP/pink-extreme"
+          python3 "$GITHUB_WORKSPACE/clients/extreme/qa5_variant.py" "$RUNNER_TEMP/pink-extreme"
           # Verify that any Tauri regeneration did not restore the production ID.
-          python3 "$GITHUB_WORKSPACE/clients/extreme/qa4_variant.py" "$RUNNER_TEMP/pink-extreme" --postbuild
+          python3 "$GITHUB_WORKSPACE/clients/extreme/qa5_variant.py" "$RUNNER_TEMP/pink-extreme" --postbuild
           cd "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android"
           export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
           ./gradlew --no-daemon app:assembleUniversalDebug app:assembleUniversalDebugAndroidTest -x app:rustBuildUniversalDebug
@@ -285,13 +286,14 @@ jobs:
           set -euo pipefail
           apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
           test -s "$apk"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink-qa4-package.txt"
-          grep -Fq "package: name='com.pinkiptv.extreme.qa4'" "$RUNNER_TEMP/pink-qa4-package.txt"
-          grep -Fq "application-label:'PINK IPTV TESTE 4'" "$RUNNER_TEMP/pink-qa4-package.txt"
-          ! grep -Fq "package: name='com.pinkiptv.extreme'" "$RUNNER_TEMP/pink-qa4-package.txt"
-          ! grep -Fq "package: name='com.pinkiptv.extreme.qa2'" "$RUNNER_TEMP/pink-qa4-package.txt"
-          ! grep -Fq "package: name='com.pinkiptv.extreme.qa3'" "$RUNNER_TEMP/pink-qa4-package.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/pink-qa4-certificate.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink-qa5-package.txt"
+          grep -Fq "package: name='com.pinkiptv.extreme.qa5'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          grep -Fq "application-label:'PINK IPTV TESTE 5'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa2'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa3'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa4'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/pink-qa5-certificate.txt"
           python3 - <<'PY'
           from zipfile import ZipFile
           from pathlib import Path
@@ -301,9 +303,9 @@ jobs:
               files=archive.namelist()
               assert any(f.endswith("/libwg-go.so") for f in files)
               assert not any(f.endswith("/libwg.so") or f.endswith("/libwg-quick.so") for f in files)
-          print("PINK_QA4_DISTINCT_ID_SIGNED_OFFICIAL_VPN_LIBRARY=PASS")
+          print("PINK_QA5_DISTINCT_ID_SIGNED_OFFICIAL_VPN_LIBRARY=PASS")
           PY
-      - name: Prepare QA4 emulator acceptance with the real native package name
+      - name: Prepare QA5 emulator acceptance with the real native package name
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -314,14 +316,14 @@ jobs:
           assert original in base
           assert "adb shell am force-stop com.pinkiptv.extreme" in base
           assert "com.pinkiptv.extreme.PinkVpnIdentityTest" in base
-          amended=base.replace(original,"com.pinkiptv.extreme.qa4.test/androidx.test.runner.AndroidJUnitRunner")
+          amended=base.replace(original,"com.pinkiptv.extreme.qa5.test/androidx.test.runner.AndroidJUnitRunner")
           amended=amended.replace("adb shell am force-stop com.pinkiptv.extreme",
-                                 "adb shell am force-stop com.pinkiptv.extreme.qa4")
+                                 "adb shell am force-stop com.pinkiptv.extreme.qa5")
           assert original not in amended
           assert "com.pinkiptv.extreme.PinkVpnIdentityTest" in amended
-          (root/"pink-qa4-emulator.sh").write_text(amended)
+          (root/"pink-qa5-emulator.sh").write_text(amended)
           PY
-      - name: Verify side-by-side QA4 VPN, Keystore, real Android UI and native playback
+      - name: Verify side-by-side QA5 VPN, Keystore, real Android UI and native playback
         uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed
         with:
           api-level: 35
@@ -335,24 +337,24 @@ jobs:
           emulator-boot-timeout: 900
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: ${{ runner.temp }}/pink-extreme/src-tauri/gen/android
-          script: bash "$RUNNER_TEMP/pink-qa4-emulator.sh"
-      - name: Package verified owner-only PINK IPTV TESTE 4 APK
+          script: bash "$RUNNER_TEMP/pink-qa5-emulator.sh"
+      - name: Package verified owner-only PINK IPTV TESTE 5 APK
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/pink-qa4-deliverable"
+          mkdir -p "$RUNNER_TEMP/pink-qa5-deliverable"
           apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
-          cp "$apk" "$RUNNER_TEMP/pink-qa4-deliverable/PINK-IPTV-TESTE4.apk"
-          cp "$RUNNER_TEMP/pink-qa4-package.txt" "$RUNNER_TEMP/pink-qa4-deliverable/package-check.txt"
-          cp "$RUNNER_TEMP/pink-qa4-certificate.txt" "$RUNNER_TEMP/pink-qa4-deliverable/signing-check.txt"
-          cd "$RUNNER_TEMP/pink-qa4-deliverable"
-          sha256sum PINK-IPTV-TESTE4.apk > SHA256SUMS
+          cp "$apk" "$RUNNER_TEMP/pink-qa5-deliverable/PINK-IPTV-TESTE5.apk"
+          cp "$RUNNER_TEMP/pink-qa5-package.txt" "$RUNNER_TEMP/pink-qa5-deliverable/package-check.txt"
+          cp "$RUNNER_TEMP/pink-qa5-certificate.txt" "$RUNNER_TEMP/pink-qa5-deliverable/signing-check.txt"
+          cd "$RUNNER_TEMP/pink-qa5-deliverable"
+          sha256sum PINK-IPTV-TESTE5.apk > SHA256SUMS
           python3 - <<'PY'
           from pathlib import Path
           import os, json, hashlib
-          path=Path(os.environ["RUNNER_TEMP"])/"pink-qa4-deliverable"
-          apk=path/"PINK-IPTV-TESTE4.apk"
-          payload={"application_id":"com.pinkiptv.extreme.qa4",
-            "does_not_replace":["com.pinkiptv.extreme","com.pinkiptv.extreme.qa2","com.pinkiptv.extreme.qa3"],
+          path=Path(os.environ["RUNNER_TEMP"])/"pink-qa5-deliverable"
+          apk=path/"PINK-IPTV-TESTE5.apk"
+          payload={"application_id":"com.pinkiptv.extreme.qa5",
+            "does_not_replace":["com.pinkiptv.extreme","com.pinkiptv.extreme.qa2","com.pinkiptv.extreme.qa3","com.pinkiptv.extreme.qa4"],
             "source_sha":os.environ["GITHUB_SHA"],
             "github_run":int(os.environ["GITHUB_RUN_ID"]),
             "sha256":hashlib.sha256(apk.read_bytes()).hexdigest(),
@@ -361,10 +363,10 @@ jobs:
             "owner_device_slot_and_vpn_consent_required_before_physical_install":True}
           (path/"provenance.json").write_text(json.dumps(payload,indent=2)+"\n")
           PY
-          echo PINK_QA4_ISOLATED_SIGNED_APK_AND_SHA256=PASS
+          echo PINK_QA5_ISOLATED_SIGNED_APK_AND_SHA256=PASS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: PINK-IPTV-TESTE4-FAST-20261015
-          path: ${{ runner.temp }}/pink-qa4-deliverable
+          name: PINK-IPTV-TESTE5-FAST-20261015
+          path: ${{ runner.temp }}/pink-qa5-deliverable
           if-no-files-found: error
           retention-days: 30

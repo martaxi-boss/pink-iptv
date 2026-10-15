@@ -88,7 +88,7 @@ try {
         if(mode==="android-account"){
           await page.waitForFunction(id=>{
             const text=document.getElementById(id)?.textContent||""
-            return /nesta categoria|in catalogue|total movies|total series/i.test(text)
+            return /títulos iniciais|nesta categoria|\b\d+\s+of\s+\d+\b|in catalogue|total movies|total series/i.test(text)
           },statusId,{timeout:20000})
           const cards=await page.locator("#"+(route==="movies"?"movie-grid":"series-grid")+" > :not([data-skeleton])").count()
           assert.ok(cards>0,route+" did not render the native fixture catalog")

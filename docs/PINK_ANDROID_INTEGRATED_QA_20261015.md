@@ -14,3 +14,11 @@ All existing credentials and traffic stay under the original Android Keystore an
 **Limits:** A cold request for `All categories` still transfers and maps the entire provider VOD/Series inventory, which can take minutes. A provider-verified, safe category-scoped fast path and real-device performance measurements are needed for that case. A complete source build does not certify actual phone frame rate.
 
 **Distribution gate:** Original Android debug APK signing certificates vary between CI runs (issue #54). This integration PR is not a replacement APK; **never uninstall or replace the existing working Android/VPN app**. Provide only a verified separate QA build before owner acceptance, then request physical test. Production release remains disabled.
+
+## Category-first extension (from PR #75)
+- Android phone makes a small VPN-bound Xtream request for the selected category before retrieving a full provider VOD/Series catalog. Numeric category IDs validated both in JS and Kotlin; provider URLs and credentials remain native.
+- Category-map and per-category rows use account-scoped cache keys. An explicit All categories selection is persisted; global search still loads the full list. The same full-list semantics remain for Android TV and desktop.
+- The first category is chosen visibly from available, non-adult categories only when no existing selection was saved. Virtual favorites, recents and genres require a full view; missing/ambiguous category mappings fall back safely.
+- First uncached data is still provider-dependent: servers may ignore the category_id filter; no physical measured speedup yet. Only acceptance with the owner's active provider can prove it.
+
+**CI gate:** the Android workflow must pass after this exact integration SHA; the previously successful PR #74 SHA is superseded. No distribution or merge without complete integration CI and signing/identity review.

@@ -349,4 +349,6 @@ from test_native_video_actions_overlay import test as verify_native_video_action
 verify_native_video_actions()
 from native_video_actions_overlay import apply as apply_native_video_actions
 apply_native_video_actions(DEST)
+from fast_category_overlay import apply as apply_fast_category
+apply_fast_category(ROOT, DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

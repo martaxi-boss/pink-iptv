@@ -38,10 +38,12 @@ try {
       const errors=[], requests=[]
       page.on("pageerror",e=>errors.push(e.message))
       page.on("console",msg=>{if(msg.type()==="error")errors.push(msg.text())})
-      if(mode==="android-account"){
-        await page.addInitScript(() => {
+      // Both cases must use the real protected Android vault protocol.
+      // Supplying localStorage alone would bypass PINK's Keystore-only rule.
+      {
+        await page.addInitScript((useAccount) => {
           const account={_id:"pink-smoke",title:"Synthetic QA",type:"xtream",serverUrl:"https://fixture.invalid",username:"synthetic",password:"synthetic"}
-          localStorage.setItem("xt_playlists",JSON.stringify({entries:[account],selectedId:account._id}))
+          if(useAccount) localStorage.setItem("xt_playlists",JSON.stringify({entries:[],selectedId:account._id}))
           const bodies={
             get_vod_categories:JSON.stringify([{category_id:"7",category_name:"Demo"}]),
             get_series_categories:JSON.stringify([{category_id:"7",category_name:"Demo"}]),
@@ -65,12 +67,14 @@ try {
             } else if(request.operation==="vodCatalogClose"){
               staging.delete(request.payload.token)
             } else if(request.operation==="vaultReadValidated"){
-              result=JSON.stringify({entries:[account],selectedId:account._id})
+              result=useAccount ? JSON.stringify({entries:[account],selectedId:account._id}) : null
+            } else if(request.operation==="vaultRead"){
+              result=null
             } else {ok=false;code="UNSUPPORTED"}
             queueMicrotask(()=>window.PinkNative.onmessage?.({data:JSON.stringify({id:request.id,ok,result,code})}))
           }}
           window.__pinkSmokeNativeStats={staging}
-        })
+        }, mode==="android-account")
       }
       const statusId=route==="movies"?"movie-list-status":"series-list-status"
       const url=base+"/"+route+"/"

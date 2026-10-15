@@ -104,6 +104,41 @@ def apply(dest: Path) -> None:
         '    "xt:android-native-volume",\n',
         '    "xt:android-native-volume",\n    "xt:android-native-cast-request",\n')
 
+    # Android can resume a WebView with an event already queued. The first
+    # subscription must be active before draining the queue; later VOD page
+    # subscriptions must also receive a short-lived cast request.
+    _replace_once(root, bridge,
+        'let listenersInstalled = false\\n',
+        'let listenersInstalled = false\\n'
+        'let pendingNativeCastEvent: AndroidNativeEvent | null = null\\n'
+        'let pendingNativeCastAt = 0\\n'
+        'const NATIVE_CAST_REPLAY_WINDOW_MS = 30_000\\n'
+        'export function acknowledgeAndroidNativeCastRequest(contentKey: string): void {\\n'
+        '  if (pendingNativeCastEvent?.payload?.contentKey === contentKey) pendingNativeCastEvent = null\\n'
+        '}\\n')
+    _replace_once(root, bridge,
+        '  for (const callback of subscribers) {\\n',
+        '  if (type === "xt:android-native-cast-request") {\\n'
+        '    pendingNativeCastEvent = event\\n'
+        '    pendingNativeCastAt = Date.now()\\n'
+        '  }\\n'
+        '  for (const callback of subscribers) {\\n')
+    _replace_once(root, bridge,
+        '  if (androidNativePlayerAvailable) installListeners()\\n'
+        '  subscribers.add(callback)\\n',
+        '  const replay = pendingNativeCastEvent\\n'
+        '  subscribers.add(callback)\\n'
+        '  if (androidNativePlayerAvailable) installListeners()\\n'
+        '  if (replay && replay === pendingNativeCastEvent &&\\n'
+        '      Date.now() - pendingNativeCastAt < NATIVE_CAST_REPLAY_WINDOW_MS) {\\n'
+        '    try { callback(replay) } catch {}\\n'
+        '  }\\n')
+
+    # A tiny no-credential session intent survives Android Activity / WebView
+    # recreation. It never contains account data, stream URLs or VPN state.
+    intent_helper = root / "src/scripts/lib/pink-native-cast-intent.ts"
+    intent_helper.write_text((Path(__file__).parent / "overlay/pink-native-cast-intent.ts").read_text())
+
     # A channel can change with the TV remote inside the native player. The
     # cast intent's current channelId (not its initial contentKey) is canonical.
     live = "src/scripts/stream/stream.ts"
@@ -141,11 +176,16 @@ def apply(dest: Path) -> None:
         path = f"src/scripts/{plural}/detail.ts"
         _replace_once(root, path,
             "  launchAndroidNativeVodWithProgress,\n",
-            "  launchAndroidNativeVodWithProgress,\n  subscribeAndroidNativeEvents,\n")
+            "  launchAndroidNativeVodWithProgress,\n  subscribeAndroidNativeEvents,\n  acknowledgeAndroidNativeCastRequest,\n")
         _replace_once(root, path,
             "let pipBtnBound = false\n",
-            "let pipBtnBound = false\n"
-            "let pinkNativeCastTarget: { contentKey: string; playlistId: string } | null = null\n")
+            "let pipBtnBound = false\n")
+
+    for route in ("movies", "series"):
+        _replace_once(root, f"src/scripts/{route}/detail.ts",
+            'import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"\\n',
+            'import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"\\n'
+            'import { rememberNativeCastIntent, matchesNativeCastIntent, clearNativeCastIntent } from "@/scripts/lib/pink-native-cast-intent.ts"\\n')
 
     movie = "src/scripts/movies/detail.ts"
     _replace_once(root, movie,
@@ -155,7 +195,7 @@ def apply(dest: Path) -> None:
 ''',
         '''      progressExtras: { title: movie.name, logo: movie.logo || null },
     })
-    if (launched) pinkNativeCastTarget = { contentKey: "vod:" + movie.id, playlistId: activePlaylistId }
+    if (launched) rememberNativeCastIntent("movie", activePlaylistId, "vod:" + movie.id)
     if (launched) return
 ''')
     _replace_once(root, movie,
@@ -170,13 +210,27 @@ subscribeExternalPlayerExit(() => {
 // cast a stale selection after the account or movie has changed.
 subscribeAndroidNativeEvents((event) => {
   if (event.type !== "xt:android-native-cast-request") return
-  const target = pinkNativeCastTarget
-  if (!target || !movie || target.playlistId !== activePlaylistId ||
-      target.contentKey !== event.payload?.contentKey ||
-      target.contentKey !== "vod:" + movie.id) return
-  pinkNativeCastTarget = null
-  const button = document.getElementById("movie-detail-play-tv") as HTMLButtonElement | null
-  if (button && !button.hidden && button.isConnected) button.click()
+  if (event.payload?.mode !== "vod" || !String(event.payload?.contentKey || "").startsWith("vod:")) return
+  const contentKey = String(event.payload.contentKey)
+  // The WebView can resume before catalog hydration; retry the exact match
+  // briefly instead of silently dropping the user's native cast request.
+  const openWhenReady = (attempt: number) => {
+    if (!movie || !activePlaylistId) {
+      if (attempt < 80) window.setTimeout(() => openWhenReady(attempt + 1), 250)
+      return
+    }
+    if (contentKey !== "vod:" + movie.id ||
+        !matchesNativeCastIntent("movie", activePlaylistId, contentKey)) return
+    const button = document.getElementById("movie-detail-play-tv") as HTMLButtonElement | null
+    if (!button?.isConnected) {
+      if (attempt < 80) window.setTimeout(() => openWhenReady(attempt + 1), 250)
+      return
+    }
+    clearNativeCastIntent("movie")
+    acknowledgeAndroidNativeCastRequest(contentKey)
+    button.click()
+  }
+  openWhenReady(0)
 })
 
 subscribeExternalPlayerExit(() => {
@@ -192,7 +246,7 @@ subscribeExternalPlayerExit(() => {
   let backend = getPlayerBackend()
 ''',
         '''    })
-    if (launched) pinkNativeCastTarget = { contentKey: "ep:" + episode.id, playlistId: activePlaylistId }
+    if (launched) rememberNativeCastIntent("series", activePlaylistId, "ep:" + episode.id)
     if (launched) return
   }
 
@@ -210,13 +264,31 @@ subscribeExternalPlayerExit(() => {
 // handler (including season/episode navigation), never a new cast transport.
 subscribeAndroidNativeEvents((event) => {
   if (event.type !== "xt:android-native-cast-request") return
-  const target = pinkNativeCastTarget
-  if (!target || !currentEpisode || target.playlistId !== activePlaylistId ||
-      target.contentKey !== event.payload?.contentKey ||
-      target.contentKey !== "ep:" + currentEpisode.id) return
-  pinkNativeCastTarget = null
-  const button = document.getElementById("series-detail-play-tv") as HTMLButtonElement | null
-  if (button && !button.hidden && button.isConnected) button.click()
+  if (event.payload?.mode !== "vod" || !String(event.payload?.contentKey || "").startsWith("ep:")) return
+  const contentKey = String(event.payload.contentKey)
+  const openWhenReady = (attempt: number) => {
+    if (!activePlaylistId || !series || !episodesByKey) {
+      if (attempt < 80) window.setTimeout(() => openWhenReady(attempt + 1), 250)
+      return
+    }
+    if (!matchesNativeCastIntent("series", activePlaylistId, contentKey)) return
+    // Restore the precise episode after an Android WebView recreation; the
+    // default episode might belong to another season.
+    const episode = Object.values(episodesByKey).flat().find((ep: any) =>
+      contentKey === "ep:" + ep?.id)
+    if (!episode) return
+    const button = document.getElementById("series-detail-play-tv") as HTMLButtonElement | null
+    if (!button?.isConnected) {
+      if (attempt < 80) window.setTimeout(() => openWhenReady(attempt + 1), 250)
+      return
+    }
+    currentEpisode = episode
+    playTvBtnHandle?.refresh()
+    clearNativeCastIntent("series")
+    acknowledgeAndroidNativeCastRequest(contentKey)
+    button.click()
+  }
+  openWhenReady(0)
 })
 
 subscribeExternalPlayerExit(() => {

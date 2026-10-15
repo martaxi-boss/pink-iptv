@@ -83,17 +83,27 @@ subscribeExternalPlayerExit(() => {
         assert 'put("channelId", channel.id)' in native
         assert "finish()" in native
         bridge = (root / "src/scripts/lib/android-video-launcher.ts").read_text()
-        assert bridge.count('"xt:android-native-cast-request"') == 2
+        assert bridge.count('"xt:android-native-cast-request"') >= 2
+        assert "subscribers.add(callback)\\n" in bridge
+        assert "pendingNativeCastEvent" in bridge
+        assert "acknowledgeAndroidNativeCastRequest" in bridge
+        helper = (root / "src/scripts/lib/pink-native-cast-intent.ts").read_text()
+        assert "sessionStorage.setItem" in helper
+        assert "sessionStorage.removeItem" in helper
+        assert "MAX_AGE_MS" in helper
         live = (root / "src/scripts/stream/stream.ts").read_text()
         assert 'event.payload?.mode !== "live"' in live
         assert "String(entry.id) === String(event.payload.channelId)" in live
         for kind, route in (("vod", "movies"), ("ep", "series")):
             source = (root / f"src/scripts/{route}/detail.ts").read_text()
-            assert 'target.playlistId !== activePlaylistId' in source
-            assert 'target.contentKey !== event.payload?.contentKey' in source
+            assert "matchesNativeCastIntent" in source
+            assert "rememberNativeCastIntent" in source
+            assert "clearNativeCastIntent" in source
+            assert "acknowledgeAndroidNativeCastRequest" in source
             assert f'target.contentKey !== "{kind}:" +' in source
             assert f'document.getElementById("{("movie" if kind == "vod" else "series")}-detail-play-tv")' in source
-            assert "button && !button.hidden && button.isConnected" in source
+            assert "button?.isConnected" in source
+            assert "openWhenReady" in source
 
         # Refuse ambiguous updates. No duplicate menu or silent partial patch.
         try:

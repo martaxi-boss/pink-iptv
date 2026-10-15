@@ -341,4 +341,12 @@ from catalog_overlay import apply as apply_catalog
 apply_catalog(ROOT, DEST)
 from brand_overlay import apply as apply_brand
 apply_brand(ROOT, DEST)
+from premium_overlay import apply as apply_premium
+apply_premium(ROOT, DEST)
+from mobile_performance_overlay import apply as apply_mobile_performance
+apply_mobile_performance(ROOT, DEST)
+from test_native_video_actions_overlay import test as verify_native_video_actions
+verify_native_video_actions()
+from native_video_actions_overlay import apply as apply_native_video_actions
+apply_native_video_actions(DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

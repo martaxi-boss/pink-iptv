@@ -69,6 +69,10 @@ jobs:
           set -euo pipefail
           git clone --no-checkout https://github.com/infinitel8p/Extreme-InfiniTV.git "$RUNNER_TEMP/pink-extreme"
           git -C "$RUNNER_TEMP/pink-extreme" checkout --detach 1efcc1b4ab3468db04aedd1c466228c52ef001b7
+          python3 clients/extreme/test_premium_overlay.py
+          python3 clients/extreme/test_brand_overlay.py
+          python3 clients/extreme/test_mobile_performance_overlay.py
+          python3 clients/extreme/test_native_video_actions_overlay.py
           python clients/extreme/prepare.py "$RUNNER_TEMP/pink-extreme"
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
         with:

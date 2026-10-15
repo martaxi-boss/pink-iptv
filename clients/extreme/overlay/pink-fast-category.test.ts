@@ -28,6 +28,10 @@ describe("PINK native quick-category selection", () => {
       expect(source).toContain(`"${kind}-pink-category-map"`)
       expect(source).toContain(`"${kind}-pink-category:" + selected.id`)
       expect(source).toContain("pinkFastAllRequested = true")
+      expect(source).toContain(`"pink:full-catalog:${kind}:" + activePlaylistId`)
+      expect(source).toContain("localStorage.setItem(key, \"1\")")
+      expect(source).toContain("localStorage.removeItem(key)")
+      expect(source).toContain("if (!pinkFastCategoryOnly) refreshGenreSets(activePlaylistId)")
     }
   })
   it("restricts a provider that ignores category_id instead of polluting all-cache keys", () => {

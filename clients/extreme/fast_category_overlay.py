@@ -149,7 +149,37 @@ let pinkFastGeneration = 0
     return
   }}
   applyFilter()''')
-        replace_once(dest, file, before, after)
+        # The explicit All-categories selection must survive a return to the
+        # page; otherwise a later visit silently resets back to the preview.
+        full_choice_key = f'"pink:full-catalog:{kind}:" + activePlaylistId'
+        old_filter = '''  if (pinkFastCategoryOnly && activeCat !== pinkFastCurrentName) {
+    if (!activeCat) pinkFastAllRequested = true
+    void load''' + page + '''()
+    return
+  }
+  applyFilter()'''
+        new_filter = f'''  if (PINK_FAST_PHONE && activePlaylistId) {{
+    const key = {full_choice_key}
+    if (!activeCat) {{
+      pinkFastAllRequested = true
+      try {{ localStorage.setItem(key, "1") }} catch {{}}
+    }} else {{
+      pinkFastAllRequested = false
+      try {{ localStorage.removeItem(key) }} catch {{}}
+    }}
+  }}
+  if (pinkFastCategoryOnly && activeCat !== pinkFastCurrentName) {{
+    void load{page}()
+    return
+  }}
+  applyFilter()'''
+        replace_once(dest, file, old_filter, new_filter)
+
+        # Showing a 500-row category should not request a full 120k-title
+        # genre index. Genre selections still fall back to the full view.
+        replace_once(dest, file,
+                     "  picker.rerender()\n  populateLanguageFilterOptions()\n  refreshGenreSets(activePlaylistId)\n",
+                     "  picker.rerender()\n  populateLanguageFilterOptions()\n  if (!pinkFastCategoryOnly) refreshGenreSets(activePlaylistId)\n")
 
         fastfunction = f'''
 async function pinkFastLoadCategory(entryId: string, token: number): Promise<boolean> {{
@@ -197,6 +227,22 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
         # full 120k-item IndexedDB catalog is deserialized. Otherwise the
         # Android phone still blocks even though the small category is cached.
         full_cache_hydration = f'  await hydrateCache(active._id, "{kind}")'
+        # Switching accounts must drop the previous account's category-only
+        # view, and rehydrate the new account's explicit All choice.
+        replace_once(dest, file,
+            "  activePlaylistId = active._id\n  activePlaylistTitle = active.title || \"\"",
+            f'''  if (activePlaylistId !== active._id) {{
+    pinkFastCategoryOnly = false
+    pinkFastCurrentName = ""
+    pinkFastCategories = []
+    document.documentElement.removeAttribute("data-pink-fast-category")
+  }}
+  activePlaylistId = active._id
+  try {{
+    pinkFastAllRequested =
+      localStorage.getItem("pink:full-catalog:{kind}:" + activePlaylistId) === "1"
+  }} catch {{ pinkFastAllRequested = false }}
+  activePlaylistTitle = active.title || ""''')
         quick = f'''  if (PINK_FAST_PHONE && !pinkFastAllRequested) {{
     try {{
       creds = await loadCreds()

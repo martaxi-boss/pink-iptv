@@ -7,8 +7,8 @@ export function pickPinkFastCategory(categoryMap, selectedName) {
   for (const [id, rawName] of categoryMap) {
     const name = String(rawName || "").trim()
     if (!/^[0-9]{1,12}$/.test(String(id)) || !name) continue
-    const current = seen.get(name)
-    seen.set(name, current ? null : String(id))
+    if (seen.has(name)) seen.set(name, null)
+    else seen.set(name, String(id))
   }
   const choices = [...seen].filter(([, id]) => id).map(([name, id]) => ({name, id}))
   if (selectedName) return choices.find(c => c.name === selectedName) || null

@@ -341,4 +341,6 @@ from catalog_overlay import apply as apply_catalog
 apply_catalog(ROOT, DEST)
 from brand_overlay import apply as apply_brand
 apply_brand(ROOT, DEST)
+from fast_category_overlay import apply as apply_fast_category
+apply_fast_category(ROOT, DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

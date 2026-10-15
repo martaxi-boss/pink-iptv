@@ -41,6 +41,29 @@ def apply(root: Path, dest: Path) -> None:
                  '                "&category_id=" + categoryId\n'
                  '            }\n'
                  '            return URL(origin.trimEnd(\'/\') + "/player_api.php?username=" + encode(username) + "&password=" + encode(password) + "&action=" + action + scoped)')
+    # Native JVM source-level regression is packaged with the original tests.
+    native_test = "src-tauri/gen/android/app/src/test/java/com/pinkiptv/extreme/PinkVodCatalogTest.kt"
+    test_marker = "class PinkVodCatalogTest {"
+    scoped_test = """class PinkVodCatalogTest {
+    @Test fun numericCategoryScopeIsBoundToFixedProtectedCatalogActions() {
+        assertEquals(
+            "https://provider.example/player_api.php?username=fixture%20user&password=fixture%2Fpass&action=get_vod_streams&category_id=71",
+            PinkVodCatalog.requestUrl("https://provider.example", "fixture user", "fixture/pass", "get_vod_streams", "71").toString()
+        )
+        assertTrue(PinkVodCatalog.requestUrl("https://provider.example", "u", "p", "get_series", "2").toString().endsWith("action=get_series&category_id=2"))
+        for (bad in listOf("", "-1", "0&evil=1", "1%0A", "abcdefghijklmn", "1234567890123")) {
+            try {
+                PinkVodCatalog.requestUrl("https://provider.example", "u", "p", "get_series", bad)
+                fail("Untrusted category admitted")
+            } catch (_: IllegalArgumentException) { }
+        }
+        try {
+            PinkVodCatalog.requestUrl("https://provider.example", "u", "p", "get_vod_categories", "71")
+            fail("Category filter on metadata action")
+        } catch (_: IllegalArgumentException) { }
+    }
+"""
+    replace_once(dest, native_test, test_marker, scoped_test)
     bridge = "src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/PinkWebBridge.kt"
     replace_once(dest, bridge,
                  'vodCatalog.open(payload.getString("action"), payload.getString("entryId"))',

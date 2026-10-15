@@ -69,6 +69,7 @@ jobs:
           set -euo pipefail
           git clone --no-checkout https://github.com/infinitel8p/Extreme-InfiniTV.git "$RUNNER_TEMP/pink-extreme"
           git -C "$RUNNER_TEMP/pink-extreme" checkout --detach 1efcc1b4ab3468db04aedd1c466228c52ef001b7
+          python3 -m py_compile clients/extreme/fast_category_overlay.py
           python clients/extreme/prepare.py "$RUNNER_TEMP/pink-extreme"
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
         with:
@@ -79,7 +80,7 @@ jobs:
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-fast-category.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
           pnpm exec playwright install --with-deps chromium
           node tests/pink-catalog-browser.mjs
           pnpm run build

@@ -183,9 +183,9 @@ def apply(dest: Path) -> None:
 
     for route in ("movies", "series"):
         _replace_once(root, f"src/scripts/{route}/detail.ts",
-            'import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"\\n',
-            'import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"\\n'
-            'import { rememberNativeCastIntent, matchesNativeCastIntent, clearNativeCastIntent } from "@/scripts/lib/pink-native-cast-intent.ts"\\n')
+            'import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"\n',
+            'import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"\n'
+            'import { rememberNativeCastIntent, matchesNativeCastIntent, clearNativeCastIntent } from "@/scripts/lib/pink-native-cast-intent.ts"\n')
 
     movie = "src/scripts/movies/detail.ts"
     _replace_once(root, movie,

@@ -35,8 +35,10 @@ export async function fetchPinkVodCatalog(action, entryId, signal) {
           if (received !== size) throw Object.assign(new Error("Catálogo PINK incompleto."), {code:"BODY_SIZE"})
           await finish(); controller.close(); return
         }
-        const text = atob(chunk.data)
-        const bytes = Uint8Array.from(text, c => c.charCodeAt(0))
+        const binary = atob(chunk.data)
+        // Avoid a JavaScript callback for every byte of a huge VOD catalog.
+        const bytes = new Uint8Array(binary.length)
+        for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index)
         received += bytes.length
         if (received > size) throw catalogFailure("BODY_SIZE")
         controller.enqueue(bytes)

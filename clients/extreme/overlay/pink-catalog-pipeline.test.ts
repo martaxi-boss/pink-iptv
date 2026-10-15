@@ -6,43 +6,50 @@ import { parsePinkCatalog } from '../src/scripts/lib/pink-catalog-worker.js'
 afterEach(() => vi.unstubAllGlobals())
 const source = (path: string) => readFileSync(new URL('../src/' + path, import.meta.url), 'utf8')
 describe('demand-first catalog ownership', () => {
-  it('advances Live → Movies → Series only on completion, joins triggers and continues after failure', async () => {
+  it('warms only Live, deduplicates Home triggers, and never preloads enormous VOD catalogs', async () => {
     const background = createCatalogBackground()
     const order: string[] = []
     let release: any
     const load = vi.fn(async (kind: string) => {
       order.push(kind)
       if (kind === 'live') await new Promise(resolve => { release = resolve })
-      if (kind === 'vod') throw Object.assign(Error('bounded failure'), {code:'READ_IDLE'})
     })
     const a = background('account', load)
     expect(background('account', load)).toBe(a)
     await Promise.resolve()
     expect(order).toEqual(['live'])
     release()
-    expect(await a).toEqual({vod:'READ_IDLE'})
-    expect(order).toEqual(['live', 'vod', 'series'])
+    expect(await a).toEqual({})
+    expect(order).toEqual(['live'])
   })
-  it('places an explicit Series request immediately after active Live without duplicating background work', async () => {
+  it('starts a requested Series page without an automatic Movies download', async () => {
     const queue = createCatalogQueue(() => 'series')
     const background = createCatalogBackground()
-    const hot = new Set<string>()
     const order: string[] = []
     let release: any
-    const load = (kind: string) => hot.has(kind) ? Promise.resolve() : queue(kind, kind, async () => {
+    const load = (kind: string) => queue(kind, kind, async () => {
       order.push(kind)
       if (kind === 'live') await new Promise(resolve => { release = resolve })
-      hot.add(kind)
+      return kind
     })
-    const job = background('account', load)
+    const home = background('account', load)
     await Promise.resolve(); await Promise.resolve()
+    expect(order).toEqual(['live'])
     const page = load('series')
     release()
-    await Promise.all([job, page])
-    expect(order).toEqual(['live', 'series', 'vod'])
-    await background('account', load)
-    expect(order).toEqual(['live', 'series', 'vod'])
+    expect(await page).toBe('series')
+    expect(await home).toEqual({})
+    expect(order).toEqual(['live', 'series'])
     expect(createCatalogBackground.toString()).not.toMatch(/setTimeout|setInterval/)
+  })
+  it('reports a failed Live warmup without launching Movies or Series', async () => {
+    const order: string[] = []
+    const errors = await createCatalogBackground()('account', async (kind: string) => {
+      order.push(kind)
+      throw Object.assign(Error('fixture failure'), { code: 'VPN_LOST' })
+    })
+    expect(errors).toEqual({ live: 'VPN_LOST' })
+    expect(order).toEqual(['live'])
   })
   it('joins a page and warmup request and serializes different catalogs', async () => {
     const queue = createCatalogQueue()

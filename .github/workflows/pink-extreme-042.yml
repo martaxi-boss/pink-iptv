@@ -11,7 +11,15 @@ permissions:
   contents: read
 jobs:
   android:
-    if: (github.event_name == 'pull_request' && github.event.pull_request.number == 61) || (github.event_name != 'pull_request' && github.event.head_commit.message != 'Validate bounded hosted recovery records 055')
+    # Exact-PR Android verification is available to every ready, same-repo PR,
+    # including independently published Codex worker branches. A skipped job
+    # cannot certify a phase. Forks and draft PRs remain outside this lane.
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.draft == false) ||
+      (github.event_name != 'pull_request' &&
+       github.event.head_commit.message != 'Validate bounded hosted recovery records 055')
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     env:
@@ -25,16 +33,21 @@ jobs:
           persist-credentials: false
       - name: Audit immutable certification061 or bounded login recovery062
         run: |
-          if [ "${{ github.event_name }}" = 'pull_request' ] && [ "${{ github.head_ref }}" = 'builder/vpn-android-recovery-075' ]; then
+          if [ "${{ github.event_name }}" = 'pull_request' ] && [ "${{ github.event.pull_request.number }}" = '61' ]; then
+            python clients/extreme/audit_061.py
+          elif [ "${{ github.event_name }}" = 'pull_request' ] && [ "${{ github.head_ref }}" = 'builder/vpn-android-recovery-075' ]; then
             python clients/extreme/audit_075.py
           elif [ "${{ github.ref_name }}" = 'builder/device-login-recovery-062' ]; then
             python clients/extreme/audit_062.py
           elif [ "${{ github.ref_name }}" = 'builder/physical-ui-recovery-059' ]; then
             test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json
             python clients/extreme/audit_061.py
-          elif test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json; then
+          elif [ "${{ github.event_name }}" != 'pull_request' ] && test -f .project-leader/tasks/PINK-IPTV-PHYSICAL-UI-CERTIFICATION-061.json; then
             python clients/extreme/audit_061.py
           fi
+          # A historical immutable certification applies only to its own
+          # authorized scope; all other PRs still run the full Android suite.
+          git diff --check
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
         with:
           version: 10.31.0

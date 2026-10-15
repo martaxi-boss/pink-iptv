@@ -191,7 +191,11 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
         replace_once(dest, file, load_marker, inject)
         # Only an explicit All selection or global search requests the full
         # catalog. Search always remains global (never limited to one category).
-        search_marker = ('searchEl?.addEventListener(\n  "input",\n  debounce(() => {')
+        search_marker = (
+            'searchEl?.addEventListener(\n  "input",\n  debounce(() => {'
+            if kind == "vod" else
+            'searchEl?.addEventListener(\n  "input",\n  debounce(() => applyFilter(), 160)\n)'
+        )
         replace_once(dest, file, search_marker, f'''searchEl?.addEventListener("input", () => {{
   if (pinkFastCategoryOnly && searchEl?.value?.trim()) {{
     pinkFastAllRequested = true

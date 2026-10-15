@@ -18,6 +18,18 @@ describe("PINK native quick-category selection", () => {
     expect(pickPinkFastCategory(map,"__favorites__")).toBeNull()
     expect(pickPinkFastCategory(map,"Bad")).toBeNull()
   })
+  it("loads a small category before touching the global 120k-title cache", () => {
+    for (const [plural, kind] of [["movies", "vod"], ["series", "series"]]) {
+      const source = readFileSync(new URL(`../src/scripts/${plural}/${plural}.ts`, import.meta.url), "utf8")
+      const fast = source.indexOf("await pinkFastLoadCategory(active._id, pinkFastToken)")
+      const global = source.indexOf(`await hydrateCache(active._id, "${kind}")`)
+      expect(fast).toBeGreaterThan(0)
+      expect(global).toBeGreaterThan(fast)
+      expect(source).toContain(`"${kind}-pink-category-map"`)
+      expect(source).toContain(`"${kind}-pink-category:" + selected.id`)
+      expect(source).toContain("pinkFastAllRequested = true")
+    }
+  })
   it("restricts a provider that ignores category_id instead of polluting all-cache keys", () => {
     const records=[{id:1,category:"Drama"},{id:2,category:"Comedy"},{id:3,category:"Drama"}]
     expect(filterPinkScopedRows(records,"Drama")).toEqual([records[0],records[2]])

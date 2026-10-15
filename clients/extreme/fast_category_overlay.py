@@ -110,7 +110,56 @@ def apply(root: Path, dest: Path) -> None:
                      f'    const r = await xtreamApiFetch("{full_action}", categoryId ? {{category_id: categoryId}} : {{}}, {{entryId: playlistId}})')
         replace_once(dest, shared,
                      f'processPinkCatalog(body, "{kind}", catMap, playlistId, {kind.upper()}_TTL_MS)',
-                     f'processPinkCatalog(body, "{kind}", catMap, categoryId ? null : playlistId, {kind.upper()}_TTL_MS)')
+                     f'processPinkCatalog(body, "{kind}", catMap, categoryId ? null : playlistId, {kind.upper()}_TTL_MS, categoryId)')
+
+    # Filter on raw provider category IDs, not the first display label:
+    # an entry may belong to multiple categories. The normal full worker
+    # signature and global cache remain byte-identical by default.
+    pipeline = "src/scripts/lib/pink-catalog-pipeline.js"
+    replace_once(dest, pipeline,
+        "export function processPinkCatalog(body, kind, categories, entryId, ttl) {",
+        "export function processPinkCatalog(body, kind, categories, entryId, ttl, categoryId = null) {")
+    replace_once(dest, pipeline,
+        "worker.postMessage({body, kind, categories, entryId, ttl})",
+        "worker.postMessage({body, kind, categories, entryId, ttl, categoryId})")
+    worker = "src/scripts/lib/pink-catalog-worker.js"
+    replace_once(dest, worker,
+        "export function parsePinkCatalog(body, kind, categories) {",
+        "export function parsePinkCatalog(body, kind, categories, scopedCategoryId = null) {")
+    replace_once(dest, worker,
+        '''  try {
+    if (kind === "vod") return mapXtreamVodRows(raw, categories)
+    if (kind === "series") return mapXtreamSeriesRows(raw, categories)
+  } catch { throw catalogFailure("WORKER_MAP") }''',
+        '''  try {
+    let source = raw
+    if (scopedCategoryId != null) {
+      const chosenId = String(scopedCategoryId)
+      if (!/^[0-9]{1,12}$/.test(chosenId)) throw Error("Invalid category")
+      const chosenName = categories.get(chosenId)
+      // Providers sometimes ignore category_id. Filter those full bodies in
+      // the Worker, before mapping or painting any wrong-category posters.
+      source = raw.filter(row => row && (
+        String(row.category_id ?? "") === chosenId ||
+        (Array.isArray(row.category_ids) &&
+          row.category_ids.some(id => String(id) === chosenId)) ||
+        (chosenName && String(row.category_name || "").trim() === chosenName)
+      ))
+      if (raw.length && source.length === 0) throw Error("Unverified category scope")
+    }
+    const mapped = kind === "vod"
+      ? mapXtreamVodRows(source, categories)
+      : kind === "series" ? mapXtreamSeriesRows(source, categories) : null
+    if (!mapped) throw Error("Unknown catalog")
+    if (scopedCategoryId != null) {
+      const label = categories.get(String(scopedCategoryId))
+      if (label) for (const row of mapped) row.category = label
+    }
+    return mapped
+  } catch { throw catalogFailure("WORKER_MAP") }''')
+    replace_once(dest, worker,
+        "rows = parsePinkCatalog(data.body, data.kind, data.categories); offset = 0",
+        "rows = parsePinkCatalog(data.body, data.kind, data.categories, data.categoryId); offset = 0")
 
     # The short category response gets its OWN IndexedDB entry. Full-list
     # search/favourites remain possible by explicitly choosing All categories.
@@ -174,7 +223,7 @@ let pinkFastGeneration = 0
 async function pinkFastLoadCategory(entryId: string, token: number): Promise<boolean> {{
   if (!PINK_FAST_PHONE || pinkFastAllRequested || searchEl?.value?.trim()) return false
   const {{ {lookup}, {fetcher} }} = await import("@/scripts/lib/catalog.js")
-  const {{ pickPinkFastCategory, filterPinkScopedRows }} = await import("@/scripts/lib/pink-fast-category.js")
+  const {{ pickPinkFastCategory }} = await import("@/scripts/lib/pink-fast-category.js")
   // Keep the small category index cached independently of large title lists.
   const categoryResult = await cachedFetch(entryId, "{kind}-pink-category-map",
     {kind.upper()}_TTL_MS, () => {lookup}(entryId))
@@ -194,7 +243,7 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
     await cachedFetch(entryId, key, {kind.upper()}_TTL_MS,
       () => {fetcher}(entryId, selected.id, categories))
   if (token !== pinkFastGeneration || entryId !== activePlaylistId) return true
-  const scoped = filterPinkScopedRows(result.data, selected.name)
+  const scoped = result.data
   {"await " if kind == "series" else ""}paint{page}(scoped, result.fromCache, result.age)
   if (listStatus) listStatus.textContent = String(scoped.length) +
     " nesta categoria · Seleciona Todas as categorias para ver o catálogo completo"

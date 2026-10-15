@@ -30,8 +30,27 @@ describe("PINK native quick-category selection", () => {
       expect(source).toContain("pinkFastAllRequested = true")
       expect(source).toContain(`"pink:full-catalog:${kind}:" + activePlaylistId`)
       expect(source).toContain("localStorage.setItem(key, \"1\")")
+      expect(source).toContain("const scoped = result.data")
       expect(source).toContain("localStorage.removeItem(key)")
       expect(source).toContain("if (!pinkFastCategoryOnly) refreshGenreSets(activePlaylistId)")
+    }
+  })
+  it("keeps valid multi-category Movies and Series and removes results from providers ignoring category_id", async () => {
+    const {parsePinkCatalog} = await import("../src/scripts/lib/pink-catalog-worker.js")
+    const categories=new Map([["2","Drama"],["7","Comedy"],["9","News"]])
+    for (const kind of ["vod", "series"]) {
+      const idKey=kind === "vod" ? "stream_id" : "series_id"
+      const raw=[
+        {[idKey]:1,name:"Shared in two groups",category_ids:[2,7]},
+        {[idKey]:2,name:"Wrong category",category_id:9},
+        {[idKey]:3,name:"Selected category",category_id:7}
+      ]
+      const scoped=parsePinkCatalog(JSON.stringify(raw),kind,categories,"7")
+      expect(scoped.map(x=>x.id)).toEqual([1,3])
+      expect(scoped.map(x=>x.category)).toEqual(["Comedy","Comedy"])
+      expect(parsePinkCatalog(JSON.stringify(raw),kind,categories)).toHaveLength(3)
+      expect(() => parsePinkCatalog(JSON.stringify(raw),kind,categories,"1&evil")).toThrow()
+      expect(() => parsePinkCatalog(JSON.stringify(raw),kind,categories,"333")).toThrow()
     }
   })
   it("restricts a provider that ignores category_id instead of polluting all-cache keys", () => {

@@ -207,6 +207,14 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
 
 '''
         replace_once(dest, file, full_cache_hydration, quick + full_cache_hydration)
+        # Restore the full category picker/counts after an explicit global
+        # download succeeds (not only when a pre-existing full-cache hit).
+        full_paint = ("    paintMovies(data, fromCache, age)"
+                      if kind == "vod" else "    await paintSeries(data, fromCache, age)")
+        replace_once(dest, file, full_paint,
+                     '    pinkFastCategoryOnly = false\n'
+                     '    document.documentElement.removeAttribute("data-pink-fast-category")\n'
+                     + full_paint)
         # Only an explicit All selection or global search requests the full
         # catalog. Search always remains global (never limited to one category).
         search_marker = (

@@ -239,3 +239,8 @@ html[data-pink-cinema="1"] body:has(#series-grid) .pink-catalog-hero {
     flex: 1 1 100%;
   }
 }
+
+/* Owner mobile Home: remove decorative masthead, not the Live TV tile. */
+html[data-pink-cinema="1"] body:has(#hub-tiles) .pink-masthead {
+  display: none !important;
+}

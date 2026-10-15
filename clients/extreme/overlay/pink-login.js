@@ -12,7 +12,7 @@ export function parseRecoverableInstallations(raw) {
 }
 export const loginMarkup = `
   <section class="mx-auto w-full max-w-md px-6 py-10">
-    <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-8 w-64" />
+    <div class="mx-auto mb-8 flex items-center justify-center text-accent" role="img" aria-label="PINK IPTV"><span class="text-7xl font-black">P</span><span class="flex flex-col"><span class="text-4xl font-black">INK</span><span class="text-lg font-bold tracking-widest">IPTV</span></span></div>
     <h1 class="mb-2 text-2xl font-semibold text-fg">Bem-vindo à PINK IPTV</h1>
     <p class="mb-7 text-fg-3">Use o mesmo utilizador e palavra-passe da sua conta PINK IPTV. O acesso fica guardado neste dispositivo.</p>
     <form data-pink-login autocomplete="off" class="space-y-5">

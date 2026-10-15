@@ -9,6 +9,9 @@ describe("PINK native quick-category selection", () => {
     const map = new Map([["1","XXX ADULT"],["2","[MULTI-LANG] TOP 2026 MOVIES"],["3","Documentary"]])
     expect(pickPinkFastCategory(map,"Documentary")).toEqual({id:"3",name:"Documentary"})
     expect(pickPinkFastCategory(map,"")).toEqual({id:"2",name:"[MULTI-LANG] TOP 2026 MOVIES"})
+    // A later TOP/MULTI-LANG category must never be prioritized over a normal one.
+    expect(pickPinkFastCategory(new Map([["3","Documentary"],["4","[MULTI-LANG] TOP 2026 MOVIES"]]),""))
+      .toEqual({id:"3",name:"Documentary"})
     expect(pickPinkFastCategory(new Map([["1","XXX ADULT"]]),"")).toBeNull()
   })
   it("rejects ambiguous category names, nonnumeric IDs and virtual categories", () => {
@@ -31,6 +34,13 @@ describe("PINK native quick-category selection", () => {
       expect(source).toContain(`"pink:full-catalog:${kind}:" + activePlaylistId`)
       expect(source).toContain("localStorage.setItem(key, \"1\")")
       expect(source).toContain("const scoped = result.data")
+      expect(source).toContain("picker.getActiveCat() === \"\"")
+      expect(source).toContain("pinkFastCompleteAll(active._id, pinkFastToken)")
+      expect(source).toContain(`"pink:all-default-v1:${kind}:" + activePlaylistId`)
+      expect(source).toContain("títulos iniciais · A carregar todas as categorias")
+      expect(source).toContain("const fromCache = result.fromCache === undefined")
+      expect(source).not.toContain("picker.setActiveCat(selected.name")
+      expect(source).toContain(`getCached(entryId, "${kind}")`)
       expect(source).toContain("localStorage.removeItem(key)")
       expect(source).toContain("if (!pinkFastCategoryOnly) refreshGenreSets(activePlaylistId)")
     }

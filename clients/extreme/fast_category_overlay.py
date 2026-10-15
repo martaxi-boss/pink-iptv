@@ -220,6 +220,34 @@ let pinkFastGeneration = 0
                      "  picker.rerender()\n  populateLanguageFilterOptions()\n  if (!pinkFastCategoryOnly) refreshGenreSets(activePlaylistId)\n")
 
         fastfunction = f'''
+// The visible selection is All Categories; keep the first small, fast
+// category as an explicitly labelled preview while the full global list is
+// fetched and persisted using its original global cache key.
+async function pinkFastCompleteAll(entryId: string, token: number): Promise<void> {{
+  if (token !== pinkFastGeneration || entryId !== activePlaylistId || picker.getActiveCat()) return
+  try {{
+    await hydrateCache(entryId, "{kind}")
+    let result = getCached(entryId, "{kind}")
+    if (!result) {{
+      const {{ {fetcher} }} = await import("@/scripts/lib/catalog.js")
+      result = await cachedFetch(entryId, "{kind}", {kind.upper()}_TTL_MS, () => {fetcher}(entryId))
+    }}
+    // Never overwrite the owner's later selection or another account's view.
+    if (token !== pinkFastGeneration || entryId !== activePlaylistId ||
+        picker.getActiveCat() !== "" || !result || !Array.isArray(result.data)) return
+    pinkFastCategoryOnly = false
+    document.documentElement.removeAttribute("data-pink-fast-category")
+    const fromCache = result.fromCache === undefined ? true : result.fromCache
+    {"await " if kind == "series" else ""}paint{page}(result.data, fromCache, result.age || 0)
+  }} catch {{
+    if (token === pinkFastGeneration && entryId === activePlaylistId &&
+        picker.getActiveCat() === "" && pinkFastCategoryOnly && listStatus) {{
+      listStatus.textContent = String(all.length) +
+        " títulos de pré-visualização · Catálogo completo indisponível neste momento"
+    }}
+  }}
+}}
+
 async function pinkFastLoadCategory(entryId: string, token: number): Promise<boolean> {{
   if (!PINK_FAST_PHONE || pinkFastAllRequested || searchEl?.value?.trim()) return false
   const {{ {lookup}, {fetcher} }} = await import("@/scripts/lib/catalog.js")
@@ -235,7 +263,9 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
   pinkFastCurrentName = selected.name
   pinkFastCategoryOnly = true
   document.documentElement.setAttribute("data-pink-fast-category", "1")
-  if (picker.getActiveCat() !== selected.name) picker.setActiveCat(selected.name, {{silent: true}})
+  // Never replace the owner's All-categories preference with the quick preview.
+  // Only the *native request* is scoped; the All picker remains unselected.
+
   const key = "{kind}-pink-category:" + selected.id
   await hydrateCache(entryId, key)
   const existing = getCached(entryId, key)
@@ -245,8 +275,13 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
   if (token !== pinkFastGeneration || entryId !== activePlaylistId) return true
   const scoped = result.data
   {"await " if kind == "series" else ""}paint{page}(scoped, result.fromCache, result.age)
-  if (listStatus) listStatus.textContent = String(scoped.length) +
-    " nesta categoria · Seleciona Todas as categorias para ver o catálogo completo"
+  if (listStatus) listStatus.textContent = picker.getActiveCat()
+    ? String(scoped.length) + " nesta categoria"
+    : String(scoped.length) + " títulos iniciais · A carregar todas as categorias…"
+  if (!picker.getActiveCat()) {{
+    const heroCount = document.getElementById("{'movie' if kind == 'vod' else 'series'}-hero-count")
+    if (heroCount) heroCount.textContent = scoped.length.toLocaleString() + "+"
+  }}
   return true
 }}
 '''
@@ -280,13 +315,33 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
     pinkFastAllRequested =
       localStorage.getItem("pink:full-catalog:{kind}:" + activePlaylistId) === "1"
   }} catch {{ pinkFastAllRequested = false }}
+  if (PINK_FAST_PHONE) {{
+    try {{
+      // One-time per-account migration clears the historical automatic
+      // category choice; later user choices continue to persist normally.
+      const migrated = "pink:all-default-v1:{kind}:" + activePlaylistId
+      if (localStorage.getItem(migrated) !== "1") {{
+        picker.setActiveCat("", {{silent: true}})
+        localStorage.removeItem("pink:full-catalog:{kind}:" + activePlaylistId)
+        pinkFastAllRequested = false
+        localStorage.setItem(migrated, "1")
+      }}
+    }} catch {{ /* Storage denied: the picker still works in memory. */ }}
+  }}
   activePlaylistTitle = active.title || ""''')
         quick = f'''  if (PINK_FAST_PHONE && !pinkFastAllRequested) {{
     try {{
       creds = await loadCreds()
       if (creds.host && creds.user && creds.pass &&
-          await pinkFastLoadCategory(active._id, pinkFastToken)) return
-    }} catch {{ /* Provider may not support category_id; full cache stays available. */ }}
+          await pinkFastLoadCategory(active._id, pinkFastToken)) {{
+        if (picker.getActiveCat() === "") {{
+          // Allow the first compact poster grid to become interactive before
+          // a large full-catalog IndexedDB/provider request starts.
+          setTimeout(() => {{ void pinkFastCompleteAll(active._id, pinkFastToken) }}, 180)
+        }}
+        return
+      }}
+    }} catch {{ /* Scoped API unsupported: original full catalog still works. */ }}
   }}
 
 '''

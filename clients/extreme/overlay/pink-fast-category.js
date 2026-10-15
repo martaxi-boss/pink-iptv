@@ -14,7 +14,9 @@ export function pickPinkFastCategory(categoryMap, selectedName) {
   if (selectedName) return choices.find(c => c.name === selectedName) || null
   const allowed = choices.filter(c => !/(^|[^a-z])(adult|porn|xxx|erotic|sex|18\+)([^a-z]|$)/i.test(c.name))
   if (!allowed.length) return null // Never auto-open age-gated categories.
-  return allowed.find(c => /(top|recent|new|novidad|lan[çc]amento|2026)/i.test(c.name)) || allowed[0]
+  // Preview content follows the provider's available category order. Never
+  // force a "TOP", "2026" or "[MULTI-LANG]" category as the visible selection.
+  return allowed[0]
 }
 export function filterPinkScopedRows(rows, categoryName) {
   return (Array.isArray(rows) ? rows : []).filter(row => row && row.category === categoryName)

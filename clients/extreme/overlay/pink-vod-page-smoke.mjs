@@ -45,10 +45,10 @@ try {
           const account={_id:"pink-smoke",title:"Synthetic QA",type:"xtream",serverUrl:"https://fixture.invalid",username:"synthetic",password:"synthetic"}
           if(useAccount) localStorage.setItem("xt_playlists",JSON.stringify({entries:[],selectedId:account._id}))
           const bodies={
-            get_vod_categories:JSON.stringify([{category_id:"7",category_name:"Demo"}]),
-            get_series_categories:JSON.stringify([{category_id:"7",category_name:"Demo"}]),
-            get_vod_streams:JSON.stringify([{stream_id:71,name:"Fixture Movie",category_id:"7",category_ids:[7],stream_icon:""}]),
-            get_series:JSON.stringify([{series_id:72,name:"Fixture Series",category_id:"7",category_ids:[7],cover:""}]),
+            get_vod_categories:JSON.stringify([{category_id:"7",category_name:"Documentary"},{category_id:"8",category_name:"[MULTI-LANG] TOP 2026 MOVIES"}]),
+            get_series_categories:JSON.stringify([{category_id:"7",category_name:"Documentary"},{category_id:"8",category_name:"[MULTI-LANG] NETFLIX"}]),
+            get_vod_streams:JSON.stringify([{stream_id:71,name:"Fixture Movie",category_id:"7",category_ids:[7],stream_icon:""},{stream_id:73,name:"Another Movie",category_id:"8",category_ids:[8],stream_icon:""}]),
+            get_series:JSON.stringify([{series_id:72,name:"Fixture Series",category_id:"7",category_ids:[7],cover:""},{series_id:74,name:"Another Series",category_id:"8",category_ids:[8],cover:""}]),
           }
           const staging=new Map()
           window.PinkNative={onmessage:null,postMessage(text) {
@@ -92,6 +92,20 @@ try {
           },statusId,{timeout:20000})
           const cards=await page.locator("#"+(route==="movies"?"movie-grid":"series-grid")+" > :not([data-skeleton])").count()
           assert.ok(cards>0,route+" did not render the native fixture catalog")
+          // The first fast scoped response must NEVER auto-select MULTI-LANG
+          // and must transparently become the complete two-category result.
+          const prefix=route==="movies"?"movie":"series"
+          await page.waitForFunction(prefix=>{
+            const label=document.getElementById(prefix+"-category-picker-label")?.textContent||""
+            return /all categories|todas as categorias/i.test(label)
+          },prefix,{timeout:12000})
+          await page.waitForFunction(prefix=>
+            document.getElementById(prefix+"-hero-count")?.textContent?.trim()==="2",
+            prefix,{timeout:30000})
+          const fullStatus=await page.locator("#"+statusId).textContent()
+          assert.ok(!/carregar todas|títulos iniciais|nesta categoria/i.test(fullStatus||""),
+            route+" has not completed the All-categories catalog")
+          console.log("PINK_VOD_DEFAULT_ALL_PROGRESSIVE=PASS",route)
         } else {
           const link=await page.locator("#"+statusId+" a[href='/login']").count()
           assert.ok(link>0,route+" did not show actionable missing-account state")

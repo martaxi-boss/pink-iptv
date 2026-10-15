@@ -225,3 +225,17 @@ html[data-pink-cinema="1"] body:has(#movie-grid) .pink-catalog-hero,
 html[data-pink-cinema="1"] body:has(#series-grid) .pink-catalog-hero {
   display: none !important;
 }
+
+/* Owner mobile Live TV layout: retain EPG data and handlers but remove their
+   redundant visible panel/shortcuts; let Category fill the resulting row. */
+@media (max-width: 767.98px), (max-width: 1023.98px) and (orientation: portrait) {
+  html[data-pink-cinema="1"] #livetv-page-main #epg,
+  html[data-pink-cinema="1"] #livetv-page-main #epg-toggle,
+  html[data-pink-cinema="1"] #livetv-page-main #category-picker-trigger ~ a[href="/epg"] {
+    display: none !important;
+  }
+  html[data-pink-cinema="1"] #livetv-page-main #category-picker-trigger {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}

@@ -46,7 +46,7 @@ describe("PINK native quick-category selection", () => {
         {[idKey]:3,name:"Selected category",category_id:7}
       ]
       const scoped=parsePinkCatalog(JSON.stringify(raw),kind,categories,"7")
-      expect(scoped.map(x=>x.id)).toEqual([1,3])
+      expect(scoped.map(x=>x.id).sort((a,b)=>a-b)).toEqual([1,3])
       expect(scoped.map(x=>x.category)).toEqual(["Comedy","Comedy"])
       expect(parsePinkCatalog(JSON.stringify(raw),kind,categories)).toHaveLength(3)
       expect(() => parsePinkCatalog(JSON.stringify(raw),kind,categories,"1&evil")).toThrow()

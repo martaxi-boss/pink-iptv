@@ -219,3 +219,9 @@ html[data-pink-cinema="1"][data-perf-mode="on"] :is(#movie-grid,#series-grid) > 
   filter: none !important;
   transition: none !important;
 }
+
+/* Owner QA5: remove only the redundant artwork above Movies and Series. */
+html[data-pink-cinema="1"] body:has(#movie-grid) .pink-catalog-hero,
+html[data-pink-cinema="1"] body:has(#series-grid) .pink-catalog-hero {
+  display: none !important;
+}

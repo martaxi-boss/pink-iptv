@@ -341,6 +341,8 @@ from catalog_overlay import apply as apply_catalog
 apply_catalog(ROOT, DEST)
 from brand_overlay import apply as apply_brand
 apply_brand(ROOT, DEST)
+from test_native_video_actions_overlay import test as verify_native_video_actions
+verify_native_video_actions()  # Bounded synthetic regression before the full Android build.
 from native_video_actions_overlay import apply as apply_native_video_actions
 apply_native_video_actions(DEST)
 print('Applied PINK overlay to pinned complete Extreme application')

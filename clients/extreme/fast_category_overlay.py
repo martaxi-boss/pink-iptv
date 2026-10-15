@@ -156,7 +156,10 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
   if (!PINK_FAST_PHONE || pinkFastAllRequested || searchEl?.value?.trim()) return false
   const {{ {lookup}, {fetcher} }} = await import("@/scripts/lib/catalog.js")
   const {{ pickPinkFastCategory, filterPinkScopedRows }} = await import("@/scripts/lib/pink-fast-category.js")
-  const categories = await {lookup}(entryId)
+  // Keep the small category index cached independently of large title lists.
+  const categoryResult = await cachedFetch(entryId, "{kind}-pink-category-map",
+    {kind.upper()}_TTL_MS, () => {lookup}(entryId))
+  const categories = categoryResult.data
   if (token !== pinkFastGeneration || entryId !== activePlaylistId) return true
   const selected = pickPinkFastCategory(categories, picker.getActiveCat())
   if (!selected) return false
@@ -190,28 +193,20 @@ async function pinkFastLoadCategory(entryId: string, token: number): Promise<boo
                "    document.documentElement.removeAttribute(\"data-pink-fast-category\")\n"
                + ("    paintMovies(hit.data, true, hit.age)" if kind == "vod" else "    await paintSeries(hit.data, true, hit.age)"))
         replace_once(dest, file, old, new)
-        # An uncached page tries a small selected/first appropriate category
-        # before the existing exact full-fetch path. Failure reverts to full.
-        load_marker = "  if (hit) return\n\n  try {"
-        if kind == "vod":
-            inject = f'''  if (hit) return
-  if (PINK_FAST_PHONE && !pinkFastAllRequested) {{
+        # Critical: the scoped category/cache must be checked BEFORE the
+        # full 120k-item IndexedDB catalog is deserialized. Otherwise the
+        # Android phone still blocks even though the small category is cached.
+        full_cache_hydration = f'  await hydrateCache(active._id, "{kind}")'
+        quick = f'''  if (PINK_FAST_PHONE && !pinkFastAllRequested) {{
     try {{
-      if (await pinkFastLoadCategory(active._id, pinkFastToken)) return
-    }} catch {{ /* Scoped API unsupported: full catalog fallback is unchanged. */ }}
+      creds = await loadCreds()
+      if (creds.host && creds.user && creds.pass &&
+          await pinkFastLoadCategory(active._id, pinkFastToken)) return
+    }} catch {{ /* Provider may not support category_id; full cache stays available. */ }}
   }}
 
-  try {{'''
-        else:
-            inject = f'''  if (hit) return
-  if (PINK_FAST_PHONE && !pinkFastAllRequested) {{
-    try {{
-      if (await pinkFastLoadCategory(active._id, pinkFastToken)) return
-    }} catch {{ /* Scoped API unsupported: full catalog fallback is unchanged. */ }}
-  }}
-
-  try {{'''
-        replace_once(dest, file, load_marker, inject)
+'''
+        replace_once(dest, file, full_cache_hydration, quick + full_cache_hydration)
         # Only an explicit All selection or global search requests the full
         # catalog. Search always remains global (never limited to one category).
         search_marker = (

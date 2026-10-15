@@ -75,6 +75,10 @@ jobs:
           workspaces: "${{ runner.temp }}/pink-extreme/src-tauri -> target"
           key: pink-extreme-043-ubuntu22
           cache-on-failure: "true"
+      - name: Check Android phone fluidity patch before expensive packaging
+        run: |
+          python3 -m py_compile clients/extreme/mobile_performance_overlay.py clients/extreme/test_mobile_performance_overlay.py
+          python3 clients/extreme/test_mobile_performance_overlay.py
       - name: Install and verify login contract
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |

@@ -65,7 +65,7 @@ const AUTO_LOAD_CAP = PINK_MOBILE_GRID ? 240 : 1500""".replace("\n // Large", "\
         replace_once(
             page,
             "import { buildGroupingIndex, pickPreferredEntryId, groupPassesLanguageFilter } from \"@/scripts/lib/language-groups.ts\"",
-            "import { getSharedGroupingIndex, pickPreferredEntryId, groupPassesLanguageFilter } from \"@/scripts/lib/language-groups.ts\"",
+            "import { buildGroupingIndex, getSharedGroupingIndex, pickPreferredEntryId, groupPassesLanguageFilter } from \"@/scripts/lib/language-groups.ts\"",
         )
         replace_once(page, "groupingIndex = buildGroupingIndex(all)",
                      "groupingIndex = getSharedGroupingIndex(all)")

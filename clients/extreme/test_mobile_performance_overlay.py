@@ -26,6 +26,8 @@ def test() -> None:
             text = """import { buildGroupingIndex, pickPreferredEntryId, groupPassesLanguageFilter } from "@/scripts/lib/language-groups.ts"
 const PAGE_SIZE = 200
 const AUTO_LOAD_CAP = 1500
+// This initializer executes before painting, even if the account is missing.
+let groupingIndex = buildGroupingIndex([])
 function paint(data) {
   groupingIndex = buildGroupingIndex(all)
   const useVT =
@@ -63,6 +65,9 @@ function openMovie(id) { return id }
             assert 'PINK_MOBILE_GRID ? "160px 0px" : "600px 0px"' in patched
             assert "!PINK_MOBILE_GRID &&" in patched
             assert "getSharedGroupingIndex(all)" in patched
+            assert 'import { buildGroupingIndex, getSharedGroupingIndex, ' in patched
+            assert "let groupingIndex = buildGroupingIndex([])" in patched
+            assert patched.count("buildGroupingIndex(") == 1  # retained only for initial empty index
             assert 'function openMovie(id) { return id }' in patched
             assert patched.count("const PINK_MOBILE_GRID =") == 1
             # Native-only guard and TV/desktop fallbacks remain explicit.

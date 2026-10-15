@@ -155,10 +155,8 @@ def apply(dest: Path) -> None:
 ''',
         '''      progressExtras: { title: movie.name, logo: movie.logo || null },
     })
-    if (launched) {
-      pinkNativeCastTarget = { contentKey: "vod:" + movie.id, playlistId: activePlaylistId }
-      return
-    }
+    if (launched) pinkNativeCastTarget = { contentKey: "vod:" + movie.id, playlistId: activePlaylistId }
+    if (launched) return
 ''')
     _replace_once(root, movie,
         ''')
@@ -194,10 +192,8 @@ subscribeExternalPlayerExit(() => {
   let backend = getPlayerBackend()
 ''',
         '''    })
-    if (launched) {
-      pinkNativeCastTarget = { contentKey: "ep:" + episode.id, playlistId: activePlaylistId }
-      return
-    }
+    if (launched) pinkNativeCastTarget = { contentKey: "ep:" + episode.id, playlistId: activePlaylistId }
+    if (launched) return
   }
 
   let backend = getPlayerBackend()

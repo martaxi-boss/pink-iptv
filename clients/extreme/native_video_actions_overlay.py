@@ -93,8 +93,8 @@ def apply(dest: Path) -> None:
     _replace_once(root, "src-tauri/gen/android/app/src/main/res/values/strings.xml",
         '    <string name="xt_video_display_stretch">Stretch</string>\n',
         '    <string name="xt_video_display_stretch">Stretch</string>\n'
-        '    <string name="pink_native_pip">Picture-in-Picture</string>\n'
-        '    <string name="pink_native_play_on_tv">Play on TV</string>\n')
+        '    <string name="pink_native_pip" translatable="false">Picture-in-Picture</string>\n'
+        '    <string name="pink_native_play_on_tv" translatable="false">Play on TV</string>\n')
 
     bridge = "src/scripts/lib/android-video-launcher.ts"
     _replace_once(root, bridge,

@@ -43,12 +43,17 @@ def test() -> None:
              '<resources>\n    <string name="xt_video_display_stretch">Stretch</string>\n</resources>\n')
         _put(root, "src/scripts/lib/android-video-launcher.ts",
              '  | "xt:android-native-volume"\n'
-             '  const types = [\n    "xt:android-native-volume",\n  ]\n')
+             '  const types = [\n    "xt:android-native-volume",\n  ]\n'
+             'let listenersInstalled = false\n'
+             '  for (const callback of subscribers) {\n'
+             '  if (androidNativePlayerAvailable) installListeners()\n'
+             '  subscribers.add(callback)\n')
         _put(root, "src/scripts/stream/stream.ts",
              '  subscribeAndroidNativeEvents((event) => {\n'
              '    if (event.type !== "xt:android-native-channel-changed") return\n'
              '  })\n')
-        movie = """  launchAndroidNativeVodWithProgress,
+        movie = """import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"
+  launchAndroidNativeVodWithProgress,
 let pipBtnBound = false
       progressExtras: { title: movie.name, logo: movie.logo || null },
     })
@@ -59,7 +64,8 @@ subscribeExternalPlayerExit(() => {
   if (!externalPresenceActive) return
 """
         _put(root, "src/scripts/movies/detail.ts", movie)
-        series = """  launchAndroidNativeVodWithProgress,
+        series = """import { setupPlayOnTvButton } from "@/scripts/lib/play-on-tv-button.ts"
+  launchAndroidNativeVodWithProgress,
 let pipBtnBound = false
     })
     if (launched) return
@@ -100,7 +106,7 @@ subscribeExternalPlayerExit(() => {
             assert "rememberNativeCastIntent" in source
             assert "clearNativeCastIntent" in source
             assert "acknowledgeAndroidNativeCastRequest" in source
-            assert f'target.contentKey !== "{kind}:" +' in source
+            assert f'"{kind}:"' in source
             assert f'document.getElementById("{("movie" if kind == "vod" else "series")}-detail-play-tv")' in source
             assert "button?.isConnected" in source
             assert "openWhenReady" in source

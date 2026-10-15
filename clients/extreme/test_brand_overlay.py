@@ -80,6 +80,8 @@ def test() -> None:
             newer = (dest / f"src/pages/{name}/index.astro").read_text()
             assert newer.count('src="/pink-idle.webp"') == 1
             assert newer.count(f'data-pink-idle-brand="{kind}"') == 1
+            assert 'class="pink-catalog-hero ' in newer
+            assert "max-h-[60dvh]" not in newer
             # All upstream links/controls and detail-player navigations stay
             # byte-identical after the one visual insertion.
             image_start = newer.index("\t\t<!-- PINK artwork")

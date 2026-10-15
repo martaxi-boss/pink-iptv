@@ -6,10 +6,12 @@ def apply(root, dest, replace):
     native = 'src-tauri/gen/android/app/src/main/java/com/pinkiptv/extreme/'
     shutil.copyfile(root / 'overlay/PinkVodTracks.kt', dest / native / 'PinkVodTracks.kt')
     resources = dest / 'src-tauri/gen/android/app/src/main/res/values/pink-vod.xml'
-    resources.write_text('<resources><string name="pink_vod_audio" translatable="false">Áudio</string>'
+    resources.write_text('<resources><string name="pink_player_options" translatable="false">'
+                         'Opções de áudio e legendas</string>'
+                         '<string name="pink_vod_audio" translatable="false">Áudio</string>'
                          '<string name="pink_vod_subtitles" translatable="false">Legendas / CC</string></resources>\n')
     replace(native + 'VideoActivity.kt', '    view.player = player',
-            '    view.player = player\n    if (mode == MODE_VOD) PinkVodTracks.attach(view, player)')
+            '    view.player = player\n    PinkVodTracks.attach(view, player)')
     # Reuse the existing HTTP factory for network media; add Android content
     # reads only for the local VOD path introduced by the active workstream.
     replace(native + 'VideoActivity.kt',

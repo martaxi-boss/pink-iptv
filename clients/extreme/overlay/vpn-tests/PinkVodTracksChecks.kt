@@ -18,10 +18,15 @@ import androidx.test.runner.lifecycle.Stage
 import androidx.test.uiautomator.UiDevice
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isFocusable
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.platform.app.InstrumentationRegistry
+import org.hamcrest.Matchers.allOf
 import org.junit.Assert.*
 
 /** Real container extraction, real controller dialogs and decoder output; no provider fixture or VPN bypass. */
@@ -54,7 +59,7 @@ class PinkVodTracksChecks {
     private fun descendants(root: View): List<View> = listOf(root) +
         if (root is ViewGroup) (0 until root.childCount).flatMap { descendants(root.getChildAt(it)) } else emptyList()
 
-    private fun fixture(name: String, verify: (MainActivity) -> Unit) {
+    private fun fixture(name: String, contentKey: String, verify: (MainActivity) -> Unit) {
         val context = instrumentation.targetContext
         val resolver = context.contentResolver
         val values = ContentValues().apply {
@@ -76,7 +81,7 @@ class PinkVodTracksChecks {
                     .filterIsInstance<MainActivity>().single()
                 // Exercise the real native bridge, VideoActivity, MediaItem and selector.
                 // This is local test media; the remote provider VPN guard stays enabled.
-                assertTrue(AndroidVideoBridge(host, { null }).launchVod("fixture", uri.toString(),
+                assertTrue(AndroidVideoBridge(host, { null }).launchVod(contentKey, uri.toString(),
                     "", "", "fixture", "", 0))
             }
             await("production native VOD Activity") {
@@ -113,10 +118,15 @@ class PinkVodTracksChecks {
         }
     }
 
-    private fun choose(type: Int, track: Track, expected: List<Track>) {
+    private fun choose(type: Int, track: Track, expected: List<Track>, textAvailable: Boolean) {
         instrumentation.runOnMainSync { view.showController() }
-        onView(withId(if (type == C.TRACK_TYPE_AUDIO) androidx.media3.ui.R.id.exo_audio_track
-            else androidx.media3.ui.R.id.exo_subtitle)).perform(click())
+        onView(allOf(withContentDescription(R.string.pink_player_options), isDisplayed(), isFocusable()))
+            .perform(click())
+        onView(withText(R.string.pink_vod_audio)).check(matches(isDisplayed()))
+        if (textAvailable) onView(withText(R.string.pink_vod_subtitles)).check(matches(isDisplayed()))
+        else onView(withText(R.string.pink_vod_subtitles)).check(doesNotExist())
+        onView(withText(if (type == C.TRACK_TYPE_AUDIO) R.string.pink_vod_audio
+            else R.string.pink_vod_subtitles)).perform(click())
         onView(isAssignableFrom(TrackSelectionView::class.java)).check { selection, failure ->
             if (failure != null) throw failure
             val displayed = descendants(selection).filterIsInstance<CheckedTextView>()
@@ -141,15 +151,14 @@ class PinkVodTracksChecks {
         }
     }
 
-    fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4") { host ->
+    fun singleRealAudioAndNoInventedSubtitles() = fixture("single-audio.mp4", "vod:fixture") { host ->
         lateinit var audio: List<Track>
         instrumentation.runOnMainSync {
             audio = tracks(C.TRACK_TYPE_AUDIO)
             assertEquals(1, audio.size)
             assertTrue(tracks(C.TRACK_TYPE_TEXT).isEmpty())
         }
-        await("trackless CC is disabled") { !view.findViewById<View>(androidx.media3.ui.R.id.exo_subtitle).isEnabled }
-        choose(C.TRACK_TYPE_AUDIO, audio.single(), audio)
+        choose(C.TRACK_TYPE_AUDIO, audio.single(), audio, textAvailable = false)
         instrumentation.runOnMainSync {
             assertFalse(PinkVpnRuntime.isReady())
             assertFalse(AndroidVideoBridge(host, { null }).launchVod("fixture", "https://example.invalid/fixture.mp4",
@@ -159,7 +168,8 @@ class PinkVodTracksChecks {
         report("REAL_MEDIA3_SINGLE_AUDIO_NO_SUBTITLES_AND_PROTECTED_LAUNCH_FALLBACK=PASS")
     }
 
-    fun allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo() = fixture("multi-tracks.mkv") {
+    fun allRealAudioAndTextTracksIncludingForcedCanBeSelectedWithoutBreakingVideo() =
+        fixture("multi-tracks.mkv", "ep:fixture") {
         lateinit var audio: List<Track>
         lateinit var text: List<Track>
         instrumentation.runOnMainSync {
@@ -169,9 +179,9 @@ class PinkVodTracksChecks {
                 (0 until group.length).any { group.getTrackFormat(it).selectionFlags and C.SELECTION_FLAG_FORCED != 0 }
             })
         }
-        audio.forEach { choose(C.TRACK_TYPE_AUDIO, it, audio) }
+        audio.forEach { choose(C.TRACK_TYPE_AUDIO, it, audio, textAvailable = true) }
         text.forEach { track ->
-            choose(C.TRACK_TYPE_TEXT, track, text)
+            choose(C.TRACK_TYPE_TEXT, track, text, textAvailable = true)
             await("selected subtitle produces real cues") {
                 player.currentCues.cues.any { it.text?.toString() == if (track.language == "en") "PINK fixture EN" else "PINK fixture PT" }
             }

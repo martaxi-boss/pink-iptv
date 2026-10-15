@@ -49,6 +49,7 @@ def test() -> None:
              '  if (androidNativePlayerAvailable) installListeners()\n'
              '  subscribers.add(callback)\n')
         _put(root, "src/scripts/stream/stream.ts",
+             '  subscribeAndroidNativeEvents,\n'
              '  subscribeAndroidNativeEvents((event) => {\n'
              '    if (event.type !== "xt:android-native-channel-changed") return\n'
              '  })\n')
@@ -99,7 +100,9 @@ subscribeExternalPlayerExit(() => {
         assert "MAX_AGE_MS" in helper
         live = (root / "src/scripts/stream/stream.ts").read_text()
         assert 'event.payload?.mode !== "live"' in live
-        assert "String(entry.id) === String(event.payload.channelId)" in live
+        assert "String(entry.id) === channelId" in live
+        assert "acknowledgeAndroidNativeCastRequest" in live
+        assert "openWhenReady" in live
         for kind, route in (("vod", "movies"), ("ep", "series")):
             source = (root / f"src/scripts/{route}/detail.ts").read_text()
             assert "matchesNativeCastIntent" in source

@@ -139,6 +139,10 @@ def apply(dest: Path) -> None:
     intent_helper = root / "src/scripts/lib/pink-native-cast-intent.ts"
     intent_helper.write_text((Path(__file__).parent / "overlay/pink-native-cast-intent.ts").read_text())
 
+    _replace_once(root, "src/scripts/stream/stream.ts",
+        "  subscribeAndroidNativeEvents,\n",
+        "  subscribeAndroidNativeEvents,\n  acknowledgeAndroidNativeCastRequest,\n")
+
     # A channel can change with the TV remote inside the native player. The
     # cast intent's current channelId (not its initial contentKey) is canonical.
     live = "src/scripts/stream/stream.ts"
@@ -149,24 +153,34 @@ def apply(dest: Path) -> None:
         '''  subscribeAndroidNativeEvents((event) => {
     if (event.type === "xt:android-native-cast-request") {
       if (event.payload?.mode !== "live" || !event.payload.channelId) return
-      const channel = all.find((entry) => String(entry.id) === String(event.payload.channelId))
-      if (!channel) return
-      // Use the same authenticated source builder and receiver picker as the
-      // Live "Play on TV" action: the event contains no media URL or credentials.
-      void import("@/scripts/lib/tv-cast.ts").then(({ castLiveChannelToTv }) => {
-        return castLiveChannelToTv({
-          contentTitle: channel.name || null,
-          title: channel.name || "",
-          logo: channel.logo || undefined,
-          buildSrc: () => buildChannelStreamUrl(channel),
-          drm: streamDrmById.get(channel.id) || undefined,
-          headers: streamHeadersById.get(channel.id) || undefined,
-          preferNativeHls: isNativeHlsFallbackChannel(channel.id),
-          stopLocal: releaseLocalPlaybackForHandoff,
-          restoreLocal: () => { void play(channel.id, channel.name, "user") },
-          liveContext: liveContextForChannelId(channel.id),
+      // Android may resume this page before the active playlist finishes
+      // hydrating; never lose a user-initiated cast on an empty channel list.
+      const channelId = String(event.payload.channelId)
+      const openWhenReady = (attempt: number) => {
+        const channel = all.find((entry) => String(entry.id) === channelId)
+        if (!channel || !activePlaylistId) {
+          if (attempt < 80) window.setTimeout(() => openWhenReady(attempt + 1), 250)
+          return
+        }
+        acknowledgeAndroidNativeCastRequest(String(event.payload.contentKey || "live:" + channelId))
+        // The trusted existing picker resolves the authenticated stream
+        // source; the event contains no URL, password or VPN credential.
+        void import("@/scripts/lib/tv-cast.ts").then(({ castLiveChannelToTv }) => {
+          return castLiveChannelToTv({
+            contentTitle: channel.name || null,
+            title: channel.name || "",
+            logo: channel.logo || undefined,
+            buildSrc: () => buildChannelStreamUrl(channel),
+            drm: streamDrmById.get(channel.id) || undefined,
+            headers: streamHeadersById.get(channel.id) || undefined,
+            preferNativeHls: isNativeHlsFallbackChannel(channel.id),
+            stopLocal: releaseLocalPlaybackForHandoff,
+            restoreLocal: () => { void play(channel.id, channel.name, "user") },
+            liveContext: liveContextForChannelId(channel.id),
+          })
         })
-      })
+      }
+      openWhenReady(0)
       return
     }
     if (event.type !== "xt:android-native-channel-changed") return

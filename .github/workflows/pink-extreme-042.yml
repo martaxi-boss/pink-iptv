@@ -64,6 +64,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - name: Certify future side-by-side test identity without using an owner's VPN
+        run: |
+          python3 -m py_compile clients/extreme/qa3_variant.py clients/extreme/test_qa3_variant.py
+          python3 clients/extreme/test_qa3_variant.py
       - name: Prepare complete pinned upstream application
         run: |
           set -euo pipefail
@@ -263,5 +267,102 @@ jobs:
         with:
           name: PINK-VOD-APK-part-03
           path: ${{ runner.temp }}/pink-vod-delivery/part-03
+          if-no-files-found: error
+          retention-days: 30
+      - name: Repackage certified Android source into an isolated QA3 app
+        working-directory: ${{ runner.temp }}/pink-extreme
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/clients/extreme/qa3_variant.py" "$RUNNER_TEMP/pink-extreme"
+          # Verify that any Tauri regeneration did not restore the production ID.
+          python3 "$GITHUB_WORKSPACE/clients/extreme/qa3_variant.py" "$RUNNER_TEMP/pink-extreme" --postbuild
+          cd "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android"
+          export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
+          ./gradlew --no-daemon app:assembleUniversalDebug app:assembleUniversalDebugAndroidTest -x app:rustBuildUniversalDebug
+      - name: Refuse an APK that could replace PINK IPTV or TESTE 2
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink-qa3-package.txt"
+          grep -Fq "package: name='com.pinkiptv.extreme.qa3'" "$RUNNER_TEMP/pink-qa3-package.txt"
+          grep -Fq "application-label:'PINK IPTV TESTE 3'" "$RUNNER_TEMP/pink-qa3-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme'" "$RUNNER_TEMP/pink-qa3-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa2'" "$RUNNER_TEMP/pink-qa3-package.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/pink-qa3-certificate.txt"
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          import os
+          apk=Path(os.environ["RUNNER_TEMP"])/"pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          with ZipFile(apk) as archive:
+              files=archive.namelist()
+              assert any(f.endswith("/libwg-go.so") for f in files)
+              assert not any(f.endswith("/libwg.so") or f.endswith("/libwg-quick.so") for f in files)
+          print("PINK_QA3_DISTINCT_ID_SIGNED_OFFICIAL_VPN_LIBRARY=PASS")
+          PY
+      - name: Prepare QA3 emulator acceptance with the real native package name
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          root=Path(os.environ["RUNNER_TEMP"])
+          base=(root/"pink053-emulator.sh").read_text()
+          original="com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner"
+          assert original in base
+          assert "adb shell am force-stop com.pinkiptv.extreme" in base
+          assert "com.pinkiptv.extreme.PinkVpnIdentityTest" in base
+          amended=base.replace(original,"com.pinkiptv.extreme.qa3.test/androidx.test.runner.AndroidJUnitRunner")
+          amended=amended.replace("adb shell am force-stop com.pinkiptv.extreme",
+                                 "adb shell am force-stop com.pinkiptv.extreme.qa3")
+          assert original not in amended
+          assert "com.pinkiptv.extreme.PinkVpnIdentityTest" in amended
+          (root/"pink-qa3-emulator.sh").write_text(amended)
+          PY
+      - name: Verify side-by-side QA3 VPN, Keystore, real Android UI and native playback
+        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          cores: 4
+          ram-size: 4096M
+          disk-size: 4096M
+          disable-linux-hw-accel: false
+          emulator-boot-timeout: 900
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          working-directory: ${{ runner.temp }}/pink-extreme/src-tauri/gen/android
+          script: bash "$RUNNER_TEMP/pink-qa3-emulator.sh"
+      - name: Package verified owner-only PINK IPTV TESTE 3 APK
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pink-qa3-deliverable"
+          apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          cp "$apk" "$RUNNER_TEMP/pink-qa3-deliverable/PINK-IPTV-TESTE3.apk"
+          cp "$RUNNER_TEMP/pink-qa3-package.txt" "$RUNNER_TEMP/pink-qa3-deliverable/package-check.txt"
+          cp "$RUNNER_TEMP/pink-qa3-certificate.txt" "$RUNNER_TEMP/pink-qa3-deliverable/signing-check.txt"
+          cd "$RUNNER_TEMP/pink-qa3-deliverable"
+          sha256sum PINK-IPTV-TESTE3.apk > SHA256SUMS
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, json, hashlib
+          path=Path(os.environ["RUNNER_TEMP"])/"pink-qa3-deliverable"
+          apk=path/"PINK-IPTV-TESTE3.apk"
+          payload={"application_id":"com.pinkiptv.extreme.qa3",
+            "does_not_replace":["com.pinkiptv.extreme","com.pinkiptv.extreme.qa2"],
+            "source_sha":os.environ["GITHUB_SHA"],
+            "github_run":int(os.environ["GITHUB_RUN_ID"]),
+            "sha256":hashlib.sha256(apk.read_bytes()).hexdigest(),
+            "size_bytes":apk.stat().st_size,
+            "release":False,"debug_signing_not_persistent":True,
+            "owner_device_slot_and_vpn_consent_required_before_physical_install":True}
+          (path/"provenance.json").write_text(json.dumps(payload,indent=2)+"\n")
+          PY
+          echo PINK_QA3_ISOLATED_SIGNED_APK_AND_SHA256=PASS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: PINK-IPTV-TESTE3-FAST-20261015
+          path: ${{ runner.temp }}/pink-qa3-deliverable
           if-no-files-found: error
           retention-days: 30

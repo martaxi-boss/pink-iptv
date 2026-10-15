@@ -108,31 +108,31 @@ def apply(dest: Path) -> None:
     # subscription must be active before draining the queue; later VOD page
     # subscriptions must also receive a short-lived cast request.
     _replace_once(root, bridge,
-        'let listenersInstalled = false\\n',
-        'let listenersInstalled = false\\n'
-        'let pendingNativeCastEvent: AndroidNativeEvent | null = null\\n'
-        'let pendingNativeCastAt = 0\\n'
-        'const NATIVE_CAST_REPLAY_WINDOW_MS = 30_000\\n'
-        'export function acknowledgeAndroidNativeCastRequest(contentKey: string): void {\\n'
-        '  if (pendingNativeCastEvent?.payload?.contentKey === contentKey) pendingNativeCastEvent = null\\n'
-        '}\\n')
+        'let listenersInstalled = false\n',
+        'let listenersInstalled = false\n'
+        'let pendingNativeCastEvent: AndroidNativeEvent | null = null\n'
+        'let pendingNativeCastAt = 0\n'
+        'const NATIVE_CAST_REPLAY_WINDOW_MS = 30_000\n'
+        'export function acknowledgeAndroidNativeCastRequest(contentKey: string): void {\n'
+        '  if (pendingNativeCastEvent?.payload?.contentKey === contentKey) pendingNativeCastEvent = null\n'
+        '}\n')
     _replace_once(root, bridge,
-        '  for (const callback of subscribers) {\\n',
-        '  if (type === "xt:android-native-cast-request") {\\n'
-        '    pendingNativeCastEvent = event\\n'
-        '    pendingNativeCastAt = Date.now()\\n'
-        '  }\\n'
-        '  for (const callback of subscribers) {\\n')
+        '  for (const callback of subscribers) {\n',
+        '  if (type === "xt:android-native-cast-request") {\n'
+        '    pendingNativeCastEvent = event\n'
+        '    pendingNativeCastAt = Date.now()\n'
+        '  }\n'
+        '  for (const callback of subscribers) {\n')
     _replace_once(root, bridge,
-        '  if (androidNativePlayerAvailable) installListeners()\\n'
-        '  subscribers.add(callback)\\n',
-        '  const replay = pendingNativeCastEvent\\n'
-        '  subscribers.add(callback)\\n'
-        '  if (androidNativePlayerAvailable) installListeners()\\n'
-        '  if (replay && replay === pendingNativeCastEvent &&\\n'
-        '      Date.now() - pendingNativeCastAt < NATIVE_CAST_REPLAY_WINDOW_MS) {\\n'
-        '    try { callback(replay) } catch {}\\n'
-        '  }\\n')
+        '  if (androidNativePlayerAvailable) installListeners()\n'
+        '  subscribers.add(callback)\n',
+        '  const replay = pendingNativeCastEvent\n'
+        '  subscribers.add(callback)\n'
+        '  if (androidNativePlayerAvailable) installListeners()\n'
+        '  if (replay && replay === pendingNativeCastEvent &&\n'
+        '      Date.now() - pendingNativeCastAt < NATIVE_CAST_REPLAY_WINDOW_MS) {\n'
+        '    try { callback(replay) } catch {}\n'
+        '  }\n')
 
     # A tiny no-credential session intent survives Android Activity / WebView
     # recreation. It never contains account data, stream URLs or VPN state.

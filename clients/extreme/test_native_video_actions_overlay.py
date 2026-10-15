@@ -84,7 +84,7 @@ subscribeExternalPlayerExit(() => {
         assert "finish()" in native
         bridge = (root / "src/scripts/lib/android-video-launcher.ts").read_text()
         assert bridge.count('"xt:android-native-cast-request"') >= 2
-        assert "subscribers.add(callback)\\n" in bridge
+        assert "subscribers.add(callback)\n" in bridge
         assert "pendingNativeCastEvent" in bridge
         assert "acknowledgeAndroidNativeCastRequest" in bridge
         helper = (root / "src/scripts/lib/pink-native-cast-intent.ts").read_text()

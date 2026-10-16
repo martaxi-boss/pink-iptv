@@ -2,7 +2,11 @@
 
 Private project for an original IPTV player for Android/Android TV and Windows.
 
-Status: Complete Extreme/PINK Android client with native WireGuard integrated into main under certified Task055 (2026-10-06). Exact staging proof includes native decoded Live AV through WireGuard; Owner physical-device/TV acceptance and production readiness remain separate. Windows has not started.
+Status (2026-10-16): Owner accepted PINK IPTV TESTE 5 as the current Android visual/functional reference. The tested implementation `68e4f953dbec34dce7bf8f3b8f831e63ed4bffb6` was merged through PR #74 into `main` at `912395e8d0880184ea7d178ba81cb9a80d70a723`; exact QA5 Android CI run `38822702488` passed. The original native WireGuard/Keystore safety boundaries remain in place. Windows has not started.
+
+Distribution boundary: The owner-tested package `com.pinkiptv.extreme.qa5` is a separately installable, **temporarily debug-signed** test APK. Its signing key is not retained for reliable updates; owner approval of its appearance does **not** constitute a production-signed Android release. The original Android installation must not be uninstalled or overwritten. A persistent release signer and migration/update plan remain required (issue #54). The existing Play on TV receiver transport is intentionally disabled to protect IPTV credentials and VPN routing; end-to-end Smart TV casting is **not** certified (issue #67). Physical subtitle cases (#55), VPN customer rollout/staging (#56), repository protection (#50) and other open security acceptance tasks remain tracked separately.
+
+Historical Project Leader, Task055 and development branch records are preserved for recovery, not additional active application variants. New work must use the current live `main` and must not silently resume older branches.
 Public launch: NO.
 Repository must never contain production credentials, Mega OTT tokens, Xtream passwords, WireGuard private keys, or server private keys.
 

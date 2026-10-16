@@ -20,6 +20,7 @@ def apply(root: Path, destination: Path):
     shutil.copyfile(root / "overlay/pink-catalog-diagnostic.test.ts", destination / "tests/pink-catalog-diagnostic.test.ts")
     shutil.copyfile(root / "overlay/pink-catalog-pipeline.test.ts", destination / "tests/pink-catalog-pipeline.test.ts")
     shutil.copyfile(root / "overlay/pink-catalog-browser.mjs", destination / "tests/pink-catalog-browser.mjs")
+    shutil.copyfile(root / "overlay/pink-vod-page-smoke.mjs", destination / "tests/pink-vod-page-smoke.mjs")
     android_tests = destination / "src-tauri/gen/android/app/src/androidTest/java/com/pinkiptv/extreme"
     shutil.copyfile(root / "overlay/vpn-tests/PinkCatalogWorkerChecks.kt", android_tests / "PinkCatalogWorkerChecks.kt")
     shutil.copyfile(root / "overlay/vpn-tests/PinkCatalogTransportChecks.kt", android_tests / "PinkCatalogTransportChecks.kt")

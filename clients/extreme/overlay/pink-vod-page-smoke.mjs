@@ -1,0 +1,126 @@
+// Render real built Movies and Series routes in Chromium, not only isolated
+// workers/mappers. Regression for the owner's TESTE3 screenshots showing
+// literal SSR "No playlist selected" when both route scripts never ran.
+// Synthetic credentials only; no external provider or actual VPN.
+import assert from "node:assert/strict"
+import {createServer} from "node:http"
+import {readFile, stat} from "node:fs/promises"
+import {resolve, extname, join, sep} from "node:path"
+import {chromium} from "playwright"
+
+const root = resolve("dist")
+const types = {".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".svg":"image/svg+xml",".png":"image/png",".webp":"image/webp",".woff2":"font/woff2"}
+const server = createServer(async(req,res) => {
+  try {
+    const path = decodeURIComponent(new URL(req.url, "http://127.0.0.1").pathname)
+    let file = resolve(root, "." + path)
+    if (file !== root && !file.startsWith(root + sep)) {res.writeHead(403).end();return}
+    let info = await stat(file).catch(()=>null)
+    if (info?.isDirectory()) {file=join(file,"index.html");info=await stat(file).catch(()=>null)}
+    if (!info && !extname(path)) {
+      file=resolve(root,"."+path+".html")
+      info=await stat(file).catch(()=>null)
+    }
+    if (!info?.isFile()) {res.writeHead(404).end("missing fixture asset");return}
+    res.writeHead(200,{"content-type":types[extname(file)]||"application/octet-stream","cache-control":"no-store"})
+    res.end(await readFile(file))
+  } catch(error) {res.writeHead(500).end("test asset failure")}
+})
+let browser
+try {
+  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve))
+  browser = await chromium.launch({headless:true})
+  const base = "http://127.0.0.1:"+server.address().port
+  for (const route of ["movies","series"]) {
+    for (const mode of ["no-account","android-account"]) {
+      const context=await browser.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true})
+      const page=await context.newPage()
+      const errors=[], requests=[]
+      page.on("pageerror",e=>errors.push(e.message))
+      page.on("console",msg=>{if(msg.type()==="error")errors.push(msg.text())})
+      // Both cases must use the real protected Android vault protocol.
+      // Supplying localStorage alone would bypass PINK's Keystore-only rule.
+      {
+        await page.addInitScript((useAccount) => {
+          const account={_id:"pink-smoke",title:"Synthetic QA",type:"xtream",serverUrl:"https://fixture.invalid",username:"synthetic",password:"synthetic"}
+          if(useAccount) localStorage.setItem("xt_playlists",JSON.stringify({entries:[],selectedId:account._id}))
+          const bodies={
+            get_vod_categories:JSON.stringify([{category_id:"7",category_name:"Documentary"},{category_id:"8",category_name:"[MULTI-LANG] TOP 2026 MOVIES"}]),
+            get_series_categories:JSON.stringify([{category_id:"7",category_name:"Documentary"},{category_id:"8",category_name:"[MULTI-LANG] NETFLIX"}]),
+            get_vod_streams:JSON.stringify([{stream_id:71,name:"Fixture Movie",category_id:"7",category_ids:[7],stream_icon:""},{stream_id:73,name:"Another Movie",category_id:"8",category_ids:[8],stream_icon:""}]),
+            get_series:JSON.stringify([{series_id:72,name:"Fixture Series",category_id:"7",category_ids:[7],cover:""},{series_id:74,name:"Another Series",category_id:"8",category_ids:[8],cover:""}]),
+          }
+          const staging=new Map()
+          window.PinkNative={onmessage:null,postMessage(text) {
+            const request=JSON.parse(text)
+            let result=true,ok=true,code
+            if(request.operation==="vodCatalog"){
+              const action=request.payload.action
+              const body=bodies[action]
+              if(!body){ok=false;code="UNSUPPORTED"}
+              else {const bytes=new TextEncoder().encode(body);staging.set(action,{bytes,offset:0});result={token:action,size:bytes.length}}
+            } else if(request.operation==="vodCatalogChunk"){
+              const stage=staging.get(request.payload.token)
+              if(!stage){ok=false;code="STAGE"}
+              else if(stage.offset>=stage.bytes.length)result={done:true}
+              else {const chunk=stage.bytes.slice(stage.offset,stage.offset+16384);stage.offset+=chunk.length;result={data:btoa(String.fromCharCode(...chunk))}}
+            } else if(request.operation==="vodCatalogClose"){
+              staging.delete(request.payload.token)
+            } else if(request.operation==="vaultReadValidated"){
+              result=useAccount ? JSON.stringify({entries:[account],selectedId:account._id}) : null
+            } else if(request.operation==="vaultRead"){
+              result=null
+            } else {ok=false;code="UNSUPPORTED"}
+            queueMicrotask(()=>window.PinkNative.onmessage?.({data:JSON.stringify({id:request.id,ok,result,code})}))
+          }}
+          window.__pinkSmokeNativeStats={staging}
+        }, mode==="android-account")
+      }
+      const statusId=route==="movies"?"movie-list-status":"series-list-status"
+      const url=base+"/"+route+"/"
+      const response=await page.goto(url,{waitUntil:"domcontentloaded"})
+      assert.equal(response?.status(),200,route+" missing built page")
+      try {
+        await page.waitForFunction(id=>{
+          const element=document.getElementById(id)
+          return element && !/^no playlist selected\.?$/i.test(element.textContent.trim())
+        },statusId,{timeout:15000})
+        if(mode==="android-account"){
+          await page.waitForFunction(id=>{
+            const text=document.getElementById(id)?.textContent||""
+            return /títulos iniciais|nesta categoria|\b\d+\s+of\s+\d+\b|in catalogue|total movies|total series/i.test(text)
+          },statusId,{timeout:20000})
+          const cards=await page.locator("#"+(route==="movies"?"movie-grid":"series-grid")+" > :not([data-skeleton])").count()
+          assert.ok(cards>0,route+" did not render the native fixture catalog")
+          // The first fast scoped response must NEVER auto-select MULTI-LANG
+          // and must transparently become the complete two-category result.
+          const prefix=route==="movies"?"movie":"series"
+          await page.waitForFunction(prefix=>{
+            const label=document.getElementById(prefix+"-category-picker-label")?.textContent||""
+            return /all categories|todas as categorias/i.test(label)
+          },prefix,{timeout:12000})
+          await page.waitForFunction(prefix=>
+            document.getElementById(prefix+"-hero-count")?.textContent?.trim()==="2",
+            prefix,{timeout:30000})
+          const fullStatus=await page.locator("#"+statusId).textContent()
+          assert.ok(!/carregar todas|títulos iniciais|nesta categoria/i.test(fullStatus||""),
+            route+" has not completed the All-categories catalog")
+          console.log("PINK_VOD_DEFAULT_ALL_PROGRESSIVE=PASS",route)
+        } else {
+          const link=await page.locator("#"+statusId+" a[href='/login']").count()
+          assert.ok(link>0,route+" did not show actionable missing-account state")
+        }
+      } catch(error) {
+        const state=await page.evaluate(id=>({text:document.getElementById(id)?.textContent,grid:document.getElementById(id.replace("list-status","grid"))?.children?.length}),statusId)
+        throw Error("PINK_VOD_BOOTSTRAP_FAILED "+JSON.stringify({route,mode,state,errors:errors.slice(0,6),requestLog:requests.slice(0,6)}),{cause:error})
+      }
+      const fatal=errors.filter(error=>/uncaught|referenceerror|syntaxerror|cannot access|not defined|failed to fetch dynamically imported/i.test(error))
+      assert.deepEqual(fatal,[],route+" client bootstrap JavaScript error")
+      console.log("PINK_VOD_BROWSER_BOOTSTRAP=PASS",route,mode)
+      await context.close()
+    }
+  }
+} finally {
+  await browser?.close()
+  await new Promise(resolve=>server.close(resolve))
+}

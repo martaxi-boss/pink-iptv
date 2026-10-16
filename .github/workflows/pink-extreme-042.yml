@@ -64,11 +64,20 @@ jobs:
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - name: Certify future side-by-side test identity without using an owner's VPN
+        run: |
+          python3 -m py_compile clients/extreme/qa5_variant.py clients/extreme/test_qa5_variant.py
+          python3 clients/extreme/test_qa5_variant.py
       - name: Prepare complete pinned upstream application
         run: |
           set -euo pipefail
           git clone --no-checkout https://github.com/infinitel8p/Extreme-InfiniTV.git "$RUNNER_TEMP/pink-extreme"
           git -C "$RUNNER_TEMP/pink-extreme" checkout --detach 1efcc1b4ab3468db04aedd1c466228c52ef001b7
+          python3 clients/extreme/test_premium_overlay.py
+          python3 clients/extreme/test_brand_overlay.py
+          python3 clients/extreme/test_mobile_performance_overlay.py
+          python3 clients/extreme/test_native_video_actions_overlay.py
+          python3 -m py_compile clients/extreme/fast_category_overlay.py
           python clients/extreme/prepare.py "$RUNNER_TEMP/pink-extreme"
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
         with:
@@ -79,10 +88,12 @@ jobs:
         working-directory: ${{ runner.temp }}/pink-extreme
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-storage.test.ts tests/pink-home.test.ts tests/pink-login.test.ts tests/pink-network.test.ts tests/pink-bridge.test.ts tests/pink-catalog.test.ts tests/pink-fast-category.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-catalog-diagnostic.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts tests/android-video-launcher.test.ts tests/stall-watchdog.test.ts tests/vod-remux-memory.test.ts
           pnpm exec playwright install --with-deps chromium
           node tests/pink-catalog-browser.mjs
           pnpm run build
+          node tests/pink-vod-page-smoke.mjs
+          echo PINK_DEFAULT_ALL_COMPLETE_BOTH_ROUTES=PASS
           python - <<'PY'
           from pathlib import Path
           workers = list(Path('dist/_astro').glob('pink-catalog-worker-*.js'))
@@ -258,5 +269,104 @@ jobs:
         with:
           name: PINK-VOD-APK-part-03
           path: ${{ runner.temp }}/pink-vod-delivery/part-03
+          if-no-files-found: error
+          retention-days: 30
+      - name: Repackage certified Android source into an isolated QA5 app
+        working-directory: ${{ runner.temp }}/pink-extreme
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/clients/extreme/qa5_variant.py" "$RUNNER_TEMP/pink-extreme"
+          # Verify that any Tauri regeneration did not restore the production ID.
+          python3 "$GITHUB_WORKSPACE/clients/extreme/qa5_variant.py" "$RUNNER_TEMP/pink-extreme" --postbuild
+          cd "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android"
+          export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
+          ./gradlew --no-daemon app:assembleUniversalDebug app:assembleUniversalDebugAndroidTest -x app:rustBuildUniversalDebug
+      - name: Refuse an APK that could replace PINK IPTV or TESTE 2
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink-qa5-package.txt"
+          grep -Fq "package: name='com.pinkiptv.extreme.qa5'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          grep -Fq "application-label:'PINK IPTV TESTE 5'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa2'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa3'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          ! grep -Fq "package: name='com.pinkiptv.extreme.qa4'" "$RUNNER_TEMP/pink-qa5-package.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/pink-qa5-certificate.txt"
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          import os
+          apk=Path(os.environ["RUNNER_TEMP"])/"pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          with ZipFile(apk) as archive:
+              files=archive.namelist()
+              assert any(f.endswith("/libwg-go.so") for f in files)
+              assert not any(f.endswith("/libwg.so") or f.endswith("/libwg-quick.so") for f in files)
+          print("PINK_QA5_DISTINCT_ID_SIGNED_OFFICIAL_VPN_LIBRARY=PASS")
+          PY
+      - name: Prepare QA5 emulator acceptance with the real native package name
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          root=Path(os.environ["RUNNER_TEMP"])
+          base=(root/"pink053-emulator.sh").read_text()
+          original="com.pinkiptv.extreme.test/androidx.test.runner.AndroidJUnitRunner"
+          assert original in base
+          assert "adb shell am force-stop com.pinkiptv.extreme" in base
+          assert "com.pinkiptv.extreme.PinkVpnIdentityTest" in base
+          amended=base.replace(original,"com.pinkiptv.extreme.qa5.test/androidx.test.runner.AndroidJUnitRunner")
+          amended=amended.replace("adb shell am force-stop com.pinkiptv.extreme",
+                                 "adb shell am force-stop com.pinkiptv.extreme.qa5")
+          assert original not in amended
+          assert "com.pinkiptv.extreme.PinkVpnIdentityTest" in amended
+          (root/"pink-qa5-emulator.sh").write_text(amended)
+          PY
+      - name: Verify side-by-side QA5 VPN, Keystore, real Android UI and native playback
+        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          cores: 4
+          ram-size: 4096M
+          disk-size: 4096M
+          disable-linux-hw-accel: false
+          emulator-boot-timeout: 900
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          working-directory: ${{ runner.temp }}/pink-extreme/src-tauri/gen/android
+          script: bash "$RUNNER_TEMP/pink-qa5-emulator.sh"
+      - name: Package verified owner-only PINK IPTV TESTE 5 APK
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pink-qa5-deliverable"
+          apk="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk"
+          cp "$apk" "$RUNNER_TEMP/pink-qa5-deliverable/PINK-IPTV-TESTE5.apk"
+          cp "$RUNNER_TEMP/pink-qa5-package.txt" "$RUNNER_TEMP/pink-qa5-deliverable/package-check.txt"
+          cp "$RUNNER_TEMP/pink-qa5-certificate.txt" "$RUNNER_TEMP/pink-qa5-deliverable/signing-check.txt"
+          cd "$RUNNER_TEMP/pink-qa5-deliverable"
+          sha256sum PINK-IPTV-TESTE5.apk > SHA256SUMS
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, json, hashlib
+          path=Path(os.environ["RUNNER_TEMP"])/"pink-qa5-deliverable"
+          apk=path/"PINK-IPTV-TESTE5.apk"
+          payload={"application_id":"com.pinkiptv.extreme.qa5",
+            "does_not_replace":["com.pinkiptv.extreme","com.pinkiptv.extreme.qa2","com.pinkiptv.extreme.qa3","com.pinkiptv.extreme.qa4"],
+            "source_sha":os.environ["GITHUB_SHA"],
+            "github_run":int(os.environ["GITHUB_RUN_ID"]),
+            "sha256":hashlib.sha256(apk.read_bytes()).hexdigest(),
+            "size_bytes":apk.stat().st_size,
+            "release":False,"debug_signing_not_persistent":True,
+            "owner_device_slot_and_vpn_consent_required_before_physical_install":True}
+          (path/"provenance.json").write_text(json.dumps(payload,indent=2)+"\n")
+          PY
+          echo PINK_QA5_ISOLATED_SIGNED_APK_AND_SHA256=PASS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: PINK-IPTV-TESTE5-FAST-20261015
+          path: ${{ runner.temp }}/pink-qa5-deliverable
           if-no-files-found: error
           retention-days: 30

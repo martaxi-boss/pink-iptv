@@ -75,11 +75,11 @@ def _patch_catalog(page: Path, name: str) -> None:
     start = '\t\t<header class="route-hero shrink-0">'
     image = f"""\t\t<!-- PINK artwork is purely decorative. Card navigation and VOD
 \t\t     playback remain in the existing, unmodified catalogue scripts. -->
-\t\t<section data-pink-idle-brand="{name}" aria-label="PINK IPTV"
-\t\t\tclass="shrink-0 rounded-2xl border border-line bg-surface p-3">
-\t\t\t<div class="aspect-video w-full mx-auto max-h-[60dvh] max-w-[calc(60dvh*16/9)]
+\t\t<section data-pink-idle-brand="{name}" aria-hidden="true"
+\t\t\tclass="pink-catalog-hero shrink-0 overflow-hidden rounded-2xl border border-line bg-surface">
+\t\t\t<div class="w-full h-full max-w-full
 \t\t\t\toverflow-hidden rounded-xl bg-black ring-1 ring-line">
-\t\t\t\t<img src="/pink-idle.webp" alt="PINK IPTV" loading="eager"
+\t\t\t\t<img src="/pink-idle.webp" alt="" loading="eager"
 \t\t\t\t\tdecoding="async" class="h-full w-full object-cover pointer-events-none" />
 \t\t\t</div>
 \t\t</section>

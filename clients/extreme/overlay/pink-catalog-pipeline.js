@@ -4,15 +4,16 @@ export function pinkCatalogRuntime() {
   return typeof window !== "undefined" && !!window.PinkNative
 }
 
-// Completion drives the next stage. Callers never have to await background work.
-// Document-local ownership also prevents a recreated WebView inheriting jobs.
+// Home warms only Live. Background whole-catalog Movies and Series downloads
+// can monopolize the VPN-bound queue for minutes, delaying the opened page.
+// VOD/Series remain on-demand through the existing cache and worker pipeline.
 export function createCatalogBackground() {
   const active = new Map()
   return (key, load) => {
     if (active.has(key)) return active.get(key)
     const job = Promise.resolve().then(async () => {
       const errors = {}
-      for (const kind of ["live", "vod", "series"]) {
+      for (const kind of ["live"]) {
         try { await load(kind) }
         catch (error) { errors[kind] = error?.code || "CATALOG_FAILED" }
       }

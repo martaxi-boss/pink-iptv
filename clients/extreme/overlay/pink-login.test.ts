@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const deps = vi.hoisted(() => ({ addEntry: vi.fn(), getEntries: vi.fn(), removeEntry: vi.fn(), resolvePinkSession: vi.fn() }))
 vi.mock('@/scripts/lib/creds.js', () => deps)
 vi.mock('@/scripts/lib/pink-session.js', () => deps)
-import { mountPinkLogin, parseRecoverableInstallations } from '../src/scripts/lib/pink-login.js'
+import { loginMarkup, mountPinkLogin, parseRecoverableInstallations } from '../src/scripts/lib/pink-login.js'
 function formHarness() {
   const button = { disabled: false }
   const status = { textContent: '' }
@@ -21,6 +21,24 @@ beforeEach(() => {
   deps.getEntries.mockResolvedValue([])
   deps.addEntry.mockResolvedValue({})
 })
+describe('polished sign-in presentation', () => {
+  it('keeps the sign-in controls accessible and recovery functional', () => {
+    expect(loginMarkup).toContain('aria-labelledby="pink-login-heading"')
+    expect(loginMarkup).toContain('id="pink-login-heading"')
+    expect(loginMarkup).toContain('class="pink-login-brand')
+    expect(loginMarkup).toContain('aria-label="PINK IPTV"')
+    for (const token of ['data-pink-login', 'name="username"', 'name="password"',
+      'type="password"', 'data-focus-key="pink:username"', 'data-focus-key="pink:password"',
+      'data-focus-key="pink:submit"', 'data-pink-status', 'role="status"',
+      'aria-live="polite"', 'data-pink-recovery', 'data-pink-manage',
+      'data-pink-device-list']) {
+      expect(loginMarkup).toContain(token)
+    }
+    expect(loginMarkup.match(/<form /g)).toHaveLength(1)
+    expect(loginMarkup.match(/type="submit"/g)).toHaveLength(1)
+  })
+})
+
 describe('VPN quota self-service recovery', () => {
   const device = (index: number) => ({
     installation_id: String(index % 10).repeat(64),

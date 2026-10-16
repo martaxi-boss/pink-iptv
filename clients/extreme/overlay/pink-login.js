@@ -11,22 +11,31 @@ export function parseRecoverableInstallations(raw) {
   return data
 }
 export const loginMarkup = `
-  <section class="mx-auto w-full max-w-md px-6 py-10">
-    <img src="/pink-wordmark.png" alt="PINK IPTV" class="mx-auto mb-8 w-64" />
-    <h1 class="mb-2 text-2xl font-semibold text-fg">Bem-vindo à PINK IPTV</h1>
-    <p class="mb-7 text-fg-3">Use o mesmo utilizador e palavra-passe da sua conta PINK IPTV. O acesso fica guardado neste dispositivo.</p>
-    <form data-pink-login autocomplete="off" class="space-y-5">
-      <label class="block text-fg">Utilizador<input name="username" required autocomplete="off" autocapitalize="none" spellcheck="false" data-focus-key="pink:username" class="mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
-      <label class="block text-fg">Palavra-passe<input name="password" type="password" required autocomplete="off" data-focus-key="pink:password" class="mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
-      <p data-pink-status role="status" aria-live="polite" class="min-h-6 text-fg-3"></p>
-      <button type="submit" data-focus-key="pink:submit" class="min-h-12 w-full rounded-2xl bg-accent px-6 py-3 font-semibold text-black tv-focus-inset">Entrar</button>
+  <section class="pink-login-shell mx-auto w-full max-w-md px-6 py-10" aria-labelledby="pink-login-heading">
+    <div class="pink-login-brand mx-auto mb-8 flex items-center justify-center text-accent" role="img" aria-label="PINK IPTV">
+      <span class="pink-login-brand-p text-7xl font-black">P</span>
+      <span class="pink-login-brand-stack flex flex-col">
+        <span class="pink-login-brand-name text-4xl font-black">INK</span>
+        <span class="pink-login-brand-caption text-lg font-bold tracking-widest">IPTV</span>
+      </span>
+    </div>
+    <div class="pink-login-intro">
+      <h1 id="pink-login-heading" class="pink-login-heading mb-2 text-2xl font-semibold text-fg">Bem-vindo à <span>PINK IPTV</span></h1>
+      <p class="pink-login-description mb-7 text-fg-3">Entre com o utilizador e a palavra-passe da sua conta. O acesso fica guardado neste dispositivo.</p>
+    </div>
+    <form data-pink-login autocomplete="off" class="pink-login-form space-y-5">
+      <label class="pink-login-label block text-fg">Utilizador<input name="username" required autocomplete="off" autocapitalize="none" spellcheck="false" data-focus-key="pink:username" class="pink-login-field mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
+      <label class="pink-login-label block text-fg">Palavra-passe<input name="password" type="password" required autocomplete="off" data-focus-key="pink:password" class="pink-login-field mt-2 min-h-12 w-full rounded-2xl border border-line bg-surface-2 px-4 text-fg outline-none tv-focus-inset" /></label>
+      <p data-pink-status role="status" aria-live="polite" class="pink-login-status text-fg-3"></p>
+      <button type="submit" data-focus-key="pink:submit" class="pink-login-submit min-h-12 w-full rounded-2xl bg-accent px-6 py-3 font-semibold text-black tv-focus-inset">Entrar</button>
     </form>
-    <section data-pink-recovery hidden class="mt-6 space-y-3">
+    <section data-pink-recovery hidden class="pink-login-recovery mt-6 space-y-3">
       <p class="text-fg-3">Pode libertar uma instalação antiga da sua conta. A instalação escolhida perderá o acesso VPN até voltar a ser autorizada.</p>
       <button type="button" data-pink-manage class="min-h-12 w-full rounded-2xl border border-line px-4 py-3 font-semibold text-fg tv-focus-inset">Gerir instalações VPN</button>
       <div data-pink-device-list class="space-y-2"></div>
     </section>
   </section>`
+
 export function mountPinkLogin(root, navigate) {
   root.innerHTML = loginMarkup
   const form = root.querySelector('form')

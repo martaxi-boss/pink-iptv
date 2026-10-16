@@ -25,9 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        # Official PostgreSQL image mirrored by AWS Public ECR, avoiding the
-        # unauthenticated Docker Hub pull quota on shared GitHub runners.
-        image: public.ecr.aws/docker/library/postgres:16.4-alpine
+        # Use the official image directly. The AWS Public ECR mirror can return
+        # "toomanyrequests: Data limit exceeded" before CI tests even start.
+        # Keep the exact same PostgreSQL 16.4 Alpine test service.
+        image: postgres:16.4-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres # pragma: allowlist secret

@@ -1,5 +1,37 @@
 # PINK IPTV - PROJECT STATE
 
+## Owner-selected QA5 baseline — 2026-10-16
+
+The Owner accepted **PINK IPTV TESTE 5** on Android as the current visual and
+functional reference. Approved implementation source
+`68e4f953dbec34dce7bf8f3b8f831e63ed4bffb6` was merged from PR #74
+into `main` as `912395e8d0880184ea7d178ba81cb9a80d70a723`.
+Exact implementation Android CI `38822702488` passed; post-merge Backend CI
+`38828476104` passed on retry after an external PostgreSQL image registry
+download quota prevented the first container startup. The retry involved
+**no backend code change**. Owner-confirmed QA5 appearance is not blanket
+physical TV or media-subtitle acceptance.
+
+**Do not resume the old phases below.** This current baseline supersedes their
+"current" headings for continuation purposes, while all historical evidence
+remains available for recovery. The eight superseded PRs #47, #53, #63,
+#68, #71, #72, #73 and #75 were closed; there are no open application PRs at
+this checkpoint. Historical branches with unique commits must not be deleted
+without evidence; no application source is copied to Floot or VPS.
+
+**Release remains NO.** The user-tested `com.pinkiptv.extreme.qa5` is an
+isolated debug-signed APK with an ephemeral signing identity. A permanent
+release signer, package migration/update plan and owner-controlled key escrow
+are unresolved (issue #54). Cross-device `Play on TV` transport is disabled
+because upstream HTTP receiver pairing may expose credential-bearing stream
+URLs and ordinary LAN routing conflicts with PINK's full-tunnel VPN; never
+unblock it without a secure receiver design and physical test (issue #67).
+Physical subtitle compatibility (#55), customer VPN deployment acceptance
+(#56), repository protection (#50) and other open security gates are separate.
+The Owner's original installed app, signing keys, Android Keystore, VPN lease
+and VPS credentials must not be altered as a consequence of QA5 acceptance.
+Public launch/deployment remains disabled.
+
 ## Current certified integration055 (2026-10-06)
 
 Task055's native Extreme/PINK Android and WireGuard integration was merged to

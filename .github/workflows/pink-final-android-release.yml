@@ -1,0 +1,147 @@
+name: PINK final Android release candidate (unsigned)
+on:
+  push:
+    branches: ["release/pink-android-final-signing-20261016"]
+    paths: [".github/workflows/pink-final-android-release.yml"]
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 85
+    env:
+      XT_SKIP_FFMPEG_SIDECAR: "1"
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      ASTRO_TELEMETRY_DISABLED: "1"
+      APPROVED_MAIN: "d48126cb8b95da3ea76646fbb8bf3de033216167"
+      UPSTREAM: "1efcc1b4ab3468db04aedd1c466228c52ef001b7"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fail closed on source changes or secrets
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "martaxi-boss/pink-iptv"
+          test "$GITHUB_REF" = "refs/heads/release/pink-android-final-signing-20261016"
+          test "$(git diff --name-only "$APPROVED_MAIN" HEAD)" = ".github/workflows/pink-final-android-release.yml"
+          test -z "$(printenv XTREAM_KEYSTORE_FILE 2>/dev/null || true)"
+          test -z "$(printenv XTREAM_KEYSTORE_PASSWORD 2>/dev/null || true)"
+          test -z "$(printenv XTREAM_KEY_PASSWORD 2>/dev/null || true)"
+          git diff --check
+          echo APPROVED_PINK_APP_SOURCE_UNCHANGED=PASS
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          version: 10.31.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: "platforms;android-36 build-tools;36.0.0 ndk;29.0.13846066"
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - name: Rebuild only approved overlay and upstream revision
+        run: |
+          set -euo pipefail
+          git clone --no-checkout https://github.com/infinitel8p/Extreme-InfiniTV.git "$RUNNER_TEMP/pink-extreme"
+          git -C "$RUNNER_TEMP/pink-extreme" checkout --detach "$UPSTREAM"
+          python3 clients/extreme/test_brand_overlay.py
+          python3 clients/extreme/test_premium_overlay.py
+          python3 clients/extreme/test_mobile_performance_overlay.py
+          python3 clients/extreme/test_native_video_actions_overlay.py
+          python3 clients/extreme/test_qa5_variant.py
+          python3 clients/extreme/prepare.py "$RUNNER_TEMP/pink-extreme"
+          gradle="$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build.gradle.kts"
+          grep -Fq 'applicationId = "com.pinkiptv.extreme"' "$gradle"
+          ! grep -Fq 'applicationIdSuffix = ".qa5"' "$gradle"
+          echo EXACT_APPROVED_PINK_OVERLAYS=PASS
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
+        with:
+          workspaces: "${{ runner.temp }}/pink-extreme/src-tauri -> target"
+          key: pink-final-release-20261016
+          cache-on-failure: "true"
+      - name: Frontend functional tests
+        working-directory: ${{ runner.temp }}/pink-extreme
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
+          pnpm exec vitest run tests/pink-session.test.ts tests/pink-login.test.ts tests/pink-home.test.ts tests/pink-catalog.test.ts tests/pink-fast-category.test.ts tests/pink-catalog-pipeline.test.ts tests/pink-presentation.test.ts tests/pink-runtime-policy.test.ts tests/pink-vod.test.ts
+          pnpm run build
+          echo PINK_LOGIN_AND_CATALOG=PASS
+      - name: PINK branded launcher
+        working-directory: ${{ runner.temp }}/pink-extreme
+        run: pnpm tauri icon "$GITHUB_WORKSPACE/clients/extreme/assets/pink-icon.png"
+      - name: Build real release code without any signing key
+        timeout-minutes: 54
+        working-directory: ${{ runner.temp }}/pink-extreme
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/29.0.13846066
+        run: |
+          set -euo pipefail
+          pnpm tauri android build --apk --target aarch64 --target armv7 --target x86_64
+          echo NONDEBUGGABLE_RELEASE_COMPILED=PASS
+      - name: Check release package and prepare unsigned signing input
+        run: |
+          set -euo pipefail
+          sdk="$ANDROID_HOME/build-tools/36.0.0"
+          mkdir -p "$RUNNER_TEMP/pink-final-unsigned"
+          find "$RUNNER_TEMP/pink-extreme/src-tauri/gen/android/app/build/outputs/apk" -type f -iname '*release*.apk' -print
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          root=Path(os.environ['RUNNER_TEMP'])/'pink-extreme/src-tauri/gen/android/app/build/outputs/apk'
+          files=[p for p in root.rglob('*.apk') if 'release' in p.name.lower() and 'unsigned' in p.name.lower() and 'universal' in str(p.parent).lower()]
+          assert len(files)==1, f"Expected exactly one unsigned universal release: {len(files)}"
+          (Path(os.environ['RUNNER_TEMP'])/'pink-final-unsigned/location.txt').write_text(str(files[0]))
+          print('UNIVERSAL_UNSIGNED_RELEASE_FOUND=PASS')
+          PY
+          apk="$(cat "$RUNNER_TEMP/pink-final-unsigned/location.txt")"
+          test -s "$apk"
+          "$sdk/aapt" dump badging "$apk" > "$RUNNER_TEMP/pink-final-unsigned/package-check.txt"
+          grep -Fq "package: name='com.pinkiptv.extreme'" "$RUNNER_TEMP/pink-final-unsigned/package-check.txt"
+          grep -Fq "application-label:'PINK IPTV'" "$RUNNER_TEMP/pink-final-unsigned/package-check.txt"
+          ! grep -Fq 'application-debuggable' "$RUNNER_TEMP/pink-final-unsigned/package-check.txt"
+          ! "$sdk/apksigner" verify "$apk" >/dev/null 2>&1
+          "$sdk/zipalign" -p -f 4 "$apk" "$RUNNER_TEMP/pink-final-unsigned/PINK-IPTV-RELEASE-UNSIGNED.apk"
+          "$sdk/zipalign" -c -p 4 "$RUNNER_TEMP/pink-final-unsigned/PINK-IPTV-RELEASE-UNSIGNED.apk"
+          ! "$sdk/apksigner" verify "$RUNNER_TEMP/pink-final-unsigned/PINK-IPTV-RELEASE-UNSIGNED.apk" >/dev/null 2>&1
+          test -s "$sdk/lib/apksigner.jar"
+          cp "$sdk/lib/apksigner.jar" "$RUNNER_TEMP/pink-final-unsigned/apksigner.jar"
+          java -cp "$RUNNER_TEMP/pink-final-unsigned/apksigner.jar" com.android.apksigner.ApkSignerTool version
+          python3 - <<'PY'
+          from pathlib import Path
+          import os,zipfile
+          apk=Path(os.environ['RUNNER_TEMP'])/'pink-final-unsigned/PINK-IPTV-RELEASE-UNSIGNED.apk'
+          with zipfile.ZipFile(apk) as f:
+            names=f.namelist()
+            assert any(x.endswith('/libwg-go.so') for x in names)
+            assert not any(x.endswith('/libwg.so') or x.endswith('/libwg-quick.so') for x in names)
+          print('OFFICIAL_NATIVE_WIREGUARD=PASS')
+          PY
+          echo PINK_RELEASE_UNSIGNED_READY_TO_SIGN=PASS
+      - name: Provenance SHA and source identity, no signing secrets
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/pink-final-unsigned"
+          python3 - <<'PY'
+          import json,hashlib,os
+          from pathlib import Path
+          f=Path('PINK-IPTV-RELEASE-UNSIGNED.apk')
+          with f.open('rb') as a: digest=hashlib.file_digest(a,'sha256').hexdigest()
+          p={'stage':'unsigned-not-installable','approved_main':os.environ['APPROVED_MAIN'],'upstream':os.environ['UPSTREAM'],'builder_workflow_sha':os.environ['GITHUB_SHA'],'package':'com.pinkiptv.extreme','sha256':digest,'size':f.stat().st_size,'release_signed':False}
+          Path('provenance.json').write_text(json.dumps(p,indent=2)+'\n')
+          PY
+          sha256sum PINK-IPTV-RELEASE-UNSIGNED.apk apksigner.jar > SHA256SUMS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: PINK-IPTV-RELEASE-UNSIGNED-INPUT-20261016
+          path: ${{ runner.temp }}/pink-final-unsigned
+          if-no-files-found: error
+          retention-days: 14

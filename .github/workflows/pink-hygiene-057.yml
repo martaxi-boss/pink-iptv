@@ -38,7 +38,7 @@ jobs:
           PINK_HYGIENE_EXECUTE: "1"
         run: python ops/pink_hygiene_057.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
         with:
           name: PINK-hygiene-057-result
-        if: always()
           path: pink-hygiene-057-result.json

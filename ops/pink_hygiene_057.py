@@ -7,7 +7,11 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 REPO = "martaxi-boss/pink-iptv"
-BASE = "2f228c6800cddee8944e1a2eedd7e8ae3a78d879"  # pragma: allowlist secret -- public Git commit identifier
+BASE = "c78800eaf5b57023f23910865232e589a09ee82c"  # SHA of verified 49-branch historical meta-merge
+FINAL_MAIN = "d48126cb8b95da3ea76646fbb8bf3de033216167"
+ARCHIVE = "archive/legacy-branches-20261016"
+MANIFEST_BLOB = "b79014b601a52d9d9b6e8a48b392188e987dcd83"
+AUTH_PATH = ".project-leader/transitions/PINK-IPTV-FINAL-20261016.authorization.json"
 TASK = "PINK-IPTV-REPOSITORY-HYGIENE-057"
 
 
@@ -27,63 +31,130 @@ def protected():
         runs = api("actions/runs?status=" + status + "&per_page=100")["workflow_runs"]
         assert len(runs) < 100, "Bounded inventory exceeded"
         heads.update(r["head_branch"] for r in runs)
-    return heads | {"main", "builder/extreme-live-certification-055", "builder/repository-hygiene-057"}
+    return heads | {"main", ARCHIVE}
+
+
+
+
+def archive_inventory():
+    """Prove full Git ancestry and exactly approved branch names, before effects."""
+    assert api("git/ref/heads/main")["object"]["sha"] == FINAL_MAIN, "Approved main moved"
+    archive_sha = api("git/ref/heads/" + ARCHIVE)["object"]["sha"]
+    # The exact 5 meta-merge commits preserve all original branch-tip histories.
+    comparison = api("compare/" + BASE + "..." + archive_sha)
+    assert comparison["merge_base_commit"]["sha"] == BASE, "Archive anchor not reachable"
+    content = api("contents/PINK-IPTV-HISTORICO-20261016.json?ref=" + quote(ARCHIVE, safe=""))
+    assert content["sha"] == MANIFEST_BLOB, "Historical manifest was replaced"
+    manifest = json.loads(Path("PINK-IPTV-HISTORICO-20261016.json").read_text())
+    assert manifest["approved_main_sha"] == FINAL_MAIN
+    entries = manifest["entries"]
+    assert len(entries) == 49 and len({b["branch"] for b in entries}) == 49
+    assert all(b["branch"] not in ("main", ARCHIVE) and
+               isinstance(b["sha"], str) and len(b["sha"]) == 40 for b in entries)
+
+    chain = [
+        "64f310d510bd389831bcc734b050149da6d521a3",
+        "390b47ad4c03e9156084085816d8b399ce86cb72",
+        "ff2dbd13dbcd6490ac58e7c3f3b6a922de78d957",
+        "5c8e5bd4a28746a978e1513d2979c8d11331a376",
+        BASE,
+    ]
+    unique_heads = list(dict.fromkeys(b["sha"] for b in entries))
+    assert len(unique_heads) == 48, "Historical head count changed"
+    parents_seen = []
+    for i, sha in enumerate(chain):
+        commit = api("git/commits/" + sha)
+        parents = [p["sha"] for p in commit["parents"]]
+        assert commit["tree"]["sha"] == "18bedd835a06951d1f90282360aee5e7f004627e"
+        assert parents[0] == (FINAL_MAIN if i == 0 else chain[i-1])
+        assert parents[1:] == unique_heads[i*10:(i+1)*10]
+        parents_seen.extend(parents[1:])
+    assert parents_seen == unique_heads, "Not all branch histories archived"
+    return archive_sha, entries
 
 
 def inventory():
-    main = api("git/ref/heads/main")["object"]["sha"]
-    assert main == BASE, "Main changed; reconstruct before cleanup"
-    branches = api("branches?per_page=100")
-    assert len(branches) < 100, "Bounded inventory exceeded"
-    exclude = protected()
+    archive_sha, entries = archive_inventory()
+    live = {b["name"]: b for b in api("branches?per_page=100")}
+    assert len(live) < 100, "Branch list truncated"
+    busy = protected()
     candidates, preserved = [], []
-    for branch in branches:
-        name, sha = branch["name"], branch["commit"]["sha"]
-        if name in exclude or name.startswith("control/"):
-            preserved.append({"branch": name, "reason": "protected or active"})
-            continue
-        comparison = api("compare/" + sha + "..." + BASE)
-        if comparison["merge_base_commit"]["sha"] == sha and comparison["status"] in ("ahead", "identical"):
-            candidates.append({"branch": name, "sha": sha})
+    for b in entries:
+        name, sha = b["branch"], b["sha"]
+        current = live.get(name)
+        if not current:
+            preserved.append({"branch": name, "reason": "already absent"})
+        elif name in busy or current["protected"] or current["commit"]["sha"] != sha:
+            preserved.append({"branch": name, "reason": "active, protected or moved"})
         else:
-            preserved.append({"branch": name, "reason": "not proven reachable from main"})
-    evidence = {"main_sha": main, "candidates": candidates, "preserved": preserved}
+            candidates.append(b)
+    evidence = {"approved_main": FINAL_MAIN, "archive_sha": archive_sha,
+                "historical_heads_reachable": 49, "candidates": candidates, "preserved": preserved}
     Path("pink-hygiene-057-inventory.json").write_text(json.dumps(evidence, indent=2) + "\n")
     print(json.dumps(evidence, indent=2))
 
 
 def execute():
-    assert api("git/ref/heads/main")["object"]["sha"] == BASE
-    exclude = protected()
-    root = Path(".project-leader/transitions")
-    records = sorted(root.glob(TASK + "-DELETE-*.authorization.json"))
-    assert 0 < len(records) <= 60
-    deleted = []
-    for path in records:
-        record = json.loads(path.read_text())
-        assert record["repository"] == REPO and record["task_id"] == TASK
-        assert record["action"] == "delete_fully_merged_non_main_branch_ref"
-        assert record["authority"]["source"] == "CURRENT_OWNER_INSTRUCTION"
-        assert record["authority"]["binding_mode"] == "EXACT_REVISION_BOUND"
-        name, sha = record["target"]["identifier"], record["target"]["revision"]
-        assert record["target"]["base_revision"] == BASE and name not in exclude and not name.startswith("control/")
+    """Delete only exact old refs, not commits, after Owner-bound archive proof."""
+    assert os.environ.get("GITHUB_REF") == "refs/heads/" + ARCHIVE
+    archive_sha, entries = archive_inventory()
+    assert os.environ.get("GITHUB_SHA") == archive_sha, "Archive advanced after dispatch"
+    record = json.loads(Path(AUTH_PATH).read_text())
+    assert record["repository"] == REPO
+    assert record["action"] == "delete_exact_legacy_branch_refs_after_verified_archive"
+    assert record["authority"]["source"] == "CURRENT_OWNER_INSTRUCTION"
+    assert record["authority"]["binding_mode"] == "EXACT_REVISION_BOUND"
+    assert record["target"]["final_main_sha"] == FINAL_MAIN
+    assert record["target"]["archive_ancestor_sha"] == BASE
+    assert record["target"]["branches"] == entries
+    assert len(entries) == 49
+    checked = api("branches?per_page=100")
+    assert len(checked) < 100
+    protected_at_start = {b["name"] for b in checked if b["protected"]}
+    assert "main" in [b["name"] for b in checked] and ARCHIVE in [b["name"] for b in checked]
+
+    result = {"approved_main": FINAL_MAIN, "archive_sha": archive_sha,
+              "history_preserved_by_verified_parents": True,
+              "authorized_ref_count": len(entries), "deleted": [], "already_absent": [],
+              "preserved": []}
+    result_path = Path("pink-hygiene-057-result.json")
+    def save():
+        result_path.write_text(json.dumps(result, indent=2) + "\n")
+    save()
+    for item in entries:
+        name, sha = item["branch"], item["sha"]
+        assert name not in ("main", ARCHIVE) and not name.startswith("refs/")
+        assert api("git/ref/heads/main")["object"]["sha"] == FINAL_MAIN
+        assert api("git/ref/heads/" + ARCHIVE)["object"]["sha"] == archive_sha
         ref_path = "git/ref/heads/" + quote(name, safe="/")
-        assert api(ref_path)["object"]["sha"] == sha, "Ref changed; preserve it"
-        assert api("compare/" + sha + "..." + BASE)["merge_base_commit"]["sha"] == sha
-        # Recheck active work immediately before the effect.
-        assert name not in protected()
+        try:
+            ref = api(ref_path)
+        except HTTPError as error:
+            if error.code == 404:
+                result["already_absent"].append(item)
+                save()
+                continue
+            raise
+        if name in protected_at_start or name in protected() or ref["object"]["sha"] != sha:
+            result["preserved"].append({"branch": name, "reason": "protected, active or ref changed"})
+            save()
+            continue
         api("git/refs/heads/" + quote(name, safe="/"), "DELETE")
         try:
             api(ref_path)
         except HTTPError as error:
             assert error.code == 404
         else:
-            raise AssertionError("Deleted ref still exists")
-        deleted.append({"transition_id": record["transition_id"], "branch": name, "sha": sha})
-    assert api("git/ref/heads/main")["object"]["sha"] == BASE
-    evidence = {"main_sha": BASE, "deleted": deleted, "commit_history_preserved": True}
-    Path("pink-hygiene-057-result.json").write_text(json.dumps(evidence, indent=2) + "\n")
-    print(json.dumps(evidence, indent=2))
+            raise AssertionError("Deleted branch ref is still present: " + name)
+        result["deleted"].append(item)
+        save()
+    assert api("git/ref/heads/main")["object"]["sha"] == FINAL_MAIN
+    assert api("git/ref/heads/" + ARCHIVE)["object"]["sha"] == archive_sha
+    remaining = api("branches?per_page=100")
+    assert len(remaining) < 100
+    result["remaining_branch_names"] = [b["name"] for b in remaining]
+    save()
+    print(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":

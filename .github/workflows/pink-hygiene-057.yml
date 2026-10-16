@@ -2,14 +2,14 @@ name: PINK repository hygiene 057
 on:
   push:
     branches: ["archive/legacy-branches-20261016"]
-    paths: ["ops/pink_hygiene_057.py", ".github/workflows/pink-hygiene-057.yml", ".project-leader/transitions/PINK-IPTV-FINAL-20261016.authorization.json"]
+    paths: ["ops/pink_hygiene_057.py", "ops/pink_actions_artifact_hygiene.py", ".github/workflows/pink-hygiene-057.yml", ".project-leader/transitions/PINK-IPTV-FINAL-20261016.authorization.json"]
 permissions:
   contents: read
   actions: read
   pull-requests: read
 jobs:
   inventory:
-    if: github.event.head_commit.message != 'Execute exact archived PINK branch cleanup'
+    if: github.event.head_commit.message == 'Run archived branch inventory'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -42,3 +42,24 @@ jobs:
         with:
           name: PINK-hygiene-057-result
           path: pink-hygiene-057-result.json
+
+  artifact-inventory:
+    if: github.event.head_commit.message == 'Inventory outdated PINK artifacts'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Inventory only old Actions artifacts without deletion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python ops/pink_actions_artifact_hygiene.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: PINK-final-artifact-inventory
+          path: pink-artifact-inventory.json

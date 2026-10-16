@@ -30,6 +30,10 @@ jobs:
           test -z "$(printenv XTREAM_KEYSTORE_PASSWORD 2>/dev/null || true)"
           test -z "$(printenv XTREAM_KEY_PASSWORD 2>/dev/null || true)"
           git diff --check
+          python3 - <<'PY'
+          import hashlib
+          assert len(hashlib.sha256(b'PINK').hexdigest()) == 64
+          PY
           echo APPROVED_PINK_APP_SOURCE_UNCHANGED=PASS
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
         with:
@@ -134,7 +138,7 @@ jobs:
           import json,hashlib,os
           from pathlib import Path
           f=Path('PINK-IPTV-RELEASE-UNSIGNED.apk')
-          with f.open('rb') as a: digest=hashlib.file_digest(a,'sha256').hexdigest()
+          with f.open('rb') as a: digest=hashlib.sha256(a.read()).hexdigest()
           p={'stage':'unsigned-not-installable','approved_main':os.environ['APPROVED_MAIN'],'upstream':os.environ['UPSTREAM'],'builder_workflow_sha':os.environ['GITHUB_SHA'],'package':'com.pinkiptv.extreme','sha256':digest,'size':f.stat().st_size,'release_signed':False}
           Path('provenance.json').write_text(json.dumps(p,indent=2)+'\n')
           PY

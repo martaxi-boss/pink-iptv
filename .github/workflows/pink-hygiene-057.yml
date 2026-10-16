@@ -1,15 +1,15 @@
 name: PINK repository hygiene 057
 on:
   push:
-    branches: ["builder/repository-hygiene-057"]
-    paths: ["ops/pink_hygiene_057.py", ".github/workflows/pink-hygiene-057.yml", ".project-leader/transitions/PINK-IPTV-REPOSITORY-HYGIENE-057-DELETE-*"]
+    branches: ["archive/legacy-branches-20261016"]
+    paths: ["ops/pink_hygiene_057.py", ".github/workflows/pink-hygiene-057.yml", ".project-leader/transitions/PINK-IPTV-FINAL-20261016.authorization.json"]
 permissions:
   contents: read
   actions: read
   pull-requests: read
 jobs:
   inventory:
-    if: github.event.head_commit.message != 'Execute exact merged branch cleanup 057'
+    if: github.event.head_commit.message != 'Execute exact archived PINK branch cleanup'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -23,7 +23,7 @@ jobs:
           name: PINK-hygiene-057-inventory
           path: pink-hygiene-057-inventory.json
   cleanup:
-    if: github.event.head_commit.message == 'Execute exact merged branch cleanup 057'
+    if: github.event.head_commit.message == 'Execute exact archived PINK branch cleanup'
     permissions:
       contents: write
       actions: read
@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Execute only exact previously authorized refs
+      - name: Execute exactly 49 archived, owner-authorized branch ref removals
         env:
           GH_TOKEN: ${{ github.token }}
           PINK_HYGIENE_EXECUTE: "1"
@@ -40,4 +40,5 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: PINK-hygiene-057-result
+        if: always()
           path: pink-hygiene-057-result.json

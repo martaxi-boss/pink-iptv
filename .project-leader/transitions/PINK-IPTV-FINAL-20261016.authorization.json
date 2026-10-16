@@ -1,0 +1,225 @@
+{
+  "schema_version": "1.0",
+  "transition_id": "PINK-IPTV-FINAL-20261016-ARCHIVED-REF-CLEANUP",
+  "task_id": "PINK-IPTV-FINAL-20261016",
+  "repository": "martaxi-boss/pink-iptv",
+  "created_at": "2026-10-16T10:55:00Z",
+  "action": "delete_exact_legacy_branch_refs_after_verified_archive",
+  "effect_class": "E2_DESTRUCTIVE_BRANCH_REFERENCE_CLEANUP",
+  "authority": {
+    "source": "CURRENT_OWNER_INSTRUCTION",
+    "binding_mode": "EXACT_REVISION_BOUND",
+    "summary": "Owner explicitly approved and repeatedly requested final PINK IPTV QA5 project closure, comprehensive GitHub/VPS hygiene, removal of superseded old branches and residue, while preserving the exact accepted APK. All branch history has first been archived with independently verified commit ancestry."
+  },
+  "target": {
+    "final_main_sha": "d48126cb8b95da3ea76646fbb8bf3de033216167",
+    "archive_branch": "archive/legacy-branches-20261016",
+    "archive_ancestor_sha": "c78800eaf5b57023f23910865232e589a09ee82c",
+    "branches": [
+      {
+        "branch": "audit/extreme-migration-044",
+        "sha": "56ec4fa60887f7aa2bfb75be19f9d7037388c050"
+      },
+      {
+        "branch": "audit/extreme-startup-045",
+        "sha": "629d115405b176f1b40a6d853d159b092f6c39bf"
+      },
+      {
+        "branch": "builder/android-device-remediation-037-transitions",
+        "sha": "8f589ae14e05ca373211092fe8edc7c2d6af826d"
+      },
+      {
+        "branch": "builder/android-session-lifecycle-006",
+        "sha": "550d22028fb637aaaa1c0833d6f16fccb9f6a10c"
+      },
+      {
+        "branch": "builder/canonical-audit-continuation-013",
+        "sha": "eb30ea539f8f344e7c07b85b95b02f2b73b60c13"
+      },
+      {
+        "branch": "builder/canonical-ci-wait-recovered-031",
+        "sha": "d66283f9d6238dfa95c5363455dfca4913118d98"
+      },
+      {
+        "branch": "builder/canonical-recertification-008",
+        "sha": "5d2f91a0ce7cad75503c52df60f444ff0059e38f"
+      },
+      {
+        "branch": "builder/canonical-recertification-009",
+        "sha": "fe4f07023db6dd5a2256aaa330573e9b1513ffa1"
+      },
+      {
+        "branch": "builder/canonical-transitions-014",
+        "sha": "36233d56f239edb76676b9110e4cadb506b490f4"
+      },
+      {
+        "branch": "builder/canonical-transitions-016",
+        "sha": "a11507531e83c2c553d17afd13215fdca4f049da"
+      },
+      {
+        "branch": "builder/canonical-transitions-017",
+        "sha": "1a1f59eaaddf67adfaed75682626d6f2068e47e7"
+      },
+      {
+        "branch": "builder/canonical-transitions-023",
+        "sha": "089a396aabcebc9d4101483c5792b22ae01365d8"
+      },
+      {
+        "branch": "builder/canonical-transitions-028",
+        "sha": "82debb693fda349f1be68550f9f7adff27539f07"
+      },
+      {
+        "branch": "builder/canonical-transitions-031",
+        "sha": "545d402c9cd60b474bdff277071d66606a68a54e"
+      },
+      {
+        "branch": "builder/canonical-transitions-036",
+        "sha": "2fc757e710be6294f12a8d785e11674b1564b4f2"
+      },
+      {
+        "branch": "builder/extreme-live-certification-055",
+        "sha": "1d9aecf75233f5d941351d3331873096aaff7fed"
+      },
+      {
+        "branch": "builder/extreme-migration-042",
+        "sha": "9edc57f3c189ea806de0ba256990929e7f567597"
+      },
+      {
+        "branch": "builder/extreme-migration-043",
+        "sha": "7f48aa94ded8f045132a75fac8b830dc096f2d18"
+      },
+      {
+        "branch": "builder/https-staging-plan-027",
+        "sha": "2912dab0ef7ae9ef5dacf4e4e3664e73f7f133df"
+      },
+      {
+        "branch": "builder/mega-auto-resolve-transitions-050",
+        "sha": "d4b2d1d353ef4868a41142cc6e77bba3845fb46a"
+      },
+      {
+        "branch": "builder/native-video-actions-087",
+        "sha": "97438411e7c70a8954b7d524b648f5c46b333ccd"
+      },
+      {
+        "branch": "builder/ovh-observation-rollback-017",
+        "sha": "ae9f9a2dab56169f4f3fab45eb8892af60430389"
+      },
+      {
+        "branch": "builder/pink-codex-two-subagents-086",
+        "sha": "5f51d494127ccbf384f1b3dc6985cd58c7acdc6c"
+      },
+      {
+        "branch": "builder/project-hygiene-010",
+        "sha": "6bba2f8870744b3e792941150669d260c7540c89"
+      },
+      {
+        "branch": "builder/repository-hygiene-057",
+        "sha": "8f1cc9144b327c3b42f79209d59d19c26975627b"
+      },
+      {
+        "branch": "builder/side-by-side-android-qa-083",
+        "sha": "8e2d589c6a06cd9cb78f9fb442765f44c049bb00"
+      },
+      {
+        "branch": "builder/task050-format-diagnostic",
+        "sha": "63adbbf5325fabcd1c0c219a64ab767bb62e6abc"
+      },
+      {
+        "branch": "builder/transition-scan-preflight-016",
+        "sha": "23820745e4d5cbac2c1b12ad284837a91d9ff969"
+      },
+      {
+        "branch": "builder/vod-series-stage-diagnostic-069",
+        "sha": "d8f60ebd19be117613404bab510d45fb67062571"
+      },
+      {
+        "branch": "builder/vpn-lifecycle-070",
+        "sha": "4fdc889a48834b5058c558695b0f2a0f5d94138b"
+      },
+      {
+        "branch": "builder/vpn-quota-recovery-066",
+        "sha": "4fdc889a48834b5058c558695b0f2a0f5d94138b"
+      },
+      {
+        "branch": "builder/vpn-reclaim-073",
+        "sha": "e8b52a6503086a42cb6b41a08c69c3dff65fed7d"
+      },
+      {
+        "branch": "builder/wireguard-004b-stale-preparation-005",
+        "sha": "182b702da3966097cb403dcff8959785e9657df3"
+      },
+      {
+        "branch": "builder/wireguard-preflight-preparation-015",
+        "sha": "b091cbdd8dbc5d2d55bc35cfc2624eb494e12280"
+      },
+      {
+        "branch": "codex/issue-233-38654400728-1",
+        "sha": "531044389d43c1541d5b38fbe60f12c9ec8a5a88"
+      },
+      {
+        "branch": "control/merge-authorization-055-certified",
+        "sha": "13737832ce7322e491c9f68a23dff0fe6ae2d201"
+      },
+      {
+        "branch": "control/pink-efficiency-hygiene-088",
+        "sha": "be0d09dc09d4e2ff38e7ef26c02fd75a73ef96b2"
+      },
+      {
+        "branch": "control/repository-hygiene-057",
+        "sha": "f6065e7f2b1d987e5011054fdd26d10441ad9df7"
+      },
+      {
+        "branch": "control/vpn-enrollment-051",
+        "sha": "3b490216658a58d752e964cace6acf92f8482590"
+      },
+      {
+        "branch": "design/pink-premium-cinema-20261015",
+        "sha": "350b57af8cfc8fb61def149bd30e2352ba33e6b9"
+      },
+      {
+        "branch": "docs/owner-accepted-qa5-baseline-20261016",
+        "sha": "bc4f79028c8313dd5e10a20e2212722309228e87"
+      },
+      {
+        "branch": "integration/pink-cinema-fast-android-20261015",
+        "sha": "68e4f953dbec34dce7bf8f3b8f831e63ed4bffb6"
+      },
+      {
+        "branch": "ops/ovh-infrastructure-001",
+        "sha": "208760bd06901a3de326b3dfcb36c9a766a8ede0"
+      },
+      {
+        "branch": "perf/pink-catalog-on-demand-20261015",
+        "sha": "af1932fe4ec4d93efdb9d200bd8c552c88fff89c"
+      },
+      {
+        "branch": "perf/pink-fast-category-20261015",
+        "sha": "4c6944855041bbd30a1dfda4d671ca574f2b551a"
+      },
+      {
+        "branch": "perf/pink-mobile-fluidity-20261015",
+        "sha": "13f85be57d322b1e4c7fa7b144591c6abf0617a0"
+      },
+      {
+        "branch": "project-leader/authorize-android-061-pr44-20261008",
+        "sha": "2b80bb405d9ad3a4a4c53afad68d3a52b9721670"
+      },
+      {
+        "branch": "project-leader/authorize-docs-060-pr45-20261008",
+        "sha": "9337aecd24ad7b6a4017b4a2ebc4c64f417996ae"
+      },
+      {
+        "branch": "project-leader/general-codex-android-pr-certification-20261015",
+        "sha": "6ac583e50b59b56d46f9c77cc80d1e804fb72258"
+      }
+    ]
+  },
+  "invariants": [
+    "Main ref and its tree must remain unchanged",
+    "49 historical tip commits reachable from archive parent graph",
+    "No ref delete if exact SHA moved or branch protected/active",
+    "No object history rewrite, no secret/VPN/production/VPS mutation",
+    "Dry-run inventory success #38890307048",
+    "Fail-closed on missing authority or missing archive proof"
+  ]
+}
